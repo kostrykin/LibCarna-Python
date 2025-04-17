@@ -13,8 +13,9 @@ fi
 eval "$(conda shell.bash hook)"
 conda activate "$ROOT/.env"
 
-# Setup and check dependencies:
+# Setup and check dependencies
 export PYBIND11_PREFIX="$CONDA_PREFIX/share/cmake/pybind11"
+export CMAKE_MODULE_PATH="$CONDA_PREFIX/share/cmake/Modules"
 
 # Build wheel
 export CARNAPY_BUILD_TEST="OFF"

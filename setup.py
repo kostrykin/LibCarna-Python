@@ -7,7 +7,7 @@
 # > python -m twine upload dist/*.tar.gz
 
 import yaml
-with open('misc/VERSIONS.yaml', 'r') as io:
+with open('misc/versions.yml', 'r') as io:
     versions = yaml.safe_load(io)
 
 VERSION_CARNA_PY = versions['build']['carnapy']
@@ -59,6 +59,7 @@ if __name__ == '__main__':
                 f'-DREQUIRED_VERSION_CARNA={VERSION_CARNA}',
                 f'-DPYTHON_EXECUTABLE={sys.executable}',
                 f'-Dpybind11_DIR={os.environ["PYBIND11_PREFIX"]}',
+                f'-DCMAKE_MODULE_PATH={os.environ.get("CMAKE_MODULE_PATH")}',
                 f'../..',
             ]
 
@@ -82,7 +83,7 @@ if __name__ == '__main__':
         author_email = 'leonid.kostrykin@bioquant.uni-heidelberg.de',
         url = 'https://github.com/kostrykin/CarnaPy',
         include_package_data = True,
-        license = 'BSD',
+        license = 'BSD-3-Clause',
         package_dir = {
             'carna': 'build/make_release/carna',
         },
