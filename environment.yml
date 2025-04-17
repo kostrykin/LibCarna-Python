@@ -6,8 +6,12 @@ dependencies:
   - python ~=3.12
   - pybind11
   - libcarna ==3.3.3
+  - libgl-devel
+  - libegl-devel
   - libglu
   - cxx-compiler
   - make
   - cmake
   - eigen >=3.0.5
+  - pyyaml
+  - setuptools
