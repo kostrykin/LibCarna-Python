@@ -39,27 +39,3 @@ node2.free()
 assert np.allclose(base.math.scaling4f(1, 1, 1), np.eye(4))
 assert np.allclose(base.math.translation4f(0, 0, 0), np.eye(4))
 assert np.allclose(base.math.rotation4f([0, 1, 0], 0), np.eye(4))
-
-# ==========================
-# Basic Rendering
-# ==========================
-
-root = base.Node.create()
-cam  = base.Camera.create()
-cam.local_transform = base.math.rotation4f([0, 1, 0], base.math.deg2rad(20) ) @ base.math.translation4f(0, 0, 350)
-cam.projection = base.math.frustum4f(base.math.deg2rad(90), 1, 10, 2000)
-root.attach_child(cam)
-
-ctx = egl.Context.create()
-surface = base.Surface.create(ctx, 100, 100)
-renderer = base.FrameRenderer.create( ctx, 100, 100 )
-surface.begin()
-#renderer.render(cam)
-result = surface.end()
-assert result.shape == (100, 100, 3)
-assert result.sum() == 0
-renderer.free()
-surface.free()
-ctx.free()
-root.free()
-

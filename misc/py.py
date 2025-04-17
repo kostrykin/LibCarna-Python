@@ -10,10 +10,10 @@ version    = carna.version
 py_version = carna.py_version
 
 
-# Create the OpenGL context when module is loaded
-ctx = carna.egl.Context.create()
+# # Create the OpenGL context when module is loaded
+# ctx = carna.egl.Context.create()
 
-# Release the OpenGL context when module is unloaded
-@atexit.register
-def shutdown():
-    ctx.free()
+# # Release the OpenGL context when module is unloaded
+# @atexit.register
+# def shutdown():
+#     ctx.free()

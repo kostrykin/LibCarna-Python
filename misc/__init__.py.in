@@ -1,3 +1,4 @@
 py_version = '@MAJOR_VERSION@.@MINOR_VERSION@.@PATCH_VERSION@'
 version    = '@CARNA_VERSION@'
 
+from . import base

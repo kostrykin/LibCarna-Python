@@ -14,8 +14,7 @@ PYBIND11_MODULE(egl, m)
 {
 
     py::class_< Context, Carna::base::GLContext >( m, "Context" )
-        .def_static( "create", &Context::create, py::return_value_policy::reference )
-        .DEF_FREE( Context );
+        .def_static( "create", &Context::create );
 
 }
 

@@ -6,6 +6,7 @@ cmake_minimum_required( VERSION 3.5 )
 
 set( TEST_FILES
     test_base
+    test_egl
     test_py
 )
 
