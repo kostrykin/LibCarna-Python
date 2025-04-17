@@ -1,19 +1,12 @@
-cmake_minimum_required(VERSION 2.8.7)
+cmake_minimum_required( VERSION 3.5 )
 
 ############################################
 # Run the tests
 ############################################
 
-set(TEST_FILES
+set( TEST_FILES
     test_base
-    test_presets
-    test_helpers
     test_py
-    test_py_demo1
-    test_py_demo2
-    test_py_demo3
-    test_py_demo4
-    test_py_demo5
 )
 
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/test_tools.py
@@ -21,7 +14,7 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/test_tools.py
 
 foreach( TEST_FILE ${TEST_FILES} )
     configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_FILE}.py
-                    ${CMAKE_CURRENT_BINARY_DIR}/../${TEST_FILE}.py COPYONLY)
+                    ${CMAKE_CURRENT_BINARY_DIR}/../${TEST_FILE}.py COPYONLY )
 
     add_custom_target(
         ${TEST_FILE}

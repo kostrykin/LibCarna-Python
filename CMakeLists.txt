@@ -13,9 +13,9 @@ set( TARGET_NAME ${PROJECT_NAME}-${FULL_VERSION} )
 string( TOUPPER ${PROJECT_NAME} PROJECT_NAME_CAPS )
 string( TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWS )
 
-set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist )
-set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist )
-set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist )
+set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/carna )  # TODO: replace `carna` with `${PROJECT_NAME_LOWS}`
+set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/carna )
+set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/carna )
 
 ############################################
 # Set default options for this build
@@ -60,7 +60,7 @@ file( TO_CMAKE_PATH ${INSTALL_LIBRARY_DIR} INSTALL_LIBRARY_DIR )
 ############################################
 
 # EGL
-find_package( OpenGL REQUIRED COMPONENTS OpenGL EGL )
+find_package( OpenGL REQUIRED COMPONENTS EGL )
 include_directories( ${OPENGL_EGL_INCLUDE_DIRS} )
 
 # pybind11
@@ -72,7 +72,7 @@ include_directories( ${EIGEN3_INCLUDE_DIR} )
 
 # Carna
 find_package( Carna ${REQUIRED_VERSION_CARNA} REQUIRED COMPONENTS release )
-include_directories( ${CARNA_INCLUDE_DIR} )
+include_directories( ${Carna_INCLUDE_DIR} )
 set( CARNA_VERSION ${FOUND_VERSION} )
 
 ############################################
@@ -91,22 +91,11 @@ include_directories( ${CMAKE_PROJECT_DIR}src/include )
 set( MODULES
         base
         egl
-        presets
-        helpers
     )
-set( PRIVATE_QOBJECT_HEADERS
-        ""
-)
 set( PRIVATE_HEADERS
-        ${PRIVATE_QOBJECT_HEADERS}
+        ""
     )
 set( SRC
-        ""
-    )
-set( FORMS
-        ""
-    )
-set( RESOURCES
         ""
     )
 
@@ -134,7 +123,7 @@ foreach( MODULE ${MODULES} )
         ${MODULE}
         PRIVATE
         ${OPENGL_LIBRARIES}
-        ${CARNA_LIBRARIES}
+        ${Carna_LIBRARIES}
         OpenGL::EGL
     )
 endforeach( MODULE )

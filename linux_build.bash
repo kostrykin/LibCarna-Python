@@ -17,7 +17,11 @@ conda activate "$ROOT/.env"
 export PYBIND11_PREFIX="$CONDA_PREFIX/share/cmake/pybind11"
 export CMAKE_MODULE_PATH="$CONDA_PREFIX/share/cmake/Modules"
 
+# Default to not building the test suite
+if [ -z "$CARNAPY_BUILD_TEST" ]; then
+    export CARNAPY_BUILD_TEST="OFF"
+fi
+
 # Build wheel
-export CARNAPY_BUILD_TEST="OFF"
 cd "$ROOT"
 python setup.py bdist_wheel

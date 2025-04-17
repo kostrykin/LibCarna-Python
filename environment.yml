@@ -16,3 +16,4 @@ dependencies:
   - eigen >=3.0.5
   - pyyaml
   - setuptools
+  - matplotlib-base  # for tests
