@@ -8,6 +8,7 @@ dependencies:
   - libcarna ==3.3.3
   - libgl-devel
   - libegl-devel
+  - libopengl-devel
   - libglu
   - cxx-compiler
   - make
