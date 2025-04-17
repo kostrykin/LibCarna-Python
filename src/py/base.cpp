@@ -24,6 +24,9 @@ using namespace pybind11::literals; // enables the _a literal
 using namespace Carna::base;
 using namespace Carna::py;
 
+
+
+/*
 py::array_t< unsigned char > Surface__end( const Surface& surface )
 {
     const unsigned char* pixelData = surface.end();
@@ -54,35 +57,33 @@ math::Matrix4f math__plane4f_by_support( const math::Vector3f& normal, const mat
 {
     return math::plane4f( normalized( normal ), support );
 }
+*/
 
-// see: https://pybind11.readthedocs.io/en/stable/advanced/misc.html#generating-documentation-using-sphinx
 
-PYBIND11_MODULE(base, m)
+
+PYBIND11_MODULE( base, m )
 {
 
     py::class_< Carna::base::GLContext >( m, "GLContext" );
 
     py::class_< Spatial >( m, "Spatial" )
         .def_property_readonly( "has_parent", &Spatial::hasParent )
-        .def( "detach_from_parent", &Spatial::detachFromParent, py::return_value_policy::reference )
+        .def( "detach_from_parent", &Spatial::detachFromParent )
         .def_property_readonly( "parent", py::overload_cast<>( &Spatial::parent, py::const_ ) )
-        .def( "find_root", py::overload_cast<>( &Spatial::findRoot, py::const_ ), py::return_value_policy::reference )
+        .def( "find_root", py::overload_cast<>( &Spatial::findRoot, py::const_ ) )
         .def_property( "movable", &Spatial::isMovable, &Spatial::setMovable )
         .def_property( "tag", &Spatial::tag, &Spatial::setTag )
-        .def_readwrite( "local_transform", &Spatial::localTransform )
-        .DEF_FREE( Spatial );
+        .def_readwrite( "local_transform", &Spatial::localTransform );
 
     py::class_< Node, Spatial >( m, "Node" )
-        .def_static( "create", []( const std::string& tag ) {
-            return new Node( tag );
-        }
-        , py::return_value_policy::reference, "tag"_a = "" )
-        .def( "attach_child", &Node::attachChild )
-        .def( "detach_child", &Node::detachChild, py::return_value_policy::reference )
+        .def( py::init< const std::string& >(), "tag"_a = "" )
+        .def( "attach_child", &Node::attachChild, py::keep_alive<2, 1>() )
+        .def( "detach_child", &Node::detachChild )
         .def( "has_child", &Node::hasChild )
         .def( "delete_all_children", &Node::deleteAllChildren )
         .def( "children", &Node::children );
 
+/*
     py::class_< Camera, Spatial >( m, "Camera" )
         .def_static( "create", []()
         {
@@ -210,6 +211,6 @@ PYBIND11_MODULE(base, m)
     math.def( "scaling4f", static_cast< math::Matrix4f( * )( float, float, float ) >( &math::scaling4f ) );
     math.def( "plane4f", math__plane4f_by_distance );
     math.def( "plane4f", math__plane4f_by_support );
+*/
 
 }
-

@@ -10,7 +10,9 @@ using namespace pybind11::literals; // enables the _a literal
 
 using namespace Carna::egl;
 
-PYBIND11_MODULE(egl, m)
+
+
+PYBIND11_MODULE( egl, m )
 {
 
     py::class_< Context, Carna::base::GLContext >( m, "Context" )
