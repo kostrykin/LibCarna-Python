@@ -1,5 +1,5 @@
 cmake_minimum_required( VERSION 3.5 )
-project( CarnaPy )
+project( CarnaPy )  # TODO: rename to `libcarna-python`
 include( FindPackageHandleStandardArgs )
 
 set( CMAKE_CXX_STANDARD 14 )
@@ -80,9 +80,6 @@ set( CARNA_VERSION ${FOUND_VERSION} )
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/misc/__init__.py.in
                 ${CMAKE_CURRENT_BINARY_DIR}/carna/__init__.py @ONLY )
 
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/misc/py.py
-                ${CMAKE_CURRENT_BINARY_DIR}/carna/py.py COPYONLY )
-
 ############################################
 # Project
 ############################################
@@ -140,7 +137,6 @@ install( TARGETS ${MODULES}
 
 install( FILES
     ${CMAKE_CURRENT_BINARY_DIR}/carna/__init__.py
-    ${CMAKE_CURRENT_BINARY_DIR}/carna/py.py
     DESTINATION ${INSTALL_LIBRARY_DIR}
 )
 
