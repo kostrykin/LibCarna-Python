@@ -49,10 +49,10 @@ if __name__ == '__main__':
             version_major, version_minor, version_patch = [int(val) for val in VERSION_CARNA_PY.split('.')]
             build_test = os.environ.get('CARNAPY_BUILD_TEST', 'ON')
             assert build_test in ('ON', 'OFF')
-            get_cmake_args = lambda debug: [
-                f'-DCMAKE_BUILD_TYPE={"Debug" if debug else "Release"}',
+            cmake_args = [
+                f'-DCMAKE_BUILD_TYPE=Release',
                 f'-DBUILD_TEST={build_test}',
-                f'-DBUILD_DOC={"OFF" if debug else "ON"}',
+                f'-DBUILD_DOC=ON',
                 f'-DMAJOR_VERSION={version_major}',
                 f'-DMINOR_VERSION={version_minor}',
                 f'-DPATCH_VERSION={version_patch}',
@@ -63,10 +63,13 @@ if __name__ == '__main__':
                 f'../..',
             ]
 
+            if os.environ.get('CARNA_EXRA_CHECKS', 'OFF') == 'ON':
+                cmake_args.append('-DCARNA_EXRA_CHECKS=1')
+
             if not self.dry_run:
 
                 os.chdir(str(build_dir_release))
-                self.spawn(['cmake'] + get_cmake_args(debug=False))
+                self.spawn(['cmake'] + cmake_args)
                 self.spawn(['make', 'VERBOSE=1'])
                 if build_test == 'ON':
                     self.spawn(['make', 'RUN_TESTSUITE'])

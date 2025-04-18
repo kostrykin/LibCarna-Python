@@ -6,18 +6,22 @@ faulthandler.enable()
 
 import carna
 
+extra_checks = hasattr(carna.base, 'debug_events')
+
 
 class CarnaTestCase(unittest.TestCase):
 
     def setUp(self):
-        carna.base.debug_events()  # Clear events before the test starts
+        if extra_checks:
+            carna.base.debug_events()  # Clear events before the test starts
 
     def tearDown(self):
-        gc.collect()
-        debug_events = carna.base.debug_events()
-        memory_leaks, double_frees = analyze_debug_events(debug_events)
-        self.assertEqual(memory_leaks, 0, f"Memory leaks detected: {memory_leaks}")
-        self.assertEqual(double_frees, 0, f"Double frees detected: {double_frees}")
+        if extra_checks:
+            gc.collect()
+            debug_events = carna.base.debug_events()
+            memory_leaks, double_frees = analyze_debug_events(debug_events)
+            self.assertEqual(memory_leaks, 0, f"Memory leaks detected: {memory_leaks}")
+            self.assertEqual(double_frees, 0, f"Double frees detected: {double_frees}")
 
 
 def analyze_debug_events(debug_events):
