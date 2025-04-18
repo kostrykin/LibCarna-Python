@@ -125,9 +125,9 @@ SpatialView< SpatialType >::~SpatialView()
     {
         if( Node* const node = dynamic_cast< Node* >( spatial ) )
         {
-            node->visitChildren
-                ( true
-                , []( Spatial& child )
+            node->visitChildren(
+                true,
+                []( Spatial& child )
                 {
                     debugEvent( &child, "deleted" );
                 }
@@ -155,9 +155,9 @@ void attachChild( SpatialView< Node >& self, SpatialView< SpatialType >& child )
     bool circular = false;
     if( Node* const childNode = dynamic_cast< Node* >( child.spatial ) )
     {
-        childNode->visitChildren
-            ( true
-            , [ &circular, &self ]( const Spatial& spatial )
+        childNode->visitChildren(
+            true,
+            [ &circular, &self ]( const Spatial& spatial )
             {
                 if( &spatial == self.spatial )
                 {
@@ -180,6 +180,39 @@ void attachChild( SpatialView< Node >& self, SpatialView< SpatialType >& child )
 // PYBIND11_MODULE: base
 // ----------------------------------------------------------------------------------
 
+template< typename SpatialType, typename ClassType >
+ClassType& addInterface_Spatial( ClassType& cls )
+{
+    cls
+        .def_property_readonly( "has_parent",
+            []( SpatialView< SpatialType >& self )->bool
+            {
+                return self.spatial->hasParent();
+            }
+        )
+        .def( "detach_from_parent",
+            []( SpatialView< SpatialType >& self )
+            {
+                self.ownedBy.reset();
+                self.spatial->detachFromParent();
+            }
+        )
+        .def_property( "is_movable",
+            []( SpatialView< SpatialType >& self )->bool
+            {
+                return self.spatial->isMovable();
+            },
+            []( SpatialView< SpatialType >& self, bool movable )
+            {
+                return self.spatial->setMovable( movable );
+            }
+        );
+        //.def_property( "tag", &Spatial::tag, &Spatial::setTag )
+        //.def_readwrite( "local_transform", &Spatial::localTransform );
+    return cls;
+}
+
+
 PYBIND11_MODULE( base, m )
 {
 
@@ -195,27 +228,11 @@ PYBIND11_MODULE( base, m )
 
     py::class_< Carna::base::GLContext >( m, "GLContext" );
 
-    py::class_< SpatialView< Spatial >, std::shared_ptr< SpatialView< Spatial > > >( m, "Spatial" )
-        .def_property_readonly( "has_parent",
-            []( SpatialView< Spatial >& self )->bool
-            {
-                return self.spatial->hasParent();
-            }
-        )
-        .def( "detach_from_parent",
-            []( SpatialView< Spatial >& self )
-            {
-                self.ownedBy.reset();
-                self.spatial->detachFromParent();
-            }
-        );
-        //.def_property_readonly( "parent", py::overload_cast<>( &Spatial::parent, py::const_ ) )
-        //.def( "find_root", py::overload_cast<>( &Spatial::findRoot, py::const_ ) )
-        //.def_property( "movable", &Spatial::isMovable, &Spatial::setMovable )
-        //.def_property( "tag", &Spatial::tag, &Spatial::setTag )
-        //.def_readwrite( "local_transform", &Spatial::localTransform );
+    auto _Spatial = py::class_< SpatialView< Spatial >, std::shared_ptr< SpatialView< Spatial > > >( m, "Spatial" );
+    addInterface_Spatial< Spatial >( _Spatial );
 
-    py::class_< SpatialView< Node >, std::shared_ptr< SpatialView< Node > > >( m, "Node" )
+    auto _Node = py::class_< SpatialView< Node >, std::shared_ptr< SpatialView< Node > > >( m, "Node" );
+    addInterface_Spatial< Node >( _Node )
         .def( py::init< const std::string& >(), "tag"_a = "" )
         .def( "attach_child", &attachChild< Spatial > )
         .def( "attach_child", &attachChild< Node > )

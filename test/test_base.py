@@ -28,6 +28,12 @@ class Node(testsuite.CarnaTestCase):
         with self.assertRaises(RuntimeError):
             node3.attach_child(node2)
 
+    def test__movable(self):
+        node1 = carna.base.Node()
+        self.assertTrue(node1.is_movable)
+        node1.is_movable = False
+        self.assertFalse(node1.is_movable)
+
 
 # # ==========================
 # # Scene Graph Manipulation 1
