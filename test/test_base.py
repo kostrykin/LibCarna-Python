@@ -28,6 +28,15 @@ class Node(testsuite.CarnaTestCase):
         with self.assertRaises(RuntimeError):
             node3.attach_child(node2)
 
+    def test__detach_from_parent(self):
+        node1 = carna.base.Node()
+        node2 = carna.base.Node()
+        self.assertFalse(node2.has_parent)
+        node1.attach_child(node2)
+        self.assertTrue(node2.has_parent)
+        node2.detach_from_parent()
+        self.assertFalse(node2.has_parent)
+
     def test__movable(self):
         node1 = carna.base.Node()
         self.assertTrue(node1.is_movable)
