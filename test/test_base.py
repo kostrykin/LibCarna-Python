@@ -20,6 +20,14 @@ class Node(testsuite.CarnaTestCase):
         with self.assertRaises(RuntimeError):
             node2.attach_child(node1)
 
+    def test__attach_child__nonfree(self):
+        node1 = carna.base.Node()
+        node2 = carna.base.Node()
+        node3 = carna.base.Node()
+        node1.attach_child(node2)
+        with self.assertRaises(RuntimeError):
+            node3.attach_child(node2)
+
 
 # # ==========================
 # # Scene Graph Manipulation 1
