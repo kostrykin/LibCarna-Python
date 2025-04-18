@@ -9,16 +9,18 @@ set( TEST_FILES
     test_egl
 )
 
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/test_tools.py
-                ${CMAKE_CURRENT_BINARY_DIR}/../test_tools.py @ONLY)
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/testsuite.py
+    ${CMAKE_CURRENT_BINARY_DIR}/../testsuite.py COPYONLY )
 
 foreach( TEST_FILE ${TEST_FILES} )
-    configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_FILE}.py
-                    ${CMAKE_CURRENT_BINARY_DIR}/../${TEST_FILE}.py COPYONLY )
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_FILE}.py
+        ${CMAKE_CURRENT_BINARY_DIR}/../${TEST_FILE}.py COPYONLY )
 
     add_custom_target(
         ${TEST_FILE}
-        COMMAND ${PYTHON_EXECUTABLE} -Xfaulthandler -c "import ${TEST_FILE}"
+        COMMAND ${PYTHON_EXECUTABLE} -Xfaulthandler -m unittest ${TEST_FILE}
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/.."
         DEPENDS ${MODULES}
         COMMENT "Running ${TEST_FILE}..."

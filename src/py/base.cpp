@@ -1,5 +1,8 @@
+#include <memory>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
+#include <pybind11/stl.h>  // TODO: only for debug
 
 namespace py = pybind11;
 
@@ -61,27 +64,142 @@ math::Matrix4f math__plane4f_by_support( const math::Vector3f& normal, const mat
 
 
 
+// ----------------------------------------------------------------------------------
+// Debug
+// ----------------------------------------------------------------------------------
+
+static std::vector< std::string > debugEvents;
+
+
+template< typename SourceType >
+static void debugEvent( SourceType* self, const std::string& event )
+{
+    std::stringstream ss;
+    ss << self << ": " << event;
+    debugEvents.push_back( ss.str() );
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// SpatialView
+// ----------------------------------------------------------------------------------
+
+template< typename SpatialType >
+class SpatialView : public std::enable_shared_from_this< SpatialView< SpatialType > >
+{
+
+public:
+
+    /* The object that owns the spatial object of this view. The spatial object of
+     * this view is owned by the view, if it is not owned by any other spatial object.
+     */
+    std::shared_ptr< SpatialView< Node > > ownedBy;
+
+    /* The spatial object of this view.
+     */
+    SpatialType* const spatial;
+
+    template< typename... Args >
+    SpatialView( Args... args );
+
+    ~SpatialView();
+
+}; // SpatialView< SpatialType >
+
+
+template< typename SpatialType >
+template< typename... Args >
+SpatialView< SpatialType >::SpatialView( Args... args )
+    : ownedBy( nullptr )
+    , spatial( new SpatialType( args... ) )
+{
+    debugEvent( spatial, "created" );
+}
+
+
+template< typename SpatialType >
+SpatialView< SpatialType >::~SpatialView()
+{
+    if( ownedBy.get() == nullptr )
+    {
+        if( Node* const node = dynamic_cast< Node* >( spatial ) )
+        {
+            node->visitChildren
+                ( true
+                , []( Spatial& child )
+                {
+                    debugEvent( &child, "deleted" );
+                }
+            );
+        }
+        debugEvent( spatial, "deleted" );
+
+        /* The spatial object of this view is not owned by any other spatial object,
+         * thus it is safe to delete the object, when the last reference dies.
+         */
+         delete spatial;
+    }
+}
+
+
+template< typename SpatialType >
+void attachChild( SpatialView< Node >& self, SpatialView< SpatialType >& child )
+{
+    child.ownedBy = self.shared_from_this();
+    self.spatial->attachChild( child.spatial );
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// PYBIND11_MODULE: base
+// ----------------------------------------------------------------------------------
+
 PYBIND11_MODULE( base, m )
 {
 
+    m.def( "debug_events", []()->std::vector< std::string >
+        {
+            auto debugEvents0 = debugEvents;
+            debugEvents.clear();
+            return debugEvents0;
+        }
+    );
+
     py::class_< Carna::base::GLContext >( m, "GLContext" );
 
-    py::class_< Spatial >( m, "Spatial" )
-        .def_property_readonly( "has_parent", &Spatial::hasParent )
-        .def( "detach_from_parent", &Spatial::detachFromParent )
-        .def_property_readonly( "parent", py::overload_cast<>( &Spatial::parent, py::const_ ) )
-        .def( "find_root", py::overload_cast<>( &Spatial::findRoot, py::const_ ) )
-        .def_property( "movable", &Spatial::isMovable, &Spatial::setMovable )
-        .def_property( "tag", &Spatial::tag, &Spatial::setTag )
-        .def_readwrite( "local_transform", &Spatial::localTransform );
+    py::class_< SpatialView< Spatial >, std::shared_ptr< SpatialView< Spatial > > >( m, "Spatial" )
+        .def_property_readonly( "has_parent",
+            []( SpatialView< Spatial >& self )->bool
+            {
+                return self.spatial->hasParent();
+            }
+        )
+        .def( "detach_from_parent",
+            []( SpatialView< Spatial >& self )
+            {
+                self.ownedBy.reset();
+                self.spatial->detachFromParent();
+            }
+        );
+        //.def_property_readonly( "parent", py::overload_cast<>( &Spatial::parent, py::const_ ) )
+        //.def( "find_root", py::overload_cast<>( &Spatial::findRoot, py::const_ ) )
+        //.def_property( "movable", &Spatial::isMovable, &Spatial::setMovable )
+        //.def_property( "tag", &Spatial::tag, &Spatial::setTag )
+        //.def_readwrite( "local_transform", &Spatial::localTransform );
 
-    py::class_< Node, Spatial >( m, "Node" )
+    py::class_< SpatialView< Node >, std::shared_ptr< SpatialView< Node > > >( m, "Node" )
         .def( py::init< const std::string& >(), "tag"_a = "" )
-        .def( "attach_child", &Node::attachChild, py::keep_alive<2, 1>() )
-        .def( "detach_child", &Node::detachChild )
-        .def( "has_child", &Node::hasChild )
-        .def( "delete_all_children", &Node::deleteAllChildren )
-        .def( "children", &Node::children );
+        .def( "attach_child", &attachChild< Spatial > )
+        .def( "attach_child", &attachChild< Node > )
+        //.def( "detach_child", &Node::detachChild )
+        //.def( "has_child", &Node::hasChild )
+        .def( "children", []( SpatialView< Node >& self )->int
+            {
+                return self.spatial->children();
+            }
+        );
 
 /*
     py::class_< Camera, Spatial >( m, "Camera" )

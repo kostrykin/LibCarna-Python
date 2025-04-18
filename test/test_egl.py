@@ -1,10 +1,10 @@
 import carna.egl
 
-import faulthandler
-faulthandler.enable()
+import testsuite
 
 
-print('--- test begin ---')
-ctx = carna.egl.Context.create()
-del ctx
-print('--- test end ---')
+class Context(testsuite.CarnaTestCase):
+
+    def test__attach_child(self):
+        ctx = carna.egl.Context.create()
+        del ctx

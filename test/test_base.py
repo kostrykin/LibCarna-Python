@@ -1,15 +1,17 @@
-import carna
 import numpy as np
 
-import faulthandler
-faulthandler.enable()
+import carna
+import testsuite
 
 
-node1 = carna.base.Node()
-assert node1.children() == 0
-node2 = carna.base.Node()
-#node1.attach_child(node2)
-#assert node1.children() == 1
+class Node(testsuite.CarnaTestCase):
+
+    def test__attach_child(self):
+        node1 = carna.base.Node()
+        self.assertEqual(node1.children(), 0)
+        node2 = carna.base.Node()
+        node1.attach_child(node2)
+        self.assertEqual(node1.children(), 1)
 
 
 # # ==========================
