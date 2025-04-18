@@ -146,6 +146,30 @@ SpatialView< SpatialType >::~SpatialView()
 template< typename SpatialType >
 void attachChild( SpatialView< Node >& self, SpatialView< SpatialType >& child )
 {
+    /* Verify that the child is not already attached to another parent.
+     */
+    CARNA_ASSERT_EX( !child.spatial->hasParent(), "Child already has a parent." );
+
+    /* Check for circular relations (verify that `self` is not a child of `child`).
+     */
+    bool circular = false;
+    if( Node* const childNode = dynamic_cast< Node* >( child.spatial ) )
+    {
+        childNode->visitChildren
+            ( true
+            , [ &circular, &self ]( const Spatial& spatial )
+            {
+                if( &spatial == self.spatial )
+                {
+                    circular = true;
+                }
+            }
+        );
+    }
+    CARNA_ASSERT_EX( !circular, "Circular relations are forbidden." );
+
+    /* Update scene graph structure.
+     */
     child.ownedBy = self.shared_from_this();
     self.spatial->attachChild( child.spatial );
 }
@@ -158,6 +182,8 @@ void attachChild( SpatialView< Node >& self, SpatialView< SpatialType >& child )
 
 PYBIND11_MODULE( base, m )
 {
+
+    //py::register_exception< AssertionFailure >( m, "AssertionFailure" );  // error: 'const class Carna::base::AssertionFailure' has no member named 'what'
 
     m.def( "debug_events", []()->std::vector< std::string >
         {

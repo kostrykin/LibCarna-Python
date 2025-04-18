@@ -13,6 +13,13 @@ class Node(testsuite.CarnaTestCase):
         node1.attach_child(node2)
         self.assertEqual(node1.children(), 1)
 
+    def test__attach_child__circular(self):
+        node1 = carna.base.Node()
+        node2 = carna.base.Node()
+        node1.attach_child(node2)
+        with self.assertRaises(RuntimeError):
+            node2.attach_child(node1)
+
 
 # # ==========================
 # # Scene Graph Manipulation 1
