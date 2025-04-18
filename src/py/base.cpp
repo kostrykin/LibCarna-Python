@@ -206,8 +206,17 @@ ClassType& addInterface_Spatial( ClassType& cls )
             {
                 return self.spatial->setMovable( movable );
             }
+        )
+        .def_property( "tag",
+            []( SpatialView< SpatialType >& self )->const std::string&
+            {
+                return self.spatial->tag();
+            },
+            []( SpatialView< SpatialType >& self, const std::string& tag )
+            {
+                return self.spatial->setTag( tag );
+            }
         );
-        //.def_property( "tag", &Spatial::tag, &Spatial::setTag )
         //.def_readwrite( "local_transform", &Spatial::localTransform );
     return cls;
 }
@@ -236,8 +245,6 @@ PYBIND11_MODULE( base, m )
         .def( py::init< const std::string& >(), "tag"_a = "" )
         .def( "attach_child", &attachChild< Spatial > )
         .def( "attach_child", &attachChild< Node > )
-        //.def( "detach_child", &Node::detachChild )
-        //.def( "has_child", &Node::hasChild )
         .def( "children", []( SpatialView< Node >& self )->int
             {
                 return self.spatial->children();

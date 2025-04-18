@@ -34,6 +34,12 @@ class Node(testsuite.CarnaTestCase):
         node1.is_movable = False
         self.assertFalse(node1.is_movable)
 
+    def test__tag(self):
+        node1 = carna.base.Node()
+        self.assertEqual(node1.tag, '')
+        node1.tag = 'Test'
+        self.assertEqual(node1.tag, 'Test')
+
 
 # # ==========================
 # # Scene Graph Manipulation 1
