@@ -183,41 +183,49 @@ void attachChild( SpatialView< Node >& self, SpatialView< SpatialType >& child )
 template< typename SpatialType, typename ClassType >
 ClassType& addInterface_Spatial( ClassType& cls )
 {
-    cls
-        .def_property_readonly( "has_parent",
-            []( SpatialView< SpatialType >& self )->bool
-            {
-                return self.spatial->hasParent();
-            }
-        )
-        .def( "detach_from_parent",
-            []( SpatialView< SpatialType >& self )
-            {
-                self.ownedBy.reset();
-                self.spatial->detachFromParent();
-            }
-        )
-        .def_property( "is_movable",
-            []( SpatialView< SpatialType >& self )->bool
-            {
-                return self.spatial->isMovable();
-            },
-            []( SpatialView< SpatialType >& self, bool movable )
-            {
-                return self.spatial->setMovable( movable );
-            }
-        )
-        .def_property( "tag",
-            []( SpatialView< SpatialType >& self )->const std::string&
-            {
-                return self.spatial->tag();
-            },
-            []( SpatialView< SpatialType >& self, const std::string& tag )
-            {
-                return self.spatial->setTag( tag );
-            }
-        );
-        //.def_readwrite( "local_transform", &Spatial::localTransform );
+    cls.def_property_readonly( "has_parent",
+        []( SpatialView< SpatialType >& self )->bool
+        {
+            return self.spatial->hasParent();
+        }
+    );
+    cls.def( "detach_from_parent",
+        []( SpatialView< SpatialType >& self )
+        {
+            self.ownedBy.reset();
+            self.spatial->detachFromParent();
+        }
+    );
+    cls.def_property( "is_movable",
+        []( SpatialView< SpatialType >& self )->bool
+        {
+            return self.spatial->isMovable();
+        },
+        []( SpatialView< SpatialType >& self, bool movable )
+        {
+            self.spatial->setMovable( movable );
+        }
+    );
+    cls.def_property( "tag",
+        []( SpatialView< SpatialType >& self )->const std::string&
+        {
+            return self.spatial->tag();
+        },
+        []( SpatialView< SpatialType >& self, const std::string& tag )
+        {
+            self.spatial->setTag( tag );
+        }
+    );
+    cls.def_property( "local_transform",
+        []( SpatialView< SpatialType >& self )->const math::Matrix4f&
+        {
+            return self.spatial->localTransform;
+        },
+        []( SpatialView< SpatialType >& self, const math::Matrix4f& localTransform )
+        {
+            self.spatial->localTransform = localTransform;
+        }
+    );
     return cls;
 }
 
@@ -236,9 +244,6 @@ PYBIND11_MODULE( base, m )
     );
 
     py::class_< Carna::base::GLContext >( m, "GLContext" );
-
-    auto _Spatial = py::class_< SpatialView< Spatial >, std::shared_ptr< SpatialView< Spatial > > >( m, "Spatial" );
-    addInterface_Spatial< Spatial >( _Spatial );
 
     auto _Node = py::class_< SpatialView< Node >, std::shared_ptr< SpatialView< Node > > >( m, "Node" );
     addInterface_Spatial< Node >( _Node )

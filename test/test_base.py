@@ -40,6 +40,12 @@ class Node(testsuite.CarnaTestCase):
         node1.tag = 'Test'
         self.assertEqual(node1.tag, 'Test')
 
+    def test__localTransform(self):
+        node1 = carna.base.Node()
+        np.testing.assert_array_equal(node1.local_transform, np.eye(4))
+        node1.local_transform = np.arange(16).reshape(4, 4)
+        np.testing.assert_array_equal(node1.local_transform, np.arange(16).reshape(4, 4))
+
 
 # # ==========================
 # # Scene Graph Manipulation 1
