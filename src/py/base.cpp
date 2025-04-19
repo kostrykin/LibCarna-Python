@@ -270,9 +270,9 @@ PYBIND11_MODULE( base, m )
     auto _Node = py::class_< SpatialView< Node >, std::shared_ptr< SpatialView< Node > > >( m, "Node" );
     addInterface_Spatial< Node >( _Node )
         .def( py::init< const std::string& >(), "tag"_a = "" )
-        .def( "attach_child", &attachChild< Spatial > )
         .def( "attach_child", &attachChild< Node > )
         .def( "attach_child", &attachChild< Camera > )
+        .def( "attach_child", &attachChild< Geometry > )
         .def( "children", []( SpatialView< Node >& self )->int
             {
                 return self.spatial->children();
@@ -309,6 +309,23 @@ PYBIND11_MODULE( base, m )
             }
         );
 
+        auto _Geometry = py::class_< SpatialView< Geometry >, std::shared_ptr< SpatialView< Geometry > > >( m, "Geometry" );
+        addInterface_Spatial< Geometry >( _Geometry )
+            .def( py::init< unsigned int, const std::string& >(), "geometry_type"_a, "tag"_a = "" )
+            /*
+            .def( "put_feature", &Geometry::putFeature )
+            .def( "remove_feature", py::overload_cast< GeometryFeature& >( &Geometry::removeFeature ) )
+            .def( "remove_feature_role", py::overload_cast< unsigned int >( &Geometry::removeFeature ) )
+            .def( "clear_features", &Geometry::clearFeatures )
+            .def( "has_feature", py::overload_cast< const GeometryFeature& >( &Geometry::hasFeature, py::const_ ) )
+            .def( "has_feature_role", py::overload_cast< unsigned int >( &Geometry::hasFeature, py::const_ ) )
+            .def( "feature", &Geometry::feature, py::return_value_policy::reference )
+            .def( "features_count", &Geometry::featuresCount )
+            .def_property( "bounding_volume", py::overload_cast<>( &Geometry::boundingVolume, py::const_ ), &Geometry::setBoundingVolume )
+            .def_property_readonly( "has_bounding_volume", &Geometry::hasBoundingVolume )
+            .def_readonly( "geometry_type", &Geometry::geometryType )
+            */;
+
 /*
     py::class_< GeometryFeature, std::unique_ptr< GeometryFeature, py::nodelete > >( m, "GeometryFeature" )
         .def( "release", &GeometryFeature::release );
@@ -327,24 +344,6 @@ PYBIND11_MODULE( base, m )
         .def( "has_parameter", &Material::hasParameter );
 
     py::class_< BoundingVolume, std::unique_ptr< BoundingVolume, py::nodelete > >( m, "BoundingVolume" );
-
-    py::class_< Geometry, Spatial >( m, "Geometry" )
-        .def_static( "create", []( const unsigned int geometryType, const std::string& tag )
-        {
-            return new Geometry( geometryType, tag );
-        }
-        , py::return_value_policy::reference, "geometryType"_a, "tag"_a = "" )
-        .def( "put_feature", &Geometry::putFeature )
-        .def( "remove_feature", py::overload_cast< GeometryFeature& >( &Geometry::removeFeature ) )
-        .def( "remove_feature_role", py::overload_cast< unsigned int >( &Geometry::removeFeature ) )
-        .def( "clear_features", &Geometry::clearFeatures )
-        .def( "has_feature", py::overload_cast< const GeometryFeature& >( &Geometry::hasFeature, py::const_ ) )
-        .def( "has_feature_role", py::overload_cast< unsigned int >( &Geometry::hasFeature, py::const_ ) )
-        .def( "feature", &Geometry::feature, py::return_value_policy::reference )
-        .def( "features_count", &Geometry::featuresCount )
-        .def_property( "bounding_volume", py::overload_cast<>( &Geometry::boundingVolume, py::const_ ), &Geometry::setBoundingVolume )
-        .def_property_readonly( "has_bounding_volume", &Geometry::hasBoundingVolume )
-        .def_readonly( "geometry_type", &Geometry::geometryType );
 
     py::class_< Surface >( m, "Surface" )
         .def_static( "create", []( const GLContext& glContext, unsigned int width, unsigned int height )

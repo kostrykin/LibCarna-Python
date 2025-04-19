@@ -7,21 +7,22 @@ import testsuite
 class SpatialMixin:
 
     ClientSpatialType = None
+    client_spatial_init_kwargs = dict()
 
     def test__movable(self):
-        node1 = self.ClientSpatialType()
+        node1 = self.ClientSpatialType(**self.client_spatial_init_kwargs)
         self.assertTrue(node1.is_movable)
         node1.is_movable = False
         self.assertFalse(node1.is_movable)
 
     def test__tag(self):
-        node1 = self.ClientSpatialType()
+        node1 = self.ClientSpatialType(**self.client_spatial_init_kwargs)
         self.assertEqual(node1.tag, '')
         node1.tag = 'Test'
         self.assertEqual(node1.tag, 'Test')
 
     def test__localTransform(self):
-        node1 = self.ClientSpatialType()
+        node1 = self.ClientSpatialType(**self.client_spatial_init_kwargs)
         np.testing.assert_array_almost_equal(node1.local_transform, np.eye(4))
         node1.local_transform = np.arange(16).reshape(4, 4)
         np.testing.assert_array_almost_equal(node1.local_transform, np.arange(16).reshape(4, 4))
@@ -30,7 +31,7 @@ class SpatialMixin:
         node1 = carna.base.Node()
         node1.local_transform = np.eye(4) * 2
         node1.update_world_transform()
-        node2 = self.ClientSpatialType()
+        node2 = self.ClientSpatialType(**self.client_spatial_init_kwargs)
         node1.attach_child(node2)
         node2.local_transform = np.eye(4) / 3
         node2.update_world_transform()
@@ -39,7 +40,7 @@ class SpatialMixin:
 
     def test__detach_from_parent(self):
         node1 = carna.base.Node()
-        node2 = self.ClientSpatialType()
+        node2 = self.ClientSpatialType(**self.client_spatial_init_kwargs)
         self.assertFalse(node2.has_parent)
         node1.attach_child(node2)
         self.assertTrue(node2.has_parent)
@@ -101,6 +102,14 @@ class Camera(testsuite.CarnaTestCase, SpatialMixin):
         camera.local_transform = 2 * np.eye(4)
         camera.update_world_transform()
         np.testing.assert_array_almost_equal(camera.view_transform, 0.5 * np.eye(4))
+
+
+class Geometry(testsuite.CarnaTestCase, SpatialMixin):
+
+    ClientSpatialType = carna.base.Geometry
+    client_spatial_init_kwargs = dict(
+        geometry_type=0,
+    )
 
 
 # # ==========================
