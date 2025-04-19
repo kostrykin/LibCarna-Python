@@ -1,3 +1,5 @@
+#include <memory>
+
 #include <Carna/Carna.h>
 #include <Carna/base/noncopyable.h>
 
@@ -23,7 +25,7 @@ class Surface
 
 public:
 
-    Surface( const base::GLContext& glContext, unsigned int width, unsigned int height );
+    Surface( const Carna::base::GLContext& glContext, unsigned int width, unsigned int height );
 
     virtual ~Surface();
 
@@ -31,7 +33,7 @@ public:
 
     unsigned int height() const;
 
-    const base::GLContext& glContext;
+    const Carna::base::GLContext& glContext;
 
     void begin() const;
 

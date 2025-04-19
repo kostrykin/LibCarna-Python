@@ -93,17 +93,21 @@ set( PRIVATE_HEADERS
         ""
     )
 set( SRC
-        ""
+        src/egl/EGLContext.cpp
+        src/py/base.cpp
+        src/py/egl.cpp
+        src/py/Surface.cpp
     )
 
 ############################################
 # Add sources
 ############################################
 
-set( EXTRA_SOURCES_egl src/egl/Context.cpp )
 foreach( MODULE ${MODULES} )
-    pybind11_add_module( ${MODULE} src/py/${MODULE}.cpp ${EXTRA_SOURCES_${MODULE}} )
+    string( TOUPPER ${MODULE} MODULE_CAPS )
+    pybind11_add_module( ${MODULE} ${SRC} )
     target_compile_options( ${MODULE} PRIVATE -fvisibility=default -fno-lto )
+    target_compile_definitions( ${MODULE} PRIVATE -DBUILD_${MODULE_CAPS}_MODULE=1 )
     SET_TARGET_PROPERTIES( ${MODULE} PROPERTIES PREFIX "" )
 endforeach( MODULE )
 

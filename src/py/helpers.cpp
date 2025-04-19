@@ -12,8 +12,6 @@ using namespace pybind11::literals; // enables the _a literal
 #include <Carna/helpers/FrameRendererHelper.h>
 #include <Carna/helpers/PointMarkerHelper.h>
 #include <Carna/helpers/VolumeGridHelper.h>
-#include <Carna/py/py.h>
-#include <iostream> //debug
 
 using namespace Carna::base;
 using namespace Carna::helpers;

@@ -10,10 +10,10 @@ namespace egl
 
 
 // ----------------------------------------------------------------------------------
-// Context
+// EGLContext
 // ----------------------------------------------------------------------------------
 
-class Context : public base::GLContext
+class EGLContext : public base::GLContext
 {
 
     NON_COPYABLE
@@ -21,19 +21,19 @@ class Context : public base::GLContext
     struct Details;
     const std::unique_ptr< Details > pimpl;
 
-    Context( Details* );
+    EGLContext( Details* );
 
 public:
 
-    static Context* create();
+    static EGLContext* create();
 
-    virtual ~Context();
+    virtual ~EGLContext();
 
 protected:
 
     virtual void activate() const;
 
-}; // Context
+}; // EGLContext
 
 
 

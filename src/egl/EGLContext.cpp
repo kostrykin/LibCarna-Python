@@ -1,14 +1,8 @@
-#include <Carna/egl/Context.h>
+#include <Carna/egl/EGLContext.h>
 #include <EGL/egl.h>
 #include <cstdlib>
 
 // see: https://developer.nvidia.com/blog/egl-eye-opengl-visualization-without-x-server/
-
-namespace Carna
-{
-
-namespace egl
-{
 
 
 
@@ -64,20 +58,20 @@ static const EGLint PBUFFER_ATTRIBS[] =
 
 
 // ----------------------------------------------------------------------------------
-// Context :: Details
+// Carna :: egl :: EGLContext :: Details
 // ----------------------------------------------------------------------------------
 
-struct Context::Details
+struct Carna::egl::EGLContext::Details
 {
-    EGLDisplay eglDpy;
-    EGLSurface eglSurf;
-    EGLContext eglCtx;
+    ::EGLDisplay eglDpy;
+    ::EGLSurface eglSurf;
+    ::EGLContext eglCtx;
 
     void activate() const;
 };
 
 
-void Context::Details::activate() const
+void Carna::egl::EGLContext::Details::activate() const
 {
     eglMakeCurrent( this->eglDpy, this->eglSurf, this->eglSurf, this->eglCtx );
     REPORT_EGL_ERROR;
@@ -86,18 +80,19 @@ void Context::Details::activate() const
 
 
 // ----------------------------------------------------------------------------------
-// Context
+// Carna :: egl :: EGLContext
 // ----------------------------------------------------------------------------------
 
-Context::Context( Details* _pimpl )
-    : base::GLContext( false )
-    , pimpl( _pimpl )
+Carna::egl::EGLContext::EGLContext( Details* _pimpl )
+    : Carna::base::GLContext( false )
+    , pimpl( _pimpl ) // TODO: rename to `pimpl`
 {
 }
 
 
-Context* Context::create()
+Carna::egl::EGLContext* Carna::egl::EGLContext::create()
 {
+    using EGLContext = ::EGLContext;
     unsetenv( "DISPLAY" ); // see https://stackoverflow.com/q/67885750/1444073
 
     Details* const pimpl = new Details();
@@ -116,28 +111,21 @@ Context* Context::create()
     pimpl->eglSurf = eglCreatePbufferSurface( pimpl->eglDpy, eglCfg, PBUFFER_ATTRIBS );
     CARNA_ASSERT( pimpl->eglSurf != EGL_NO_SURFACE );
 
-    pimpl->eglCtx  = eglCreateContext( pimpl->eglDpy, eglCfg, EGL_NO_CONTEXT, NULL );
+    pimpl->eglCtx = eglCreateContext( pimpl->eglDpy, eglCfg, EGL_NO_CONTEXT, NULL );
     CARNA_ASSERT( pimpl->eglCtx != EGL_NO_CONTEXT );
 
     pimpl->activate();
-    return new Context( pimpl );
+    return new Carna::egl::EGLContext( pimpl );
 }
 
 
-Context::~Context()
+Carna::egl::EGLContext::~EGLContext()
 {
     eglTerminate( pimpl->eglDpy );
 }
 
 
-void Context::activate() const
+void Carna::egl::EGLContext::activate() const
 {
     pimpl->activate();
 }
-
-
-
-}  // namespace Carna :: egl
-
-}  // namespace Carna
-

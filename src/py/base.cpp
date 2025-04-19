@@ -17,18 +17,17 @@ using namespace pybind11::literals; // enables the _a literal
 #include <Carna/base/Geometry.h>
 #include <Carna/base/GeometryFeature.h>
 #include <Carna/base/Color.h>
-#include <Carna/base/Material.h>
 #include <Carna/base/BoundingVolume.h>
 #include <Carna/base/GLContext.h>
-#include <Carna/base/MeshFactory.h>
-#include <Carna/base/ManagedMesh.h>
-#include <Carna/base/RenderStage.h>
-#include <Carna/base/BlendFunction.h>
-#include <Carna/py/py.h>
-#include "Surface.cpp"
+//#include <Carna/base/MeshFactory.h>
+//#include <Carna/base/ManagedMesh.h>
+//#include <Carna/base/RenderStage.h>
+//#include <Carna/base/BlendFunction.h>
+#include <Carna/py/base.h>
+#include <Carna/py/Surface.h>
 
-using namespace Carna::base;
 using namespace Carna::py;
+using namespace Carna::py::base;
 
 
 
@@ -76,31 +75,32 @@ static void debugEvent( SourceType* self, const std::string& event )
 
 
 // ----------------------------------------------------------------------------------
+// GLContextView
+// ----------------------------------------------------------------------------------
+
+GLContextView::GLContextView( Carna::base::GLContext* context )
+    : context( context )
+{
+    #if CARNA_EXTRA_CHECKS
+    debugEvent( context, "created" );
+    #endif // CARNA_EXTRA_CHECKS
+}
+
+
+GLContextView::~GLContextView()
+{
+    #if CARNA_EXTRA_CHECKS
+    debugEvent( context, "deleted" );
+    #endif // CARNA_EXTRA_CHECKS
+}
+
+
+
+// ----------------------------------------------------------------------------------
 // SpatialView
 // ----------------------------------------------------------------------------------
 
-class SpatialView : public std::enable_shared_from_this< SpatialView >
-{
-
-public:
-
-    /* The object that owns the spatial object of this view. The spatial object of
-     * this view is owned by the view, if it is not owned by any other spatial object.
-     */
-    std::shared_ptr< SpatialView > ownedBy;
-
-    /* The spatial object of this view.
-     */
-    Spatial* const spatial;
-
-    explicit SpatialView( Spatial* spatial );
-
-    virtual ~SpatialView();
-
-}; // SpatialView
-
-
-SpatialView::SpatialView( Spatial* spatial )
+SpatialView::SpatialView( Carna::base::Spatial* spatial )
     : ownedBy( nullptr )
     , spatial( spatial )
 {
@@ -115,11 +115,11 @@ SpatialView::~SpatialView()
     if( ownedBy.get() == nullptr )
     {
         #if CARNA_EXTRA_CHECKS
-        if( Node* const node = dynamic_cast< Node* >( spatial ) )
+        if( Carna::base::Node* const node = dynamic_cast< Carna::base::Node* >( spatial ) )
         {
             node->visitChildren(
                 true,
-                []( Spatial& child )
+                []( Carna::base::Spatial& child )
                 {
                     debugEvent( &child, "deleted" );
                 }
@@ -141,31 +141,9 @@ SpatialView::~SpatialView()
 // NodeView
 // ----------------------------------------------------------------------------------
 
-class NodeView : public SpatialView
+Carna::base::Node& NodeView::node()
 {
-
-public:
-
-    template< typename... Args >
-    explicit NodeView( Args... args );
-
-    Node& node();
-
-    void attachChild( SpatialView& child );
-
-}; // NodeView
-
-
-template< typename... Args >
-NodeView::NodeView( Args... args )
-    : SpatialView::SpatialView( new Node( args... ) )
-{
-}
-
-
-Node& NodeView::node()
-{
-    return static_cast< Node& >( *spatial );
+    return static_cast< Carna::base::Node& >( *spatial );
 }
 
 
@@ -178,11 +156,11 @@ void NodeView::attachChild( SpatialView& child )
     /* Check for circular relations (verify that `this` is not a child of `child`).
      */
     bool circular = false;
-    if( Node* const childNode = dynamic_cast< Node* >( child.spatial ) )
+    if( Carna::base::Node* const childNode = dynamic_cast< Carna::base::Node* >( child.spatial ) )
     {
         childNode->visitChildren(
             true,
-            [ &circular, this ]( const Spatial& spatial )
+            [ &circular, this ]( const Carna::base::Spatial& spatial )
             {
                 if( &spatial == this->spatial )
                 {
@@ -205,29 +183,9 @@ void NodeView::attachChild( SpatialView& child )
 // CameraView
 // ----------------------------------------------------------------------------------
 
-class CameraView : public SpatialView
+Carna::base::Camera& CameraView::camera()
 {
-
-public:
-
-    template< typename... Args >
-    explicit CameraView( Args... args );
-
-    Camera& camera();
-
-}; // CameraView
-
-
-template< typename... Args >
-CameraView::CameraView( Args... args )
-    : SpatialView::SpatialView( new Camera( args... ) )
-{
-}
-
-
-Camera& CameraView::camera()
-{
-    return static_cast< Camera& >( *spatial );
+    return static_cast< Carna::base::Camera& >( *spatial );
 }
 
 
@@ -236,29 +194,9 @@ Camera& CameraView::camera()
 // GeometryView
 // ----------------------------------------------------------------------------------
 
-class GeometryView : public SpatialView
+Carna::base::Geometry& GeometryView::geometry()
 {
-
-public:
-
-    template< typename... Args >
-    explicit GeometryView( Args... args );
-
-    Geometry& geometry();
-
-}; // GeometryView
-
-
-template< typename... Args >
-GeometryView::GeometryView( Args... args )
-    : SpatialView::SpatialView( new Geometry( args... ) )
-{
-}
-
-
-Geometry& GeometryView::geometry()
-{
-    return static_cast< Geometry& >( *spatial );
+    return static_cast< Carna::base::Geometry& >( *spatial );
 }
 
 
@@ -267,22 +205,7 @@ Geometry& GeometryView::geometry()
 // GeometryFeatureView
 // ----------------------------------------------------------------------------------
 
-class GeometryFeatureView : public std::enable_shared_from_this< GeometryFeatureView >
-{
-public:
-
-    /* The geometry feature of this view.
-     */
-    GeometryFeature& geometryFeature;
-
-    explicit GeometryFeatureView( GeometryFeature& geometryFeature );
-
-    virtual ~GeometryFeatureView();
-
-}; // GeometryFeatureView
-
-
-GeometryFeatureView::GeometryFeatureView( GeometryFeature& geometryFeature )
+GeometryFeatureView::GeometryFeatureView( Carna::base::GeometryFeature& geometryFeature )
     : geometryFeature( geometryFeature )
 {
 }
@@ -299,38 +222,9 @@ GeometryFeatureView::~GeometryFeatureView()
 // MaterialView
 // ----------------------------------------------------------------------------------
 
-class MaterialView : public GeometryFeatureView
+Carna::base::Material& MaterialView::material()
 {
-public:
-
-    template< typename... Args >
-    explicit MaterialView( Args... args );
-
-    Material& material();
-
-    template< typename ParameterType >
-    void setParameter( const std::string& name, const ParameterType& value );
-
-}; // MaterialView
-
-
-template< typename... Args >
-MaterialView::MaterialView( Args... args )
-    : GeometryFeatureView::GeometryFeatureView( Material::create( args... ) )
-{
-}
-
-
-Material& MaterialView::material()
-{
-    return static_cast< Material& >( geometryFeature );
-}
-
-
-template< typename ParameterType >
-void MaterialView::setParameter( const std::string& name, const ParameterType& value )
-{
-    material().setParameter( name, value );
+    return static_cast< Carna::base::Material& >( geometryFeature );
 }
 
 
@@ -346,6 +240,7 @@ void MaterialView::setParameter( const std::string& name, const ParameterType& v
     }
 
 
+#ifdef BUILD_BASE_MODULE
 PYBIND11_MODULE( base, m )
 {
 
@@ -361,7 +256,7 @@ PYBIND11_MODULE( base, m )
     );
     #endif // CARNA_EXTRA_CHECKS
 
-    //py::class_< Carna::base::GLContext >( m, "GLContext" );
+    py::class_< GLContextView, std::shared_ptr< GLContextView > >( m, "GLContext" );
 
     py::class_< SpatialView, std::shared_ptr< SpatialView > >( m, "Spatial" )
         .def_property_readonly( "has_parent",
@@ -384,7 +279,7 @@ PYBIND11_MODULE( base, m )
         )
         .def_property( "local_transform",
             VIEW_DELEGATE( SpatialView, spatial->localTransform ),
-            VIEW_DELEGATE( SpatialView, spatial->localTransform = localTransform, const math::Matrix4f& localTransform )
+            VIEW_DELEGATE( SpatialView, spatial->localTransform = localTransform, const Carna::base::math::Matrix4f& localTransform )
         )
         .def( "update_world_transform",
             VIEW_DELEGATE( SpatialView, spatial->updateWorldTransform() )
@@ -404,7 +299,7 @@ PYBIND11_MODULE( base, m )
         .def( py::init<>() )
         .def_property( "projection",
             VIEW_DELEGATE( CameraView, camera().projection() ),
-            VIEW_DELEGATE( CameraView, camera().setProjection( projection ), const math::Matrix4f& projection )
+            VIEW_DELEGATE( CameraView, camera().setProjection( projection ), const Carna::base::math::Matrix4f& projection )
         )
         .def_property( "orthogonal_projection_hint",
             VIEW_DELEGATE( CameraView, camera().isOrthogonalProjectionHintSet() ),
@@ -445,9 +340,9 @@ PYBIND11_MODULE( base, m )
 
     py::class_< MaterialView, std::shared_ptr< MaterialView >, GeometryFeatureView >( m, "Material" )
         .def( py::init< const std::string& >(), "shader_name"_a )
-        .def( "__setitem__", &MaterialView::setParameter< math::Vector4f > )
-        .def( "__setitem__", &MaterialView::setParameter< math::Vector3f > )
-        .def( "__setitem__", &MaterialView::setParameter< math::Vector2f > )
+        .def( "__setitem__", &MaterialView::setParameter< Carna::base::math::Vector4f > )
+        .def( "__setitem__", &MaterialView::setParameter< Carna::base::math::Vector3f > )
+        .def( "__setitem__", &MaterialView::setParameter< Carna::base::math::Vector2f > )
         .def( "__setitem__", &MaterialView::setParameter< float > )
         .def( "clear_parameters",
             VIEW_DELEGATE( MaterialView, material().clearParameters() )
@@ -459,6 +354,7 @@ PYBIND11_MODULE( base, m )
             VIEW_DELEGATE( MaterialView, material().hasParameter( name ), const std::string& name )
         );
 
+    /*
     py::class_< Surface >( m, "Surface" )
         .def( py::init< const GLContext&, unsigned int, unsigned int >(), "gl_context"_a, "width"_a, "height"_a ) // TODO: GLContext should be shared!
         .def_property_readonly( "width", &Surface::width )
@@ -477,7 +373,7 @@ PYBIND11_MODULE( base, m )
                     buf.ptr      = const_cast< unsigned char* >( pixelData ) + buf.itemsize * 3 * self.width() * (self.height() - 1);
                     return py::array( buf );
                 }
-            );
+            );*/
 
 /*
     py::class_< Surface >( m, "Surface" )
@@ -564,3 +460,4 @@ PYBIND11_MODULE( base, m )
 */
 
 }
+#endif // BUILD_base_MODULE

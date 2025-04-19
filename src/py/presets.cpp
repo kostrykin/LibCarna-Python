@@ -16,7 +16,6 @@ using namespace pybind11::literals; // enables the _a literal
 #include <Carna/presets/OccludedRenderingStage.h>
 #include <Carna/presets/OpaqueRenderingStage.h>
 #include <Carna/presets/MaskRenderingStage.h>
-#include <Carna/py/py.h>
 
 using namespace Carna::base;
 using namespace Carna::presets;
