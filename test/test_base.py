@@ -122,32 +122,27 @@ class Geometry(testsuite.CarnaTestCase, SpatialMixin):
         self.assertEqual(geoemtry1.features_count, 0)
 
 
-# # ==========================
-# # Scene Graph Manipulation 1
-# # ==========================
+class Material(testsuite.CarnaTestCase):
 
-# node1 = base.Node.create()
-# assert node1.children() == 0
-# node2 = base.Node.create()
-# node1.attach_child(node2)
-# assert node1.children() == 1
-# node1.free()
+    def setUp(self):
+        super().setUp()
+        self.material = carna.base.Material('solid')
 
-# # ==========================
-# # Scene Graph Manipulation 2
-# # ==========================
+    def test__color(self):
+        self.material['color'] = (1, 0, 0)
+        self.material['color'] = (1, 1, 0)
 
-# node1 = base.Node.create("root")
-# assert node1.tag == "root"
-# node2 = base.Node.create()
-# assert not node2.has_parent
-# node1.attach_child(node2)
-# assert node2.has_parent
-# assert node2.parent is node1
-# node2 = node2.detach_from_parent()
-# assert np.allclose(node2.local_transform, np.eye(4))
-# node1.free()
-# node2.free()
+    def test__has_parameter(self):
+        self.assertFalse(self.material.has_parameter('color'))
+        self.material['color'] = (1, 0, 0)
+        self.assertTrue(self.material.has_parameter('color'))
+
+    def test__remove_parameter(self):
+        self.material.remove_parameter('color')
+        self.assertFalse(self.material.has_parameter('color'))
+        self.material['color'] = (1, 0, 0)
+        self.material.remove_parameter('color')
+        self.assertFalse(self.material.has_parameter('color'))
 
 # # ==========================
 # # Math

@@ -106,7 +106,7 @@ public:
      */
     Spatial* const spatial;
 
-    SpatialView( Spatial* spatial );
+    explicit SpatialView( Spatial* spatial );
 
     virtual ~SpatialView();
 
@@ -160,7 +160,7 @@ class NodeView : public SpatialView
 public:
 
     template< typename... Args >
-    NodeView( Args... args );
+    explicit NodeView( Args... args );
 
     Node& node();
 
@@ -224,7 +224,7 @@ class CameraView : public SpatialView
 public:
 
     template< typename... Args >
-    CameraView( Args... args );
+    explicit CameraView( Args... args );
 
     Camera& camera();
 
@@ -255,7 +255,7 @@ class GeometryView : public SpatialView
 public:
 
     template< typename... Args >
-    GeometryView( Args... args );
+    explicit GeometryView( Args... args );
 
     Geometry& geometry();
 
@@ -272,6 +272,78 @@ GeometryView::GeometryView( Args... args )
 Geometry& GeometryView::geometry()
 {
     return static_cast< Geometry& >( *spatial );
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// GeometryFeatureView
+// ----------------------------------------------------------------------------------
+
+class GeometryFeatureView : public std::enable_shared_from_this< GeometryFeatureView >
+{
+public:
+
+    /* The geometry feature of this view.
+     */
+    GeometryFeature& geometryFeature;
+
+    explicit GeometryFeatureView( GeometryFeature& geometryFeature );
+
+    virtual ~GeometryFeatureView();
+
+}; // GeometryFeatureView
+
+
+GeometryFeatureView::GeometryFeatureView( GeometryFeature& geometryFeature )
+    : geometryFeature( geometryFeature )
+{
+}
+
+
+GeometryFeatureView::~GeometryFeatureView()
+{
+    geometryFeature.release();
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// MaterialView
+// ----------------------------------------------------------------------------------
+
+class MaterialView : public GeometryFeatureView
+{
+public:
+
+    template< typename... Args >
+    explicit MaterialView( Args... args );
+
+    Material& material();
+
+    template< typename ParameterType >
+    void setParameter( const std::string& name, const ParameterType& value );
+
+}; // MaterialView
+
+
+template< typename... Args >
+MaterialView::MaterialView( Args... args )
+    : GeometryFeatureView::GeometryFeatureView( Material::create( args... ) )
+{
+}
+
+
+Material& MaterialView::material()
+{
+    return static_cast< Material& >( geometryFeature );
+}
+
+
+template< typename ParameterType >
+void MaterialView::setParameter( const std::string& name, const ParameterType& value )
+{
+    material().setParameter( name, value );
 }
 
 
@@ -392,6 +464,8 @@ PYBIND11_MODULE( base, m )
             }
         );
 
+    py::class_< GeometryFeatureView, std::shared_ptr< GeometryFeatureView > >( m, "GeometryFeature" );
+
     py::class_< GeometryView, std::shared_ptr< GeometryView >, SpatialView >( m, "Geometry" )
         .def( py::init< unsigned int, const std::string& >(), "geometry_type"_a, "tag"_a = "" )
         .def_property_readonly( "geometry_type",
@@ -418,23 +492,32 @@ PYBIND11_MODULE( base, m )
         .def_property_readonly( "has_bounding_volume", &Geometry::hasBoundingVolume )
         */;
 
+    py::class_< MaterialView, std::shared_ptr< MaterialView >, GeometryFeatureView >( m, "Material" )
+        .def( py::init< const std::string& >(), "shader_name"_a )
+        .def( "__setitem__", &MaterialView::setParameter< math::Vector4f > )
+        .def( "__setitem__", &MaterialView::setParameter< math::Vector3f > )
+        .def( "__setitem__", &MaterialView::setParameter< math::Vector2f > )
+        .def( "__setitem__", &MaterialView::setParameter< float > )
+        .def( "clear_parameters",
+            []( MaterialView& self )
+            {
+                self.material().clearParameters();
+            }
+        )
+        .def( "remove_parameter",
+            []( MaterialView& self, const std::string& name )
+            {
+                self.material().removeParameter( name );
+            }
+        )
+        .def( "has_parameter",
+            []( MaterialView& self, const std::string& name )->bool
+            {
+                return self.material().hasParameter( name );
+            }
+        );
+
 /*
-    py::class_< GeometryFeature, std::unique_ptr< GeometryFeature, py::nodelete > >( m, "GeometryFeature" )
-        .def( "release", &GeometryFeature::release );
-
-    py::class_< Material, GeometryFeature, std::unique_ptr< Material, py::nodelete > >( m, "Material" )
-        .def_static( "create", []( const std::string& shaderName )
-        {
-            return &Material::create( shaderName );
-        }
-        , py::return_value_policy::reference, "shaderName"_a )
-        .def( "set_parameter4f", &Material::setParameter< math::Vector4f > )
-        .def( "set_parameter3f", &Material::setParameter< math::Vector4f > )
-        .def( "set_parameter2f", &Material::setParameter< math::Vector4f > )
-        .def( "clear_parameters", &Material::clearParameters )
-        .def( "remove_parameter", &Material::removeParameter )
-        .def( "has_parameter", &Material::hasParameter );
-
     py::class_< BoundingVolume, std::unique_ptr< BoundingVolume, py::nodelete > >( m, "BoundingVolume" );
 
     py::class_< Surface >( m, "Surface" )
