@@ -352,6 +352,13 @@ void MaterialView::setParameter( const std::string& name, const ParameterType& v
 // PYBIND11_MODULE: base
 // ----------------------------------------------------------------------------------
 
+#define VIEW_DELEGATE( ViewType, delegate, ... ) \
+    []( ViewType& self __VA_OPT__( , __VA_ARGS__ ) ) \
+    { \
+        return self.delegate; \
+    }
+
+
 PYBIND11_MODULE( base, m )
 {
 
@@ -371,10 +378,7 @@ PYBIND11_MODULE( base, m )
 
     py::class_< SpatialView, std::shared_ptr< SpatialView > >( m, "Spatial" )
         .def_property_readonly( "has_parent",
-            []( SpatialView& self )->bool
-            {
-                return self.spatial->hasParent();
-            }
+            VIEW_DELEGATE( SpatialView, spatial->hasParent() )
         )
         .def( "detach_from_parent",
             []( SpatialView& self )
@@ -384,84 +388,43 @@ PYBIND11_MODULE( base, m )
             }
         )
         .def_property( "is_movable",
-            []( SpatialView& self )->bool
-            {
-                return self.spatial->isMovable();
-            },
-            []( SpatialView& self, bool movable )
-            {
-                self.spatial->setMovable( movable );
-            }
+            VIEW_DELEGATE( SpatialView, spatial->isMovable() ),
+            VIEW_DELEGATE( SpatialView, spatial->setMovable( movable ), bool movable )
         )
         .def_property( "tag",
-            []( SpatialView& self )->const std::string&
-            {
-                return self.spatial->tag();
-            },
-            []( SpatialView& self, const std::string& tag )
-            {
-                self.spatial->setTag( tag );
-            }
+            VIEW_DELEGATE( SpatialView, spatial->tag() ),
+            VIEW_DELEGATE( SpatialView, spatial->setTag( tag ), const std::string& tag )
         )
         .def_property( "local_transform",
-            []( SpatialView& self )->const math::Matrix4f&
-            {
-                return self.spatial->localTransform;
-            },
-            []( SpatialView& self, const math::Matrix4f& localTransform )
-            {
-                self.spatial->localTransform = localTransform;
-            }
+            VIEW_DELEGATE( SpatialView, spatial->localTransform ),
+            VIEW_DELEGATE( SpatialView, spatial->localTransform = localTransform, const math::Matrix4f& localTransform )
         )
         .def( "update_world_transform",
-            []( SpatialView& self )
-            {
-                self.spatial->updateWorldTransform();
-            }
+            VIEW_DELEGATE( SpatialView, spatial->updateWorldTransform() )
         )
         .def_property_readonly( "world_transform",
-            []( SpatialView& self )->const math::Matrix4f&
-            {
-                return self.spatial->worldTransform();
-            }
+            VIEW_DELEGATE( SpatialView, spatial->worldTransform() )
         );
 
     py::class_< NodeView, std::shared_ptr< NodeView >, SpatialView >( m, "Node" )
         .def( py::init< const std::string& >(), "tag"_a = "" )
         .def( "attach_child", &NodeView::attachChild )
-        .def( "children", []( NodeView& self )->int
-            {
-                return self.node().children();
-            }
+        .def( "children",
+            VIEW_DELEGATE( NodeView, node().children() )
         );
 
     py::class_< CameraView, std::shared_ptr< CameraView >, SpatialView >( m, "Camera" )
         .def( py::init<>() )
         .def_property( "projection",
-            []( CameraView& self )->const math::Matrix4f&
-            {
-                return self.camera().projection();
-            },
-            []( CameraView& self, const math::Matrix4f& projection )
-            {
-                self.camera().setProjection( projection );
-            }
+            VIEW_DELEGATE( CameraView, camera().projection() ),
+            VIEW_DELEGATE( CameraView, camera().setProjection( projection ), const math::Matrix4f& projection )
         )
         .def_property( "orthogonal_projection_hint",
-            []( CameraView& self )->bool
-            {
-                return self.camera().isOrthogonalProjectionHintSet();
-            },
-            []( CameraView& self, bool orthogonalProjectionHint )
-            {
-                self.camera().setOrthogonalProjectionHint( orthogonalProjectionHint );
-            }
+            VIEW_DELEGATE( CameraView, camera().isOrthogonalProjectionHintSet() ),
+            VIEW_DELEGATE( CameraView, camera().setOrthogonalProjectionHint( orthogonalProjectionHint ), bool orthogonalProjectionHint )
         )
         .def_property_readonly( "view_transform",
-            []( CameraView& self )->const math::Matrix4f&
-            {
-                return self.camera().viewTransform();
-            }
+            VIEW_DELEGATE( CameraView, camera().viewTransform() )
         );
 
     py::class_< GeometryFeatureView, std::shared_ptr< GeometryFeatureView > >( m, "GeometryFeature" );
@@ -469,52 +432,28 @@ PYBIND11_MODULE( base, m )
     py::class_< GeometryView, std::shared_ptr< GeometryView >, SpatialView >( m, "Geometry" )
         .def( py::init< unsigned int, const std::string& >(), "geometry_type"_a, "tag"_a = "" )
         .def_property_readonly( "geometry_type",
-            []( GeometryView& self )->unsigned int
-            {
-                return self.geometry().geometryType;
-            }
+            VIEW_DELEGATE( GeometryView, geometry().geometryType )
         )
         .def_property_readonly( "features_count",
-            []( GeometryView& self )->std::size_t
-            {
-                return self.geometry().featuresCount();
-            }
+            VIEW_DELEGATE( GeometryView, geometry().featuresCount() )
         )
         .def( "put_feature",
-            []( GeometryView& self, unsigned int role, GeometryFeatureView& feature )
-            {
-                self.geometry().putFeature( role, feature.geometryFeature );
-            }
+            VIEW_DELEGATE( GeometryView, geometry().putFeature( role, feature.geometryFeature ), unsigned int role, GeometryFeatureView& feature )
         )
         .def( "remove_feature",
-            []( GeometryView& self, unsigned int role )
-            {
-                self.geometry().removeFeature( role );
-            }
+            VIEW_DELEGATE( GeometryView, geometry().removeFeature( role ), unsigned int role )
         )
         .def( "remove_feature",
-            []( GeometryView& self, GeometryFeatureView& feature )
-            {
-                self.geometry().removeFeature( feature.geometryFeature );
-            }
+            VIEW_DELEGATE( GeometryView, geometry().removeFeature( feature.geometryFeature ), GeometryFeatureView& feature )
         )
         .def( "clear_features",
-            []( GeometryView& self )
-            {
-                self.geometry().clearFeatures();
-            }
+            VIEW_DELEGATE( GeometryView, geometry().clearFeatures() )
         )
         .def( "has_feature",
-            []( GeometryView& self, unsigned int role )->bool
-            {
-                return self.geometry().hasFeature( role );
-            }
+            VIEW_DELEGATE( GeometryView, geometry().hasFeature( role ), unsigned int role )
         )
         .def( "has_feature",
-            []( GeometryView& self, GeometryFeatureView& feature )->bool
-            {
-                return self.geometry().hasFeature( feature.geometryFeature );
-            }
+            VIEW_DELEGATE( GeometryView, geometry().hasFeature( feature.geometryFeature ), GeometryFeatureView& feature )
         );
 
     py::class_< MaterialView, std::shared_ptr< MaterialView >, GeometryFeatureView >( m, "Material" )
@@ -524,22 +463,13 @@ PYBIND11_MODULE( base, m )
         .def( "__setitem__", &MaterialView::setParameter< math::Vector2f > )
         .def( "__setitem__", &MaterialView::setParameter< float > )
         .def( "clear_parameters",
-            []( MaterialView& self )
-            {
-                self.material().clearParameters();
-            }
+            VIEW_DELEGATE( MaterialView, material().clearParameters() )
         )
         .def( "remove_parameter",
-            []( MaterialView& self, const std::string& name )
-            {
-                self.material().removeParameter( name );
-            }
+            VIEW_DELEGATE( MaterialView, material().removeParameter( name ), const std::string& name )
         )
         .def( "has_parameter",
-            []( MaterialView& self, const std::string& name )->bool
-            {
-                return self.material().hasParameter( name );
-            }
+            VIEW_DELEGATE( MaterialView, material().hasParameter( name ), const std::string& name )
         );
 
 /*
