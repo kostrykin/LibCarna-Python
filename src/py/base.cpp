@@ -3,9 +3,9 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
 
-#if CARNA_EXRA_CHECKS
+#if CARNA_EXTRA_CHECKS
 #include <pybind11/stl.h>
-#endif // CARNA_EXRA_CHECKS
+#endif // CARNA_EXTRA_CHECKS
 
 namespace py = pybind11;
 
@@ -71,7 +71,7 @@ math::Matrix4f math__plane4f_by_support( const math::Vector3f& normal, const mat
 // debugEvents
 // ----------------------------------------------------------------------------------
 
-#if CARNA_EXRA_CHECKS
+#if CARNA_EXTRA_CHECKS
 
 static std::vector< std::string > debugEvents;
 
@@ -84,7 +84,7 @@ static void debugEvent( SourceType* self, const std::string& event )
     debugEvents.push_back( ss.str() );
 }
 
-#endif // CARNA_EXRA_CHECKS
+#endif // CARNA_EXTRA_CHECKS
 
 
 
@@ -117,9 +117,9 @@ SpatialView::SpatialView( Spatial* spatial )
     : ownedBy( nullptr )
     , spatial( spatial )
 {
-    #if CARNA_EXRA_CHECKS
+    #if CARNA_EXTRA_CHECKS
     debugEvent( spatial, "created" );
-    #endif // CARNA_EXRA_CHECKS
+    #endif // CARNA_EXTRA_CHECKS
 }
 
 
@@ -127,7 +127,7 @@ SpatialView::~SpatialView()
 {
     if( ownedBy.get() == nullptr )
     {
-        #if CARNA_EXRA_CHECKS
+        #if CARNA_EXTRA_CHECKS
         if( Node* const node = dynamic_cast< Node* >( spatial ) )
         {
             node->visitChildren(
@@ -139,7 +139,7 @@ SpatialView::~SpatialView()
             );
         }
         debugEvent( spatial, "deleted" );
-        #endif // CARNA_EXRA_CHECKS
+        #endif // CARNA_EXTRA_CHECKS
 
         /* The spatial object of this view is not owned by any other spatial object,
          * thus it is safe to delete the object, when the last reference dies.
@@ -357,7 +357,7 @@ PYBIND11_MODULE( base, m )
 
     //py::register_exception< AssertionFailure >( m, "AssertionFailure" );  // error: 'const class Carna::base::AssertionFailure' has no member named 'what'
 
-    #if CARNA_EXRA_CHECKS
+    #if CARNA_EXTRA_CHECKS
     m.def( "debug_events", []()->std::vector< std::string >
         {
             auto debugEvents0 = debugEvents;
@@ -365,7 +365,7 @@ PYBIND11_MODULE( base, m )
             return debugEvents0;
         }
     );
-    #endif // CARNA_EXRA_CHECKS
+    #endif // CARNA_EXTRA_CHECKS
 
     py::class_< Carna::base::GLContext >( m, "GLContext" );
 

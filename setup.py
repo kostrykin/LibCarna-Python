@@ -63,8 +63,8 @@ if __name__ == '__main__':
                 f'../..',
             ]
 
-            if os.environ.get('CARNA_EXRA_CHECKS', 'OFF') == 'ON':
-                cmake_args.append('-DCARNA_EXRA_CHECKS=1')
+            if os.environ.get('CARNA_EXTRA_CHECKS', 'OFF') == 'ON':
+                cmake_args.append('-DCARNA_EXTRA_CHECKS=1')
 
             if not self.dry_run:
 

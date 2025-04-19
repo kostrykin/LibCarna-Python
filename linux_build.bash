@@ -24,8 +24,8 @@ fi
 
 # Build and test with extra checks
 cd "$ROOT"
-CARNA_EXRA_CHECKS=ON python setup.py bdist
+CARNA_EXTRA_CHECKS=ON python setup.py bdist
 
 # Build wheel and test without extra checks
 cd "$ROOT"
-CARNA_EXRA_CHECKS=OFF python setup.py bdist_wheel
+CARNA_EXTRA_CHECKS=OFF python setup.py bdist_wheel
