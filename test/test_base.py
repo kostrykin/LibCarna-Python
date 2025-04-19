@@ -111,6 +111,16 @@ class Geometry(testsuite.CarnaTestCase, SpatialMixin):
         geometry_type=0,
     )
 
+    def test__geometry_type(self):
+        geoemtry1 = carna.base.Geometry(geometry_type=0)
+        geoemtry2 = carna.base.Geometry(geometry_type=1)
+        self.assertEqual(geoemtry1.geometry_type, 0)
+        self.assertEqual(geoemtry2.geometry_type, 1)
+
+    def test__features_count(self):
+        geoemtry1 = carna.base.Geometry(geometry_type=0)
+        self.assertEqual(geoemtry1.features_count, 0)
+
 
 # # ==========================
 # # Scene Graph Manipulation 1

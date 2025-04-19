@@ -312,6 +312,18 @@ PYBIND11_MODULE( base, m )
         auto _Geometry = py::class_< SpatialView< Geometry >, std::shared_ptr< SpatialView< Geometry > > >( m, "Geometry" );
         addInterface_Spatial< Geometry >( _Geometry )
             .def( py::init< unsigned int, const std::string& >(), "geometry_type"_a, "tag"_a = "" )
+            .def_property_readonly( "geometry_type",
+                []( SpatialView< Geometry >& self )->unsigned int
+                {
+                    return self.spatial->geometryType;
+                }
+            )
+            .def_property_readonly( "features_count",
+                []( SpatialView< Geometry >& self )->std::size_t
+                {
+                    return self.spatial->featuresCount();
+                }
+            )
             /*
             .def( "put_feature", &Geometry::putFeature )
             .def( "remove_feature", py::overload_cast< GeometryFeature& >( &Geometry::removeFeature ) )
@@ -320,10 +332,8 @@ PYBIND11_MODULE( base, m )
             .def( "has_feature", py::overload_cast< const GeometryFeature& >( &Geometry::hasFeature, py::const_ ) )
             .def( "has_feature_role", py::overload_cast< unsigned int >( &Geometry::hasFeature, py::const_ ) )
             .def( "feature", &Geometry::feature, py::return_value_policy::reference )
-            .def( "features_count", &Geometry::featuresCount )
             .def_property( "bounding_volume", py::overload_cast<>( &Geometry::boundingVolume, py::const_ ), &Geometry::setBoundingVolume )
             .def_property_readonly( "has_bounding_volume", &Geometry::hasBoundingVolume )
-            .def_readonly( "geometry_type", &Geometry::geometryType )
             */;
 
 /*
