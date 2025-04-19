@@ -354,26 +354,12 @@ PYBIND11_MODULE( base, m )
             VIEW_DELEGATE( MaterialView, material().hasParameter( name ), const std::string& name )
         );
 
-    /*
     py::class_< Surface >( m, "Surface" )
-        .def( py::init< const GLContext&, unsigned int, unsigned int >(), "gl_context"_a, "width"_a, "height"_a ) // TODO: GLContext should be shared!
+        .def( py::init< const GLContextView&, unsigned int, unsigned int >(), "gl_context"_a, "width"_a, "height"_a )
         .def_property_readonly( "width", &Surface::width )
         .def_property_readonly( "height", &Surface::height )
         .def( "begin", &Surface::begin )
-        .def( "end",
-                []( const Surface& self )
-                {
-                    const unsigned char* pixelData = self.end();
-                    py::buffer_info buf; // performs flipping
-                    buf.itemsize = sizeof( unsigned char );
-                    buf.format   = py::format_descriptor< unsigned char >::value;
-                    buf.ndim     = 3;
-                    buf.shape    = { self.height(), self.width(), 3 };
-                    buf.strides  = { -buf.itemsize * 3 * self.width(), buf.itemsize * 3, buf.itemsize };
-                    buf.ptr      = const_cast< unsigned char* >( pixelData ) + buf.itemsize * 3 * self.width() * (self.height() - 1);
-                    return py::array( buf );
-                }
-            );*/
+        .def( "end", &Surface::end );
 
 /*
     py::class_< Surface >( m, "Surface" )

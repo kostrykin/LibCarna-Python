@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Carna/py/base.h>
 
 namespace Carna

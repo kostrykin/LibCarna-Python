@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Carna/Carna.h>
 #include <Carna/base/Material.h>
 

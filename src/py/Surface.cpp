@@ -67,9 +67,9 @@ void Surface::Details::grabFrame()
 // Surface
 // ----------------------------------------------------------------------------------
 
-Surface::Surface( const Carna::base::GLContext& glContext, unsigned int width, unsigned int height )
-    : pimpl( new Details( glContext, width, height ) )
-    , glContext( glContext )
+Surface::Surface( const Carna::py::base::GLContextView& contextView, unsigned int width, unsigned int height )
+    : pimpl( new Details( *contextView.context, width, height ) )
+    , contextView( contextView.shared_from_this() )
     , size( pimpl->frameSize )
 {
 }
@@ -77,7 +77,7 @@ Surface::Surface( const Carna::base::GLContext& glContext, unsigned int width, u
 
 Surface::~Surface()
 {
-    glContext.makeCurrent();
+    pimpl->glContext.makeCurrent();
 }
 
 
@@ -95,16 +95,25 @@ unsigned int Surface::height() const
 
 void Surface::begin() const
 {
-    glContext.makeCurrent();
+    pimpl->glContext.makeCurrent();
     pimpl->fboBinding.reset( new Carna::base::Framebuffer::Binding( *pimpl->fbo ) );
 }
 
 
-const unsigned char* Surface::end() const
+pybind11::array Surface::end() const
 {
-    pimpl->grabFrame();
+    pimpl->glContext.makeCurrent();
     pimpl->fboBinding.reset();
-    return pimpl->frame.get();
+    const unsigned char* pixelData = pimpl->frame.get();
+
+    pybind11::buffer_info buf; // performs flipping
+    buf.itemsize = sizeof( unsigned char );
+    buf.format   = pybind11::format_descriptor< unsigned char >::value;
+    buf.ndim     = 3;
+    buf.shape    = { height(), width(), 3 };
+    buf.strides  = { -buf.itemsize * 3 * width(), buf.itemsize * 3, buf.itemsize };
+    buf.ptr      = const_cast< unsigned char* >( pixelData ) + buf.itemsize * 3 * width() * (height() - 1);
+    return pybind11::array( buf );
 }
 
 

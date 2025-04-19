@@ -1,6 +1,10 @@
+#pragma once
+
 #include <memory>
 
-#include <Carna/Carna.h>
+#include <pybind11/numpy.h>
+
+#include <Carna/py/base.h>
 #include <Carna/base/noncopyable.h>
 
 namespace Carna
@@ -25,7 +29,7 @@ class Surface
 
 public:
 
-    Surface( const Carna::base::GLContext& glContext, unsigned int width, unsigned int height );
+    Surface( const Carna::py::base::GLContextView& contextView, unsigned int width, unsigned int height );
 
     virtual ~Surface();
 
@@ -33,11 +37,11 @@ public:
 
     unsigned int height() const;
 
-    const Carna::base::GLContext& glContext;
+    const std::shared_ptr< const Carna::py::base::GLContextView > contextView;
 
     void begin() const;
 
-    const unsigned char* end() const;
+    pybind11::array end() const;
 
     const std::size_t& size;
 

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Carna/base/GLContext.h>
 #include <Carna/base/noncopyable.h>
 
