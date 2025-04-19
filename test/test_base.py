@@ -4,7 +4,57 @@ import carna
 import testsuite
 
 
-class Node(testsuite.CarnaTestCase):
+class SpatialMixin:
+
+    ClientSpatialType = None
+
+    def test__movable(self):
+        node1 = self.ClientSpatialType()
+        self.assertTrue(node1.is_movable)
+        node1.is_movable = False
+        self.assertFalse(node1.is_movable)
+
+    def test__tag(self):
+        node1 = self.ClientSpatialType()
+        self.assertEqual(node1.tag, '')
+        node1.tag = 'Test'
+        self.assertEqual(node1.tag, 'Test')
+
+    def test__localTransform(self):
+        node1 = self.ClientSpatialType()
+        np.testing.assert_array_almost_equal(node1.local_transform, np.eye(4))
+        node1.local_transform = np.arange(16).reshape(4, 4)
+        np.testing.assert_array_almost_equal(node1.local_transform, np.arange(16).reshape(4, 4))
+
+    def test__worldTransform(self):
+        node1 = carna.base.Node()
+        node1.local_transform = np.eye(4) * 2
+        node1.update_world_transform()
+        node2 = self.ClientSpatialType()
+        node1.attach_child(node2)
+        node2.local_transform = np.eye(4) / 3
+        node2.update_world_transform()
+        np.testing.assert_array_almost_equal(node1.world_transform, np.eye(4) * 2)
+        np.testing.assert_array_almost_equal(node2.world_transform, np.eye(4) * 2 / 3)
+
+    def test__detach_from_parent(self):
+        node1 = carna.base.Node()
+        node2 = self.ClientSpatialType()
+        self.assertFalse(node2.has_parent)
+        node1.attach_child(node2)
+        self.assertTrue(node2.has_parent)
+        node2.detach_from_parent()
+        self.assertFalse(node2.has_parent)
+
+
+class Node(testsuite.CarnaTestCase, SpatialMixin):
+
+    ClientSpatialType = carna.base.Node
+
+    def test__tag(self):
+        super().test__tag()
+        node1 = carna.base.Node('Test 2')
+        self.assertEqual(node1.tag, 'Test 2')
 
     def test__attach_child(self):
         node1 = carna.base.Node()
@@ -28,32 +78,29 @@ class Node(testsuite.CarnaTestCase):
         with self.assertRaises(RuntimeError):
             node3.attach_child(node2)
 
-    def test__detach_from_parent(self):
-        node1 = carna.base.Node()
-        node2 = carna.base.Node()
-        self.assertFalse(node2.has_parent)
-        node1.attach_child(node2)
-        self.assertTrue(node2.has_parent)
-        node2.detach_from_parent()
-        self.assertFalse(node2.has_parent)
 
-    def test__movable(self):
-        node1 = carna.base.Node()
-        self.assertTrue(node1.is_movable)
-        node1.is_movable = False
-        self.assertFalse(node1.is_movable)
+class Camera(testsuite.CarnaTestCase, SpatialMixin):
 
-    def test__tag(self):
-        node1 = carna.base.Node()
-        self.assertEqual(node1.tag, '')
-        node1.tag = 'Test'
-        self.assertEqual(node1.tag, 'Test')
+    ClientSpatialType = carna.base.Camera
 
-    def test__localTransform(self):
-        node1 = carna.base.Node()
-        np.testing.assert_array_equal(node1.local_transform, np.eye(4))
-        node1.local_transform = np.arange(16).reshape(4, 4)
-        np.testing.assert_array_equal(node1.local_transform, np.arange(16).reshape(4, 4))
+    def test__projection(self):
+        camera = carna.base.Camera()
+        camera.projection = np.arange(16).reshape(4, 4)
+        np.testing.assert_array_almost_equal(camera.projection, np.arange(16).reshape(4, 4))
+
+    def test__orthogonal_projection_hint(self):
+        camera = carna.base.Camera()
+        self.assertFalse(camera.orthogonal_projection_hint)
+        camera.orthogonal_projection_hint = True
+        self.assertTrue(camera.orthogonal_projection_hint)
+
+    def test__view_transform(self):
+        camera = carna.base.Camera()
+        camera.update_world_transform()
+        np.testing.assert_array_almost_equal(camera.view_transform, np.eye(4))
+        camera.local_transform = 2 * np.eye(4)
+        camera.update_world_transform()
+        np.testing.assert_array_almost_equal(camera.view_transform, 0.5 * np.eye(4))
 
 
 # # ==========================

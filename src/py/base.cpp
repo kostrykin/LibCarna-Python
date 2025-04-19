@@ -234,6 +234,18 @@ ClassType& addInterface_Spatial( ClassType& cls )
             self.spatial->localTransform = localTransform;
         }
     );
+    cls.def( "update_world_transform",
+        []( SpatialView< SpatialType >& self )
+        {
+            self.spatial->updateWorldTransform();
+        }
+    );
+    cls.def_property_readonly( "world_transform",
+        []( SpatialView< SpatialType >& self )->const math::Matrix4f&
+        {
+            return self.spatial->worldTransform();
+        }
+    );
     return cls;
 }
 
@@ -260,23 +272,44 @@ PYBIND11_MODULE( base, m )
         .def( py::init< const std::string& >(), "tag"_a = "" )
         .def( "attach_child", &attachChild< Spatial > )
         .def( "attach_child", &attachChild< Node > )
+        .def( "attach_child", &attachChild< Camera > )
         .def( "children", []( SpatialView< Node >& self )->int
             {
                 return self.spatial->children();
             }
         );
 
-/*
-    py::class_< Camera, Spatial >( m, "Camera" )
-        .def_static( "create", []()
-        {
-            return new Camera();
-        }
-        , py::return_value_policy::reference )
-        .def_property( "projection", &Camera::projection, &Camera::setProjection )
-        .def_property( "orthogonal_projection_hint", &Camera::isOrthogonalProjectionHintSet, &Camera::setOrthogonalProjectionHint )
-        .def_property_readonly( "view_transform", &Camera::viewTransform );
+    auto _Camera = py::class_< SpatialView< Camera >, std::shared_ptr< SpatialView< Camera > > >( m, "Camera" );
+    addInterface_Spatial< Camera >( _Camera )
+        .def( py::init<>() )
+        .def_property( "projection",
+            []( SpatialView< Camera >& self )->const math::Matrix4f&
+            {
+                return self.spatial->projection();
+            },
+            []( SpatialView< Camera >& self, const math::Matrix4f& projection )
+            {
+                self.spatial->setProjection( projection );
+            }
+        )
+        .def_property( "orthogonal_projection_hint",
+            []( SpatialView< Camera >& self )->bool
+            {
+                return self.spatial->isOrthogonalProjectionHintSet();
+            },
+            []( SpatialView< Camera >& self, bool orthogonalProjectionHint )
+            {
+                self.spatial->setOrthogonalProjectionHint( orthogonalProjectionHint );
+            }
+        )
+        .def_property_readonly( "view_transform",
+            []( SpatialView< Camera >& self )->const math::Matrix4f&
+            {
+                return self.spatial->viewTransform();
+            }
+        );
 
+/*
     py::class_< GeometryFeature, std::unique_ptr< GeometryFeature, py::nodelete > >( m, "GeometryFeature" )
         .def( "release", &GeometryFeature::release );
 
