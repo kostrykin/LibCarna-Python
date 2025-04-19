@@ -2,7 +2,10 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
-#include <pybind11/stl.h>  // TODO: only for debug
+
+#if CARNA_EXRA_CHECKS
+#include <pybind11/stl.h>
+#endif // CARNA_EXRA_CHECKS
 
 namespace py = pybind11;
 
@@ -89,8 +92,7 @@ static void debugEvent( SourceType* self, const std::string& event )
 // SpatialView
 // ----------------------------------------------------------------------------------
 
-template< typename SpatialType >
-class SpatialView : public std::enable_shared_from_this< SpatialView< SpatialType > >
+class SpatialView : public std::enable_shared_from_this< SpatialView >
 {
 
 public:
@@ -98,25 +100,22 @@ public:
     /* The object that owns the spatial object of this view. The spatial object of
      * this view is owned by the view, if it is not owned by any other spatial object.
      */
-    std::shared_ptr< SpatialView< Node > > ownedBy;
+    std::shared_ptr< SpatialView > ownedBy;
 
     /* The spatial object of this view.
      */
-    SpatialType* const spatial;
+    Spatial* const spatial;
 
-    template< typename... Args >
-    SpatialView( Args... args );
+    SpatialView( Spatial* spatial );
 
-    ~SpatialView();
+    virtual ~SpatialView();
 
-}; // SpatialView< SpatialType >
+}; // SpatialView
 
 
-template< typename SpatialType >
-template< typename... Args >
-SpatialView< SpatialType >::SpatialView( Args... args )
+SpatialView::SpatialView( Spatial* spatial )
     : ownedBy( nullptr )
-    , spatial( new SpatialType( args... ) )
+    , spatial( spatial )
 {
     #if CARNA_EXRA_CHECKS
     debugEvent( spatial, "created" );
@@ -124,8 +123,7 @@ SpatialView< SpatialType >::SpatialView( Args... args )
 }
 
 
-template< typename SpatialType >
-SpatialView< SpatialType >::~SpatialView()
+SpatialView::~SpatialView()
 {
     if( ownedBy.get() == nullptr )
     {
@@ -151,23 +149,55 @@ SpatialView< SpatialType >::~SpatialView()
 }
 
 
-template< typename SpatialType >
-void attachChild( SpatialView< Node >& self, SpatialView< SpatialType >& child )
+
+// ----------------------------------------------------------------------------------
+// NodeView
+// ----------------------------------------------------------------------------------
+
+class NodeView : public SpatialView
+{
+
+public:
+
+    template< typename... Args >
+    NodeView( Args... args );
+
+    Node& node();
+
+    void attachChild( SpatialView& child );
+
+}; // NodeView
+
+
+template< typename... Args >
+NodeView::NodeView( Args... args )
+    : SpatialView::SpatialView( new Node( args... ) )
+{
+}
+
+
+Node& NodeView::node()
+{
+    return static_cast< Node& >( *spatial );
+}
+
+
+void NodeView::attachChild( SpatialView& child )
 {
     /* Verify that the child is not already attached to another parent.
      */
     CARNA_ASSERT_EX( !child.spatial->hasParent(), "Child already has a parent." );
 
-    /* Check for circular relations (verify that `self` is not a child of `child`).
+    /* Check for circular relations (verify that `this` is not a child of `child`).
      */
     bool circular = false;
     if( Node* const childNode = dynamic_cast< Node* >( child.spatial ) )
     {
         childNode->visitChildren(
             true,
-            [ &circular, &self ]( const Spatial& spatial )
+            [ &circular, this ]( const Spatial& spatial )
             {
-                if( &spatial == self.spatial )
+                if( &spatial == this->spatial )
                 {
                     circular = true;
                 }
@@ -178,8 +208,70 @@ void attachChild( SpatialView< Node >& self, SpatialView< SpatialType >& child )
 
     /* Update scene graph structure.
      */
-    child.ownedBy = self.shared_from_this();
-    self.spatial->attachChild( child.spatial );
+    child.ownedBy = this->shared_from_this();
+    this->node().attachChild( child.spatial );
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// CameraView
+// ----------------------------------------------------------------------------------
+
+class CameraView : public SpatialView
+{
+
+public:
+
+    template< typename... Args >
+    CameraView( Args... args );
+
+    Camera& camera();
+
+}; // CameraView
+
+
+template< typename... Args >
+CameraView::CameraView( Args... args )
+    : SpatialView::SpatialView( new Camera( args... ) )
+{
+}
+
+
+Camera& CameraView::camera()
+{
+    return static_cast< Camera& >( *spatial );
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// GeometryView
+// ----------------------------------------------------------------------------------
+
+class GeometryView : public SpatialView
+{
+
+public:
+
+    template< typename... Args >
+    GeometryView( Args... args );
+
+    Geometry& geometry();
+
+}; // GeometryView
+
+
+template< typename... Args >
+GeometryView::GeometryView( Args... args )
+    : SpatialView::SpatialView( new Geometry( args... ) )
+{
+}
+
+
+Geometry& GeometryView::geometry()
+{
+    return static_cast< Geometry& >( *spatial );
 }
 
 
@@ -187,68 +279,6 @@ void attachChild( SpatialView< Node >& self, SpatialView< SpatialType >& child )
 // ----------------------------------------------------------------------------------
 // PYBIND11_MODULE: base
 // ----------------------------------------------------------------------------------
-
-template< typename SpatialType, typename ClassType >
-ClassType& addInterface_Spatial( ClassType& cls )
-{
-    cls.def_property_readonly( "has_parent",
-        []( SpatialView< SpatialType >& self )->bool
-        {
-            return self.spatial->hasParent();
-        }
-    );
-    cls.def( "detach_from_parent",
-        []( SpatialView< SpatialType >& self )
-        {
-            self.ownedBy.reset();
-            self.spatial->detachFromParent();
-        }
-    );
-    cls.def_property( "is_movable",
-        []( SpatialView< SpatialType >& self )->bool
-        {
-            return self.spatial->isMovable();
-        },
-        []( SpatialView< SpatialType >& self, bool movable )
-        {
-            self.spatial->setMovable( movable );
-        }
-    );
-    cls.def_property( "tag",
-        []( SpatialView< SpatialType >& self )->const std::string&
-        {
-            return self.spatial->tag();
-        },
-        []( SpatialView< SpatialType >& self, const std::string& tag )
-        {
-            self.spatial->setTag( tag );
-        }
-    );
-    cls.def_property( "local_transform",
-        []( SpatialView< SpatialType >& self )->const math::Matrix4f&
-        {
-            return self.spatial->localTransform;
-        },
-        []( SpatialView< SpatialType >& self, const math::Matrix4f& localTransform )
-        {
-            self.spatial->localTransform = localTransform;
-        }
-    );
-    cls.def( "update_world_transform",
-        []( SpatialView< SpatialType >& self )
-        {
-            self.spatial->updateWorldTransform();
-        }
-    );
-    cls.def_property_readonly( "world_transform",
-        []( SpatialView< SpatialType >& self )->const math::Matrix4f&
-        {
-            return self.spatial->worldTransform();
-        }
-    );
-    return cls;
-}
-
 
 PYBIND11_MODULE( base, m )
 {
@@ -267,74 +297,126 @@ PYBIND11_MODULE( base, m )
 
     py::class_< Carna::base::GLContext >( m, "GLContext" );
 
-    auto _Node = py::class_< SpatialView< Node >, std::shared_ptr< SpatialView< Node > > >( m, "Node" );
-    addInterface_Spatial< Node >( _Node )
-        .def( py::init< const std::string& >(), "tag"_a = "" )
-        .def( "attach_child", &attachChild< Node > )
-        .def( "attach_child", &attachChild< Camera > )
-        .def( "attach_child", &attachChild< Geometry > )
-        .def( "children", []( SpatialView< Node >& self )->int
+    py::class_< SpatialView, std::shared_ptr< SpatialView > >( m, "Spatial" )
+        .def_property_readonly( "has_parent",
+            []( SpatialView& self )->bool
             {
-                return self.spatial->children();
+                return self.spatial->hasParent();
+            }
+        )
+        .def( "detach_from_parent",
+            []( SpatialView& self )
+            {
+                self.ownedBy.reset();
+                self.spatial->detachFromParent();
+            }
+        )
+        .def_property( "is_movable",
+            []( SpatialView& self )->bool
+            {
+                return self.spatial->isMovable();
+            },
+            []( SpatialView& self, bool movable )
+            {
+                self.spatial->setMovable( movable );
+            }
+        )
+        .def_property( "tag",
+            []( SpatialView& self )->const std::string&
+            {
+                return self.spatial->tag();
+            },
+            []( SpatialView& self, const std::string& tag )
+            {
+                self.spatial->setTag( tag );
+            }
+        )
+        .def_property( "local_transform",
+            []( SpatialView& self )->const math::Matrix4f&
+            {
+                return self.spatial->localTransform;
+            },
+            []( SpatialView& self, const math::Matrix4f& localTransform )
+            {
+                self.spatial->localTransform = localTransform;
+            }
+        )
+        .def( "update_world_transform",
+            []( SpatialView& self )
+            {
+                self.spatial->updateWorldTransform();
+            }
+        )
+        .def_property_readonly( "world_transform",
+            []( SpatialView& self )->const math::Matrix4f&
+            {
+                return self.spatial->worldTransform();
             }
         );
 
-    auto _Camera = py::class_< SpatialView< Camera >, std::shared_ptr< SpatialView< Camera > > >( m, "Camera" );
-    addInterface_Spatial< Camera >( _Camera )
+    py::class_< NodeView, std::shared_ptr< NodeView >, SpatialView >( m, "Node" )
+        .def( py::init< const std::string& >(), "tag"_a = "" )
+        .def( "attach_child", &NodeView::attachChild )
+        .def( "children", []( NodeView& self )->int
+            {
+                return self.node().children();
+            }
+        );
+
+    py::class_< CameraView, std::shared_ptr< CameraView >, SpatialView >( m, "Camera" )
         .def( py::init<>() )
         .def_property( "projection",
-            []( SpatialView< Camera >& self )->const math::Matrix4f&
+            []( CameraView& self )->const math::Matrix4f&
             {
-                return self.spatial->projection();
+                return self.camera().projection();
             },
-            []( SpatialView< Camera >& self, const math::Matrix4f& projection )
+            []( CameraView& self, const math::Matrix4f& projection )
             {
-                self.spatial->setProjection( projection );
+                self.camera().setProjection( projection );
             }
         )
         .def_property( "orthogonal_projection_hint",
-            []( SpatialView< Camera >& self )->bool
+            []( CameraView& self )->bool
             {
-                return self.spatial->isOrthogonalProjectionHintSet();
+                return self.camera().isOrthogonalProjectionHintSet();
             },
-            []( SpatialView< Camera >& self, bool orthogonalProjectionHint )
+            []( CameraView& self, bool orthogonalProjectionHint )
             {
-                self.spatial->setOrthogonalProjectionHint( orthogonalProjectionHint );
+                self.camera().setOrthogonalProjectionHint( orthogonalProjectionHint );
             }
         )
         .def_property_readonly( "view_transform",
-            []( SpatialView< Camera >& self )->const math::Matrix4f&
+            []( CameraView& self )->const math::Matrix4f&
             {
-                return self.spatial->viewTransform();
+                return self.camera().viewTransform();
             }
         );
 
-        auto _Geometry = py::class_< SpatialView< Geometry >, std::shared_ptr< SpatialView< Geometry > > >( m, "Geometry" );
-        addInterface_Spatial< Geometry >( _Geometry )
-            .def( py::init< unsigned int, const std::string& >(), "geometry_type"_a, "tag"_a = "" )
-            .def_property_readonly( "geometry_type",
-                []( SpatialView< Geometry >& self )->unsigned int
-                {
-                    return self.spatial->geometryType;
-                }
-            )
-            .def_property_readonly( "features_count",
-                []( SpatialView< Geometry >& self )->std::size_t
-                {
-                    return self.spatial->featuresCount();
-                }
-            )
-            /*
-            .def( "put_feature", &Geometry::putFeature )
-            .def( "remove_feature", py::overload_cast< GeometryFeature& >( &Geometry::removeFeature ) )
-            .def( "remove_feature_role", py::overload_cast< unsigned int >( &Geometry::removeFeature ) )
-            .def( "clear_features", &Geometry::clearFeatures )
-            .def( "has_feature", py::overload_cast< const GeometryFeature& >( &Geometry::hasFeature, py::const_ ) )
-            .def( "has_feature_role", py::overload_cast< unsigned int >( &Geometry::hasFeature, py::const_ ) )
-            .def( "feature", &Geometry::feature, py::return_value_policy::reference )
-            .def_property( "bounding_volume", py::overload_cast<>( &Geometry::boundingVolume, py::const_ ), &Geometry::setBoundingVolume )
-            .def_property_readonly( "has_bounding_volume", &Geometry::hasBoundingVolume )
-            */;
+    py::class_< GeometryView, std::shared_ptr< GeometryView >, SpatialView >( m, "Geometry" )
+        .def( py::init< unsigned int, const std::string& >(), "geometry_type"_a, "tag"_a = "" )
+        .def_property_readonly( "geometry_type",
+            []( GeometryView& self )->unsigned int
+            {
+                return self.geometry().geometryType;
+            }
+        )
+        .def_property_readonly( "features_count",
+            []( GeometryView& self )->std::size_t
+            {
+                return self.geometry().featuresCount();
+            }
+        )
+        /*
+        .def( "put_feature", &Geometry::putFeature )
+        .def( "remove_feature", py::overload_cast< GeometryFeature& >( &Geometry::removeFeature ) )
+        .def( "remove_feature_role", py::overload_cast< unsigned int >( &Geometry::removeFeature ) )
+        .def( "clear_features", &Geometry::clearFeatures )
+        .def( "has_feature", py::overload_cast< const GeometryFeature& >( &Geometry::hasFeature, py::const_ ) )
+        .def( "has_feature_role", py::overload_cast< unsigned int >( &Geometry::hasFeature, py::const_ ) )
+        .def( "feature", &Geometry::feature, py::return_value_policy::reference )
+        .def_property( "bounding_volume", py::overload_cast<>( &Geometry::boundingVolume, py::const_ ), &Geometry::setBoundingVolume )
+        .def_property_readonly( "has_bounding_volume", &Geometry::hasBoundingVolume )
+        */;
 
 /*
     py::class_< GeometryFeature, std::unique_ptr< GeometryFeature, py::nodelete > >( m, "GeometryFeature" )
