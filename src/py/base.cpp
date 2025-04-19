@@ -480,10 +480,25 @@ PYBIND11_MODULE( base, m )
                 return self.geometry().featuresCount();
             }
         )
+        .def( "put_feature",
+            []( GeometryView& self, unsigned int role, GeometryFeatureView& feature )
+            {
+                self.geometry().putFeature( role, feature.geometryFeature );
+            }
+        )
+        .def( "remove_feature",
+            []( GeometryView& self, unsigned int role )
+            {
+                self.geometry().removeFeature( role );
+            }
+        )
+        .def( "remove_feature",
+            []( GeometryView& self, GeometryFeatureView& feature )
+            {
+                self.geometry().removeFeature( feature.geometryFeature );
+            }
+        )
         /*
-        .def( "put_feature", &Geometry::putFeature )
-        .def( "remove_feature", py::overload_cast< GeometryFeature& >( &Geometry::removeFeature ) )
-        .def( "remove_feature_role", py::overload_cast< unsigned int >( &Geometry::removeFeature ) )
         .def( "clear_features", &Geometry::clearFeatures )
         .def( "has_feature", py::overload_cast< const GeometryFeature& >( &Geometry::hasFeature, py::const_ ) )
         .def( "has_feature_role", py::overload_cast< unsigned int >( &Geometry::hasFeature, py::const_ ) )
