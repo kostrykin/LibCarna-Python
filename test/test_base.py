@@ -155,6 +155,20 @@ class Geometry(testsuite.CarnaTestCase, SpatialMixin):
         geoemtry1.clear_features()
         self.assertEqual(geoemtry1.features_count, 0)
 
+    def test__has_feature(self):
+        geoemtry1 = carna.base.Geometry(geometry_type=0)
+        feature1 = carna.base.Material('solid')
+        feature2 = carna.base.Material('solid')
+        self.assertFalse(geoemtry1.has_feature(10))
+        self.assertFalse(geoemtry1.has_feature(11))
+        self.assertFalse(geoemtry1.has_feature(feature1))
+        self.assertFalse(geoemtry1.has_feature(feature2))
+        geoemtry1.put_feature(10, feature1)
+        self.assertTrue (geoemtry1.has_feature(10))
+        self.assertFalse(geoemtry1.has_feature(11))
+        self.assertTrue (geoemtry1.has_feature(feature1))
+        self.assertFalse(geoemtry1.has_feature(feature2))
+
 
 class Material(testsuite.CarnaTestCase):
 

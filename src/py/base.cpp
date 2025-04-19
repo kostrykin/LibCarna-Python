@@ -504,13 +504,18 @@ PYBIND11_MODULE( base, m )
                 self.geometry().clearFeatures();
             }
         )
-        /*
-        .def( "has_feature", py::overload_cast< const GeometryFeature& >( &Geometry::hasFeature, py::const_ ) )
-        .def( "has_feature_role", py::overload_cast< unsigned int >( &Geometry::hasFeature, py::const_ ) )
-        .def( "feature", &Geometry::feature, py::return_value_policy::reference )
-        .def_property( "bounding_volume", py::overload_cast<>( &Geometry::boundingVolume, py::const_ ), &Geometry::setBoundingVolume )
-        .def_property_readonly( "has_bounding_volume", &Geometry::hasBoundingVolume )
-        */;
+        .def( "has_feature",
+            []( GeometryView& self, unsigned int role )->bool
+            {
+                return self.geometry().hasFeature( role );
+            }
+        )
+        .def( "has_feature",
+            []( GeometryView& self, GeometryFeatureView& feature )->bool
+            {
+                return self.geometry().hasFeature( feature.geometryFeature );
+            }
+        );
 
     py::class_< MaterialView, std::shared_ptr< MaterialView >, GeometryFeatureView >( m, "Material" )
         .def( py::init< const std::string& >(), "shader_name"_a )
@@ -538,8 +543,6 @@ PYBIND11_MODULE( base, m )
         );
 
 /*
-    py::class_< BoundingVolume, std::unique_ptr< BoundingVolume, py::nodelete > >( m, "BoundingVolume" );
-
     py::class_< Surface >( m, "Surface" )
         .def_static( "create", []( const GLContext& glContext, unsigned int width, unsigned int height )
         {
