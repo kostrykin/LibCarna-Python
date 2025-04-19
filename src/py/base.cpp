@@ -498,8 +498,13 @@ PYBIND11_MODULE( base, m )
                 self.geometry().removeFeature( feature.geometryFeature );
             }
         )
+        .def( "clear_features",
+            []( GeometryView& self )
+            {
+                self.geometry().clearFeatures();
+            }
+        )
         /*
-        .def( "clear_features", &Geometry::clearFeatures )
         .def( "has_feature", py::overload_cast< const GeometryFeature& >( &Geometry::hasFeature, py::const_ ) )
         .def( "has_feature_role", py::overload_cast< unsigned int >( &Geometry::hasFeature, py::const_ ) )
         .def( "feature", &Geometry::feature, py::return_value_policy::reference )
