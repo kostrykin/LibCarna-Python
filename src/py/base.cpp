@@ -33,19 +33,6 @@ using namespace Carna::py;
 
 
 /*
-py::array_t< unsigned char > Surface__end( const Surface& surface )
-{
-    const unsigned char* pixelData = surface.end();
-    py::buffer_info buf; // performs flipping
-    buf.itemsize = sizeof( unsigned char );
-    buf.format   = py::format_descriptor< unsigned char >::value;
-    buf.ndim     = 3;
-    buf.shape    = { surface.height(), surface.width(), 3 };
-    buf.strides  = { -buf.itemsize * 3 * surface.width(), buf.itemsize * 3, buf.itemsize };
-    buf.ptr      = const_cast< unsigned char* >( pixelData ) + buf.itemsize * 3 * surface.width() * (surface.height() - 1);
-    return py::array( buf );
-}
-
 template< typename VectorElementType , int dimension >
 Eigen::Matrix< float, dimension, 1 > normalized( const Eigen::Matrix< VectorElementType, dimension, 1 >& vector )
 {
@@ -374,7 +361,7 @@ PYBIND11_MODULE( base, m )
     );
     #endif // CARNA_EXTRA_CHECKS
 
-    py::class_< Carna::base::GLContext >( m, "GLContext" );
+    //py::class_< Carna::base::GLContext >( m, "GLContext" );
 
     py::class_< SpatialView, std::shared_ptr< SpatialView > >( m, "Spatial" )
         .def_property_readonly( "has_parent",
@@ -471,6 +458,26 @@ PYBIND11_MODULE( base, m )
         .def( "has_parameter",
             VIEW_DELEGATE( MaterialView, material().hasParameter( name ), const std::string& name )
         );
+
+    py::class_< Surface >( m, "Surface" )
+        .def( py::init< const GLContext&, unsigned int, unsigned int >(), "gl_context"_a, "width"_a, "height"_a ) // TODO: GLContext should be shared!
+        .def_property_readonly( "width", &Surface::width )
+        .def_property_readonly( "height", &Surface::height )
+        .def( "begin", &Surface::begin )
+        .def( "end",
+                []( const Surface& self )
+                {
+                    const unsigned char* pixelData = self.end();
+                    py::buffer_info buf; // performs flipping
+                    buf.itemsize = sizeof( unsigned char );
+                    buf.format   = py::format_descriptor< unsigned char >::value;
+                    buf.ndim     = 3;
+                    buf.shape    = { self.height(), self.width(), 3 };
+                    buf.strides  = { -buf.itemsize * 3 * self.width(), buf.itemsize * 3, buf.itemsize };
+                    buf.ptr      = const_cast< unsigned char* >( pixelData ) + buf.itemsize * 3 * self.width() * (self.height() - 1);
+                    return py::array( buf );
+                }
+            );
 
 /*
     py::class_< Surface >( m, "Surface" )
