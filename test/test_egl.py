@@ -3,8 +3,8 @@ import carna.egl
 import testsuite
 
 
-class Context(testsuite.CarnaTestCase):
+class EGLContext(testsuite.CarnaTestCase):
 
-    def test__attach_child(self):
+    def test(self):
         ctx = carna.egl.EGLContext()
         del ctx
