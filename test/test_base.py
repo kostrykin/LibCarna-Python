@@ -193,6 +193,21 @@ class Material(testsuite.CarnaTestCase):
         self.assertFalse(self.material.has_parameter('color'))
 
 
+class MeshFactory(testsuite.CarnaTestCase):
+
+    def test__create_box(self):
+        box = carna.base.MeshFactory.create_box( width=1, height=2, depth=3 )
+        del box
+
+    def test__create_ball(self):
+        ball = carna.base.MeshFactory.create_ball( radius=1, degree=3 )
+        del ball
+
+    def test__create_point(self):
+        point = carna.base.MeshFactory.create_point()
+        del point
+
+
 class math(testsuite.CarnaTestCase):
 
     def test__ortho(self):

@@ -179,6 +179,24 @@ public:
 }; // MaterialView
 
 
+
+// ----------------------------------------------------------------------------------
+// ManagedMeshView
+// ----------------------------------------------------------------------------------
+
+/*
+class ManagedMeshView : public GeometryFeatureView
+{
+public:
+
+    explicit ManagedMeshView( ManagedMeshBase& managedMesh );
+
+    Carna::base::ManagedMeshBase& managedMesh();
+
+}; // ManagedMeshView
+*/
+
+
 template< typename... Args >
 MaterialView::MaterialView( Args... args )
     : GeometryFeatureView::GeometryFeatureView( Carna::base::Material::create( args... ) )

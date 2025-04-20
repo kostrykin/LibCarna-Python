@@ -16,7 +16,7 @@ using namespace pybind11::literals; // enables the _a literal
 #include <Carna/base/Color.h>
 #include <Carna/base/BoundingVolume.h>
 #include <Carna/base/GLContext.h>
-//#include <Carna/base/MeshFactory.h>
+#include <Carna/base/MeshFactory.h>
 //#include <Carna/base/ManagedMesh.h>
 #include <Carna/base/RenderStage.h>
 //#include <Carna/base/BlendFunction.h>
@@ -499,58 +499,64 @@ PYBIND11_MODULE( base, m )
             "camera"_a, "root"_a = nullptr
         );
 
-    py::module math = m.def_submodule( "math" );
-    math.def( "ortho", &Carna::base::math::ortho4f, "left"_a, "right"_a, "bottom"_a, "top"_a, "z_near"_a, "z_far"_a );
-    math.def( "frustum",
-        py::overload_cast< float, float, float, float, float, float >( &Carna::base::math::frustum4f ),
-        "left"_a, "right"_a, "bottom"_a, "top"_a, "z_near"_a, "z_far"_a
-    );
-    math.def( "frustum",
-        py::overload_cast< float, float, float, float >( &Carna::base::math::frustum4f ),
-        "fov"_a, "height_over_width"_a, "z_near"_a, "z_far"_a
-    );
-    math.def( "deg2rad", &Carna::base::math::deg2rad, "degrees"_a );
-    math.def( "rad2deg", &Carna::base::math::rad2deg, "radians"_a );
-    math.def( "rotation", &Carna::base::math::rotation4f< Carna::base::math::Vector3f >, "axis"_a, "radians"_a );
-    math.def( "translation", &Carna::base::math::translation4f< Carna::base::math::Vector3f >, "offset"_a );
-    math.def( "scaling", &Carna::base::math::scaling4f< float >, "factors"_a );
-    math.def( "scaling", static_cast< Carna::base::math::Matrix4f( * )( float ) >( &Carna::base::math::scaling4f ), "uniform_factor"_a );
-    math.def( "plane",
-        []( const Carna::base::math::Vector3f& normal, float distance )
-        {
-            return Carna::base::math::plane4f( normal.normalized(), distance );
-        },
-        "normal"_a, "distance"_a );
-    math.def( "plane",
-        []( const Carna::base::math::Vector3f& normal, const Carna::base::math::Vector3f& support )
-        {
-            return Carna::base::math::plane4f( normal.normalized(), support );
-        },
-        "normal"_a, "support"_a );
+    m.def_submodule( "MeshFactory" )
+        .def( "create_box",
+            []( float width, float height, float depth )
+            {
+                return new GeometryFeatureView( Carna::base::MeshFactory< Carna::base::PNVertex >::createBox( width, height, depth ) );
+            },
+            "width"_a, "height"_a, "depth"_a
+        )
+        .def( "create_ball",
+            []( float radius, unsigned int degree )
+            {
+                return new GeometryFeatureView( Carna::base::MeshFactory< Carna::base::PNVertex >::createBall( radius, degree ) );
+            },
+            "radius"_a, "degree"_a=3
+        )
+        .def( "create_point",
+            []()
+            {
+                return new GeometryFeatureView( Carna::base::MeshFactory< Carna::base::PVertex >::createPoint() );
+            }
+        );
+
+    m.def_submodule( "math" )
+        .def( "ortho", &Carna::base::math::ortho4f, "left"_a, "right"_a, "bottom"_a, "top"_a, "z_near"_a, "z_far"_a )
+        .def( "frustum",
+            py::overload_cast< float, float, float, float, float, float >( &Carna::base::math::frustum4f ),
+            "left"_a, "right"_a, "bottom"_a, "top"_a, "z_near"_a, "z_far"_a
+        )
+        .def( "frustum",
+            py::overload_cast< float, float, float, float >( &Carna::base::math::frustum4f ),
+            "fov"_a, "height_over_width"_a, "z_near"_a, "z_far"_a
+        )
+        .def( "deg2rad", &Carna::base::math::deg2rad, "degrees"_a )
+        .def( "rad2deg", &Carna::base::math::rad2deg, "radians"_a )
+        .def( "rotation", &Carna::base::math::rotation4f< Carna::base::math::Vector3f >, "axis"_a, "radians"_a )
+        .def( "translation", &Carna::base::math::translation4f< Carna::base::math::Vector3f >, "offset"_a )
+        .def( "scaling", &Carna::base::math::scaling4f< float >, "factors"_a )
+        .def( "scaling", static_cast< Carna::base::math::Matrix4f( * )( float ) >( &Carna::base::math::scaling4f ), "uniform_factor"_a )
+        .def( "plane",
+            []( const Carna::base::math::Vector3f& normal, float distance )
+            {
+                return Carna::base::math::plane4f( normal.normalized(), distance );
+            },
+            "normal"_a, "distance"_a
+        )
+        .def( "plane",
+            []( const Carna::base::math::Vector3f& normal, const Carna::base::math::Vector3f& support )
+            {
+                return Carna::base::math::plane4f( normal.normalized(), support );
+            },
+            "normal"_a, "support"_a 
+        );
 
 /*
     py::class_< BlendFunction >( m, "BlendFunction" )
         .def( py::init< int, int >() )
         .def_readonly( "source_factor", &BlendFunction::sourceFactor )
         .def_readonly( "destination_factor", &BlendFunction::destinationFactor );
-
-    m.def( "create_box", []( float width, float height, float depth )
-    {
-        return static_cast< GeometryFeature* >( &MeshFactory< PNVertex >::createBox( width, height, depth ) );
-    }
-    , py::return_value_policy::reference, "width"_a, "height"_a, "depth"_a );
-
-    m.def( "create_point", []()
-    {
-        return static_cast< GeometryFeature* >( &MeshFactory< PVertex >::createPoint() );
-    }
-    , py::return_value_policy::reference );
-
-    m.def( "create_ball", []( float radius, unsigned int degree )
-    {
-        return static_cast< GeometryFeature* >( &MeshFactory< PNVertex >::createBall( radius, degree ) );
-    }
-    , py::return_value_policy::reference, "radius"_a, "degree"_a = 3 );
 */
 
 }
