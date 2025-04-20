@@ -2,6 +2,7 @@
 
 #include <Carna/Carna.h>
 #include <Carna/base/Material.h>
+#include <Carna/base/FrameRenderer.h>
 
 namespace Carna
 {
@@ -11,6 +12,9 @@ namespace py
 
 namespace base
 {
+
+
+class FrameRendererView;
 
 
 
@@ -187,6 +191,58 @@ void MaterialView::setParameter( const std::string& name, const ParameterType& v
 {
     material().setParameter( name, value );
 }
+
+
+
+// ----------------------------------------------------------------------------------
+// RenderStageView
+// ----------------------------------------------------------------------------------
+
+class RenderStageView : public std::enable_shared_from_this< RenderStageView >
+{
+
+public:
+
+    /* The object that owns the render stage of this view. The render Stage of this
+     * view is owned by the view, if it is not owned by any \a FrameRendererView.
+     */
+    std::shared_ptr< FrameRendererView > ownedBy;
+
+    /* The spatial object of this view.
+     */
+    Carna::base::RenderStage* const renderStage;
+
+    explicit RenderStageView( Carna::base::RenderStage* renderStage );
+
+    virtual ~RenderStageView();
+
+}; // RenderStageView
+
+
+
+// ----------------------------------------------------------------------------------
+// FrameRendererView
+// ----------------------------------------------------------------------------------
+
+class FrameRendererView : public std::enable_shared_from_this< FrameRendererView >
+{
+
+public:
+
+    const std::shared_ptr< GLContextView > context;
+
+    Carna::base::FrameRenderer frameRenderer;
+
+    FrameRendererView
+        ( GLContextView& context
+        , const std::vector< RenderStageView* >& renderStages
+        , unsigned int width
+        , unsigned int height
+        , bool fitSquare );
+
+    virtual ~FrameRendererView();
+
+}; // FrameRendererView
 
 
 

@@ -2,10 +2,7 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
-
-#if CARNA_EXTRA_CHECKS
 #include <pybind11/stl.h>
-#endif // CARNA_EXTRA_CHECKS
 
 namespace py = pybind11;
 
@@ -21,8 +18,9 @@ using namespace pybind11::literals; // enables the _a literal
 #include <Carna/base/GLContext.h>
 //#include <Carna/base/MeshFactory.h>
 //#include <Carna/base/ManagedMesh.h>
-//#include <Carna/base/RenderStage.h>
+#include <Carna/base/RenderStage.h>
 //#include <Carna/base/BlendFunction.h>
+#include <Carna/helpers/FrameRendererHelper.h>
 #include <Carna/py/base.h>
 #include <Carna/py/Surface.h>
 
@@ -230,6 +228,82 @@ Carna::base::Material& MaterialView::material()
 
 
 // ----------------------------------------------------------------------------------
+// RenderStageView
+// ----------------------------------------------------------------------------------
+
+RenderStageView::RenderStageView( Carna::base::RenderStage* renderStage )
+    : ownedBy( nullptr )
+    , renderStage( renderStage )
+{
+    #if CARNA_EXTRA_CHECKS
+    debugEvent( renderStage, "created" );
+    #endif // CARNA_EXTRA_CHECKS
+}
+
+
+RenderStageView::~RenderStageView()
+{
+    if( ownedBy.get() == nullptr )
+    {
+        #if CARNA_EXTRA_CHECKS
+        debugEvent( renderStage, "deleted" );
+        #endif // CARNA_EXTRA_CHECKS
+
+        /* The render stage of this view is not owned by any \a FrameRendererView,
+         * thus it is safe to delete the object, when the last reference dies.
+         */
+         delete renderStage;
+    }
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// FrameRendererView
+// ----------------------------------------------------------------------------------
+
+FrameRendererView::FrameRendererView
+        ( GLContextView& context
+        , const std::vector< RenderStageView* >& renderStages
+        , unsigned int width
+        , unsigned int height
+        , bool fitSquare)
+    : context( context.shared_from_this() )
+    , frameRenderer( *( context.context ), width, height, fitSquare )
+{
+    /* Verify that the render stages are not already added to another frame renderer.
+     */
+    for( RenderStageView* renderStage : renderStages )
+    {
+        CARNA_ASSERT_EX( renderStage->ownedBy.get() == nullptr, "Render stage was already added to a frame renderer." );
+    }
+
+    /* Add the render stages to the frame renderer.
+     */
+    Carna::helpers::FrameRendererHelper< > frameRendererHelper( frameRenderer );
+    for( RenderStageView* renderStage : renderStages )
+    {
+        renderStage->ownedBy = this->shared_from_this();
+        frameRendererHelper << renderStage->renderStage;
+    }
+    frameRendererHelper.commit();
+}
+
+
+FrameRendererView::~FrameRendererView()
+{
+    #if CARNA_EXTRA_CHECKS
+    for( std::size_it stageIdx = 0; stageIndex < frameRenderer.stages(); ++stageIndex )
+    {
+        RenderStage* const renderStage = frameRenderer.stageAt( stageIndex );
+        debugEvent( renderStage, "deleted" );
+    }
+    #endif // CARNA_EXTRA_CHECKS
+}
+
+
+
+// ----------------------------------------------------------------------------------
 // PYBIND11_MODULE: base
 // ----------------------------------------------------------------------------------
 
@@ -360,57 +434,62 @@ PYBIND11_MODULE( base, m )
         .def_property_readonly( "height", &Surface::height )
         .def( "begin", &Surface::begin )
         .def( "end", &Surface::end );
+    
+    py::class_< RenderStageView, std::shared_ptr< RenderStageView > >( m, "RenderStage" )
+        .def_property( "enabled",
+            VIEW_DELEGATE( RenderStageView, renderStage->isEnabled() ),
+            VIEW_DELEGATE( RenderStageView, renderStage->setEnabled( enabled ), bool enabled )
+        )
+        .def_property_readonly( "renderer",
+            VIEW_DELEGATE( RenderStageView, ownedBy.get() )
+        );
+
+    py::class_< FrameRendererView, std::shared_ptr< FrameRendererView > >( m, "FrameRenderer" )
+        .def( py::init< GLContextView&, const std::vector< RenderStageView* >&,
+            unsigned int, unsigned int, bool >(), "gl_context"_a, "render_stages"_a, "width"_a, "height"_a, "fit_square"_a = false
+        )
+        .def_property_readonly( "gl_context",
+            VIEW_DELEGATE( FrameRendererView, context.get() )
+        )
+        .def_property_readonly( "width",
+            VIEW_DELEGATE( FrameRendererView, frameRenderer.width() )
+        )
+        .def_property_readonly( "height",
+            VIEW_DELEGATE( FrameRendererView, frameRenderer.height() )
+        )
+        .def( "set_background_color",
+            VIEW_DELEGATE( FrameRendererView, frameRenderer.setBackgroundColor( color ), const Carna::base::Color& color ),
+            "color"_a
+        )
+        .def( "reshape",
+            VIEW_DELEGATE( FrameRendererView,
+                frameRenderer.reshape( width, height ),
+                unsigned int width, unsigned int height
+            ),
+            "width"_a, "height"_a
+        )
+        .def( "reshape",
+            VIEW_DELEGATE( FrameRendererView,
+                frameRenderer.reshape( width, height, fitSquare ),
+                unsigned int width, unsigned int height, bool fitSquare
+            ),
+            "width"_a, "height"_a, "fit_square"_a = false
+        )
+        .def( "render",
+            []( FrameRendererView& self, CameraView& camera, NodeView* root ) {
+                if( root == nullptr )
+                {
+                    self.frameRenderer.render( camera.camera() );
+                }
+                else
+                {
+                    self.frameRenderer.render( camera.camera(), root->node() );
+                }
+            },
+            "camera"_a, "root"_a = nullptr
+        );
 
 /*
-    py::class_< Surface >( m, "Surface" )
-        .def_static( "create", []( const GLContext& glContext, unsigned int width, unsigned int height )
-        {
-            return new Surface( glContext, width, height );
-        }
-        , py::return_value_policy::reference, "glContext"_a, "width"_a, "height"_a )
-        .def_property_readonly( "width", &Surface::width )
-        .def_property_readonly( "height", &Surface::height )
-        .def_property_readonly( "gl_context", []( const Surface& self )
-        {
-            return &self.glContext;
-        }
-        , py::return_value_policy::reference )
-        .def( "begin", &Surface::begin )
-        .def( "end", &Surface__end )
-        .DEF_FREE( Surface );
-
-    py::class_< RenderStage >( m, "RenderStage" )
-        .def_property( "enabled", &RenderStage::isEnabled, &RenderStage::setEnabled )
-        .def_property_readonly( "renderer", py::overload_cast<>( &RenderStage::renderer, py::const_ ) )
-        .DEF_FREE( RenderStage );
-
-    py::class_< RenderStageSequence >( m, "RenderStageSequence" )
-        .def_property_readonly( "stages", &RenderStageSequence::stages )
-        .def( "append_stage", &RenderStageSequence::appendStage )
-        .def( "clear_stages", &RenderStageSequence::clearStages )
-        .def( "stage_at", &RenderStageSequence::stageAt );
-
-    py::class_< FrameRenderer, RenderStageSequence >( m, "FrameRenderer" )
-        .def_static( "create", []( GLContext& glContext, unsigned int width, unsigned int height, bool fitSquare )
-        {
-            return new FrameRenderer( glContext, width, height, fitSquare );
-        }
-        , py::return_value_policy::reference, "glContext"_a, "width"_a, "height"_a, "fitSquare"_a = false )
-        .def_property_readonly( "gl_context", &FrameRenderer::glContext )
-        .def_property_readonly( "width", &FrameRenderer::width )
-        .def_property_readonly( "height", &FrameRenderer::height )
-        .def( "set_background_color", &FrameRenderer::setBackgroundColor )
-        .def( "reshape", py::overload_cast< unsigned int, unsigned int >( &FrameRenderer::reshape ) )
-        .def( "set_fit_square", []( FrameRenderer* self, bool fitSquare )
-        {
-            self->reshape( self->width(), self->height(), fitSquare );
-        }, "fitSquare"_a )
-        .def( "render", []( FrameRenderer* self, Camera& cam, Node* root ){
-            if( root == nullptr ) self->render( cam );
-            else self->render( cam, *root );
-        }, "cam"_a, "root"_a = nullptr )
-        .DEF_FREE( FrameRenderer );
-
     py::class_< BlendFunction >( m, "BlendFunction" )
         .def( py::init< int, int >() )
         .def_readonly( "source_factor", &BlendFunction::sourceFactor )

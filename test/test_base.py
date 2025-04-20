@@ -192,6 +192,7 @@ class Material(testsuite.CarnaTestCase):
         self.material.remove_parameter('color')
         self.assertFalse(self.material.has_parameter('color'))
 
+
 # # ==========================
 # # Math
 # # ==========================
