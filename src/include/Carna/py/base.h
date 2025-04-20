@@ -179,24 +179,6 @@ public:
 }; // MaterialView
 
 
-
-// ----------------------------------------------------------------------------------
-// ManagedMeshView
-// ----------------------------------------------------------------------------------
-
-/*
-class ManagedMeshView : public GeometryFeatureView
-{
-public:
-
-    explicit ManagedMeshView( ManagedMeshBase& managedMesh );
-
-    Carna::base::ManagedMeshBase& managedMesh();
-
-}; // ManagedMeshView
-*/
-
-
 template< typename... Args >
 MaterialView::MaterialView( Args... args )
     : GeometryFeatureView::GeometryFeatureView( Carna::base::Material::create( args... ) )
@@ -239,11 +221,35 @@ public:
 
 
 // ----------------------------------------------------------------------------------
+// MeshRenderingStageView
+// ----------------------------------------------------------------------------------
+
+class MeshRenderingStageView : public Carna::py::base::RenderStageView
+{
+
+public:
+
+    const static unsigned int ROLE_DEFAULT_MESH;
+    const static unsigned int ROLE_DEFAULT_MATERIAL;
+
+    explicit MeshRenderingStageView( Carna::base::RenderStage* renderStage );
+
+}; // MeshRenderingStageView
+
+
+
+// ----------------------------------------------------------------------------------
 // FrameRendererView
 // ----------------------------------------------------------------------------------
 
 class FrameRendererView : public std::enable_shared_from_this< FrameRendererView >
 {
+
+    FrameRendererView
+        ( GLContextView& context
+        , unsigned int width
+        , unsigned int height
+        , bool fitSquare );
 
 public:
 
@@ -251,7 +257,7 @@ public:
 
     Carna::base::FrameRenderer frameRenderer;
 
-    FrameRendererView
+    static std::shared_ptr< FrameRendererView > create
         ( GLContextView& context
         , const std::vector< RenderStageView* >& renderStages
         , unsigned int width

@@ -115,6 +115,7 @@ Carna::egl::EGLContext* Carna::egl::EGLContext::create()
     CARNA_ASSERT( pimpl->eglCtx != EGL_NO_CONTEXT );
 
     pimpl->activate();
+    REPORT_EGL_ERROR;
     return new Carna::egl::EGLContext( pimpl );
 }
 

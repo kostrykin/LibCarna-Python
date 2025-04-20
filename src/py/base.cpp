@@ -1,4 +1,5 @@
 #include <memory>
+#include <iostream> // tmp for debug
 
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
@@ -238,17 +239,41 @@ RenderStageView::~RenderStageView()
 
 
 // ----------------------------------------------------------------------------------
+// MeshRenderingStageView
+// ----------------------------------------------------------------------------------
+
+const unsigned int MeshRenderingStageView::ROLE_DEFAULT_MESH = Carna::base::MeshRenderingStageBase::ROLE_DEFAULT_MESH;
+const unsigned int MeshRenderingStageView::ROLE_DEFAULT_MATERIAL = Carna::base::MeshRenderingStageBase::ROLE_DEFAULT_MATERIAL;
+
+
+MeshRenderingStageView::MeshRenderingStageView( Carna::base::RenderStage* renderStage )
+    : RenderStageView::RenderStageView( renderStage )
+{
+}
+
+
+
+// ----------------------------------------------------------------------------------
 // FrameRendererView
 // ----------------------------------------------------------------------------------
 
 FrameRendererView::FrameRendererView
         ( GLContextView& context
-        , const std::vector< RenderStageView* >& renderStages
         , unsigned int width
         , unsigned int height
         , bool fitSquare)
     : context( context.shared_from_this() )
     , frameRenderer( *( context.context ), width, height, fitSquare )
+{
+}
+
+
+std::shared_ptr< FrameRendererView > FrameRendererView::create
+    ( GLContextView& context
+    , const std::vector< RenderStageView* >& renderStages
+    , unsigned int width
+    , unsigned int height
+    , bool fitSquare)
 {
     /* Verify that the render stages are not already added to another frame renderer.
      */
@@ -256,16 +281,25 @@ FrameRendererView::FrameRendererView
     {
         CARNA_ASSERT_EX( renderStage->ownedBy.get() == nullptr, "Render stage was already added to a frame renderer." );
     }
+    
+    /* Create the frame renderer.
+     */
+    const std::shared_ptr< FrameRendererView > frameRendererView
+    (
+        new FrameRendererView( context, width, height, fitSquare )
+    );
 
     /* Add the render stages to the frame renderer.
      */
-    Carna::helpers::FrameRendererHelper< > frameRendererHelper( frameRenderer );
+    Carna::helpers::FrameRendererHelper< > frameRendererHelper( frameRendererView->frameRenderer );
     for( RenderStageView* renderStage : renderStages )
     {
-        renderStage->ownedBy = this->shared_from_this();
+        renderStage->ownedBy = frameRendererView;
         frameRendererHelper << renderStage->renderStage;
     }
     frameRendererHelper.commit();
+
+    return frameRendererView;
 }
 
 
@@ -454,9 +488,13 @@ PYBIND11_MODULE( base, m )
             VIEW_DELEGATE( RenderStageView, ownedBy.get() )
         );
 
+    py::class_< MeshRenderingStageView, std::shared_ptr< MeshRenderingStageView >, RenderStageView >( m, "MeshRenderingStage" )
+        .def_readonly_static( "ROLE_DEFAULT_MESH", &MeshRenderingStageView::ROLE_DEFAULT_MESH )
+        .def_readonly_static( "ROLE_DEFAULT_MATERIAL", &MeshRenderingStageView::ROLE_DEFAULT_MATERIAL );
+
     py::class_< FrameRendererView, std::shared_ptr< FrameRendererView > >( m, "FrameRenderer" )
-        .def( py::init< GLContextView&, const std::vector< RenderStageView* >&,
-            unsigned int, unsigned int, bool >(), "gl_context"_a, "render_stages"_a, "width"_a, "height"_a, "fit_square"_a = false
+        .def( py::init< >( &FrameRendererView::create ),
+            "gl_context"_a, "render_stages"_a, "width"_a, "height"_a, "fit_square"_a = false
         )
         .def_property_readonly( "gl_context",
             VIEW_DELEGATE( FrameRendererView, context.get() )
@@ -535,7 +573,14 @@ PYBIND11_MODULE( base, m )
         .def( "rad2deg", &Carna::base::math::rad2deg, "radians"_a )
         .def( "rotation", &Carna::base::math::rotation4f< Carna::base::math::Vector3f >, "axis"_a, "radians"_a )
         .def( "translation", &Carna::base::math::translation4f< Carna::base::math::Vector3f >, "offset"_a )
+        .def( "translation",
+            static_cast< Carna::base::math::Matrix4f( * )( float, float, float ) >( &Carna::base::math::translation4f ),
+            "tx"_a, "ty"_a, "tz"_a
+        )
         .def( "scaling", &Carna::base::math::scaling4f< float >, "factors"_a )
+        .def( "scaling",
+            static_cast< Carna::base::math::Matrix4f( * )( float, float, float ) >( &Carna::base::math::scaling4f ),
+            "sx"_a, "sy"_a, "sz"_a )
         .def( "scaling", static_cast< Carna::base::math::Matrix4f( * )( float ) >( &Carna::base::math::scaling4f ), "uniform_factor"_a )
         .def( "plane",
             []( const Carna::base::math::Vector3f& normal, float distance )
@@ -560,4 +605,4 @@ PYBIND11_MODULE( base, m )
 */
 
 }
-#endif // BUILD_base_MODULE
+#endif // BUILD_BASE_MODULE

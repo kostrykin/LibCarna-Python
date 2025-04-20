@@ -88,6 +88,7 @@ include_directories( ${CMAKE_PROJECT_DIR}src/include )
 set( MODULES
         base
         egl
+        presets
     )
 set( PRIVATE_HEADERS
         ""
@@ -98,6 +99,7 @@ set( SRC
         src/py/Surface.cpp
         src/py/base.cpp
         src/py/egl.cpp
+        src/py/presets.cpp
     )
 
 ############################################

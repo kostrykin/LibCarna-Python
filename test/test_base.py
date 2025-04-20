@@ -208,6 +208,15 @@ class MeshFactory(testsuite.CarnaTestCase):
         del point
 
 
+class MeshRenderingStage(testsuite.CarnaTestCase):
+
+    def test(self):
+        self.assertNotEqual(
+            carna.base.MeshRenderingStage.ROLE_DEFAULT_MESH,
+            carna.base.MeshRenderingStage.ROLE_DEFAULT_MATERIAL,
+        )
+
+
 class math(testsuite.CarnaTestCase):
 
     def test__ortho(self):
@@ -304,6 +313,19 @@ class math(testsuite.CarnaTestCase):
     def test__translation__offset_is_list(self):
         np.testing.assert_array_almost_equal(
             carna.base.math.translation(offset=[1, 2, 3]),
+            np.array(
+                [
+                    [1, 0, 0, 1],
+                    [0, 1, 0, 2],
+                    [0, 0, 1, 3],
+                    [0, 0, 0, 1],
+                ],
+            ),
+        )
+
+    def test__translation__offset_is_explicit(self):
+        np.testing.assert_array_almost_equal(
+            carna.base.math.translation(tx=1, ty=2, tz=3),
             np.array(
                 [
                     [1, 0, 0, 1],

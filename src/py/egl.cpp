@@ -37,4 +37,4 @@ PYBIND11_MODULE( egl, m )
         .def( py::init<>() );
 
 }
-#endif // BUILD_egl_MODULE
+#endif // BUILD_EGL_MODULE

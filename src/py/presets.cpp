@@ -5,6 +5,9 @@ namespace py = pybind11;
 
 using namespace pybind11::literals; // enables the _a literal
 
+#include <Carna/base/GLContext.h>
+#include <Carna/py/presets.h>
+/*
 #include <Carna/base/Color.h>
 #include <Carna/base/GLContext.h>
 #include <Carna/base/ManagedMesh.h>
@@ -16,10 +19,13 @@ using namespace pybind11::literals; // enables the _a literal
 #include <Carna/presets/OccludedRenderingStage.h>
 #include <Carna/presets/OpaqueRenderingStage.h>
 #include <Carna/presets/MaskRenderingStage.h>
+*/
 
-using namespace Carna::base;
-using namespace Carna::presets;
+using namespace Carna::py;
+using namespace Carna::py::base;
+using namespace Carna::py::presets;
 
+/*
 void CuttingPlanesStage__set_windowing( CuttingPlanesStage* self, float min, float max )
 {
     const auto level = (min + max) / 2;
@@ -27,10 +33,33 @@ void CuttingPlanesStage__set_windowing( CuttingPlanesStage* self, float min, flo
     self->setWindowingLevel( level );
     self->setWindowingWidth( width );
 }
+*/
 
+
+
+// ----------------------------------------------------------------------------------
+// OpaqueRenderingStageView
+// ----------------------------------------------------------------------------------
+
+OpaqueRenderingStageView::OpaqueRenderingStageView( unsigned int geometryType )
+    : MeshRenderingStageView::MeshRenderingStageView( new Carna::presets::OpaqueRenderingStage( geometryType ) )
+{
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// PYBIND11_MODULE: presets
+// ----------------------------------------------------------------------------------
+
+#ifdef BUILD_PRESETS_MODULE
 PYBIND11_MODULE(presets, m)
 {
 
+    py::class_< OpaqueRenderingStageView, std::shared_ptr< OpaqueRenderingStageView >, MeshRenderingStageView >( m, "OpaqueRenderingStage" )
+        .def( py::init< unsigned int >(), "geometry_type"_a );
+
+    /*
     py::class_< OpaqueRenderingStage, RenderStage >( m, "OpaqueRenderingStage" )
         .def_static( "create", []( unsigned int geometryType )
         {
@@ -39,7 +68,9 @@ PYBIND11_MODULE(presets, m)
         , py::return_value_policy::reference, "geometryType"_a )
         .def_property_readonly_static( "ROLE_DEFAULT_MATERIAL", []( py::object ) { return OpaqueRenderingStage::ROLE_DEFAULT_MATERIAL; } )
         .def_property_readonly_static( "ROLE_DEFAULT_MESH", []( py::object ) { return OpaqueRenderingStage::ROLE_DEFAULT_MESH; } );
+        */
 
+/*
     py::class_< OccludedRenderingStage, RenderStage >( m, "OccludedRenderingStage" )
         .def_static( "create", []()
         {
@@ -139,6 +170,7 @@ PYBIND11_MODULE(presets, m)
                 }
             )
         .def_property( "render_borders", &MaskRenderingStage::renderBorders, &MaskRenderingStage::setRenderBorders );
+*/
 
 }
-
+#endif // BUILD_PRESETS_MODULE
