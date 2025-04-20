@@ -193,10 +193,178 @@ class Material(testsuite.CarnaTestCase):
         self.assertFalse(self.material.has_parameter('color'))
 
 
-# # ==========================
-# # Math
-# # ==========================
+class math(testsuite.CarnaTestCase):
 
-# assert np.allclose(base.math.scaling4f(1, 1, 1), np.eye(4))
-# assert np.allclose(base.math.translation4f(0, 0, 0), np.eye(4))
-# assert np.allclose(base.math.rotation4f([0, 1, 0], 0), np.eye(4))
+    def test__ortho(self):
+        np.testing.assert_array_almost_equal(
+            carna.base.math.ortho(left=-1, right=1, bottom=-1, top=1, z_near=0.1, z_far=1000),
+            np.array(
+                [
+                    [1, 0,  0, 0],
+                    [0, 1,  0, 0],
+                    [0, 0, -0.002, -1.0002],
+                    [0, 0,  0, 1],
+                ],
+            ),
+        )
+
+    def test__frustum(self):
+        np.testing.assert_array_almost_equal(
+            carna.base.math.frustum(left=-1, right=1, bottom=-1, top=1, z_near=0.1, z_far=1000),
+            np.array(
+                [
+                    [0.1, 0  ,  0, 0],
+                    [0  , 0.1,  0, 0],
+                    [0  , 0  , -1.0002, -0.20002],
+                    [0  , 0  , -1, 0],
+                ],
+            ),
+        )
+
+    def test__frustum__by_fov(self):
+        np.testing.assert_array_almost_equal(
+            carna.base.math.frustum(fov=np.pi / 2, height_over_width=1, z_near=0.1, z_far=1000),
+            np.array(
+                [
+                    [1, 0,  0, 0],
+                    [0, 1,  0, 0],
+                    [0, 0, -1.0002, -0.20002],
+                    [0, 0, -1, 0],
+                ],
+            ),
+        )
+
+    def test__deg2rad(self):
+        np.testing.assert_array_almost_equal(
+            carna.base.math.deg2rad(180),
+            np.pi,
+        )
+
+    def test__rad2deg(self):
+        np.testing.assert_array_almost_equal(
+            carna.base.math.rad2deg(np.pi),
+            180,
+            decimal=4,
+        )
+
+    def test__rotation__axis_is_column_vector(self):
+        np.testing.assert_array_almost_equal(
+            carna.base.math.rotation(axis=np.array([[0], [1], [0]]), radians=np.pi),
+            np.array(
+                [
+                    [-1, 0,  0, 0],
+                    [ 0, 1,  0, 0],
+                    [ 0, 0, -1, 0],
+                    [ 0, 0,  0, 1],
+                ],
+            ),
+        )
+
+    def test__rotation__axis_is_list(self):
+        np.testing.assert_array_almost_equal(
+            carna.base.math.rotation(axis=[0, 1, 0], radians=np.pi),
+            np.array(
+                [
+                    [-1, 0,  0, 0],
+                    [ 0, 1,  0, 0],
+                    [ 0, 0, -1, 0],
+                    [ 0, 0,  0, 1],
+                ],
+            ),
+        )
+
+    def test__translation__offset_is_column_vector(self):
+        np.testing.assert_array_almost_equal(
+            carna.base.math.translation(offset=np.array([[1], [2], [3]])),
+            np.array(
+                [
+                    [1, 0, 0, 1],
+                    [0, 1, 0, 2],
+                    [0, 0, 1, 3],
+                    [0, 0, 0, 1],
+                ],
+            ),
+        )
+
+    def test__translation__offset_is_list(self):
+        np.testing.assert_array_almost_equal(
+            carna.base.math.translation(offset=[1, 2, 3]),
+            np.array(
+                [
+                    [1, 0, 0, 1],
+                    [0, 1, 0, 2],
+                    [0, 0, 1, 3],
+                    [0, 0, 0, 1],
+                ],
+            ),
+        )
+
+    def test__scaling__offset_is_column_vector(self):
+        np.testing.assert_array_almost_equal(
+            carna.base.math.scaling(factors=np.array([[1], [2], [3]])),
+            np.array(
+                [
+                    [1, 0, 0, 0],
+                    [0, 2, 0, 0],
+                    [0, 0, 3, 0],
+                    [0, 0, 0, 1],
+                ],
+            ),
+        )
+
+    def test__scaling__offset_is_list(self):
+        np.testing.assert_array_almost_equal(
+            carna.base.math.scaling(factors=[1, 2, 3]),
+            np.array(
+                [
+                    [1, 0, 0, 0],
+                    [0, 2, 0, 0],
+                    [0, 0, 3, 0],
+                    [0, 0, 0, 1],
+                ],
+            ),
+        )
+
+    def test__scaling__uniform_factor(self):
+        f = 2.5
+        np.testing.assert_array_almost_equal(
+            carna.base.math.scaling(uniform_factor=f),
+            np.array(
+                [
+                    [f, 0, 0, 0],
+                    [0, f, 0, 0],
+                    [0, 0, f, 0],
+                    [0, 0, 0, 1],
+                ],
+            ),
+        )
+
+    def test__plane__by_distance(self):
+        np.testing.assert_array_almost_equal(
+            carna.base.math.plane(normal=[0, 2, 0], distance=2),
+            np.array(
+                [
+                    [0, -1, 0, 0],
+                    [0,  0, 1, 2],
+                    [1,  0, 0, 0],
+                    [0,  0, 0, 1],
+                ],
+            ),
+        )
+
+    def test__plane__by_support(self):
+        np.testing.assert_array_almost_equal(
+            carna.base.math.plane(normal=[0, 2, 0], support=[0, 2, 0]),
+            np.array(
+                [
+                    [0, -1, 0, 0],
+                    [0,  0, 1, 2],
+                    [1,  0, 0, 0],
+                    [0,  0, 0, 1],
+                ],
+            ),
+        )
+
+    def test__plane__zero_normal(self):
+        with self.assertRaises(RuntimeError):
+            carna.base.math.plane(normal=[0, 0, 0], distance=0)

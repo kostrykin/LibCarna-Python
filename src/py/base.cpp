@@ -30,28 +30,6 @@ using namespace Carna::py::base;
 
 
 
-/*
-template< typename VectorElementType , int dimension >
-Eigen::Matrix< float, dimension, 1 > normalized( const Eigen::Matrix< VectorElementType, dimension, 1 >& vector )
-{
-    const float length = std::sqrt( static_cast< float >( math::length2( vector ) ) );
-    if( length > 0 ) return vector / length;
-    else return vector;
-}
-
-math::Matrix4f math__plane4f_by_distance( const math::Vector3f& normal, float distance )
-{
-    return math::plane4f( normalized( normal ), distance );
-}
-
-math::Matrix4f math__plane4f_by_support( const math::Vector3f& normal, const math::Vector3f& support )
-{
-    return math::plane4f( normalized( normal ), support );
-}
-*/
-
-
-
 // ----------------------------------------------------------------------------------
 // debugEvents
 // ----------------------------------------------------------------------------------
@@ -521,6 +499,35 @@ PYBIND11_MODULE( base, m )
             "camera"_a, "root"_a = nullptr
         );
 
+    py::module math = m.def_submodule( "math" );
+    math.def( "ortho", &Carna::base::math::ortho4f, "left"_a, "right"_a, "bottom"_a, "top"_a, "z_near"_a, "z_far"_a );
+    math.def( "frustum",
+        py::overload_cast< float, float, float, float, float, float >( &Carna::base::math::frustum4f ),
+        "left"_a, "right"_a, "bottom"_a, "top"_a, "z_near"_a, "z_far"_a
+    );
+    math.def( "frustum",
+        py::overload_cast< float, float, float, float >( &Carna::base::math::frustum4f ),
+        "fov"_a, "height_over_width"_a, "z_near"_a, "z_far"_a
+    );
+    math.def( "deg2rad", &Carna::base::math::deg2rad, "degrees"_a );
+    math.def( "rad2deg", &Carna::base::math::rad2deg, "radians"_a );
+    math.def( "rotation", &Carna::base::math::rotation4f< Carna::base::math::Vector3f >, "axis"_a, "radians"_a );
+    math.def( "translation", &Carna::base::math::translation4f< Carna::base::math::Vector3f >, "offset"_a );
+    math.def( "scaling", &Carna::base::math::scaling4f< float >, "factors"_a );
+    math.def( "scaling", static_cast< Carna::base::math::Matrix4f( * )( float ) >( &Carna::base::math::scaling4f ), "uniform_factor"_a );
+    math.def( "plane",
+        []( const Carna::base::math::Vector3f& normal, float distance )
+        {
+            return Carna::base::math::plane4f( normal.normalized(), distance );
+        },
+        "normal"_a, "distance"_a );
+    math.def( "plane",
+        []( const Carna::base::math::Vector3f& normal, const Carna::base::math::Vector3f& support )
+        {
+            return Carna::base::math::plane4f( normal.normalized(), support );
+        },
+        "normal"_a, "support"_a );
+
 /*
     py::class_< BlendFunction >( m, "BlendFunction" )
         .def( py::init< int, int >() )
@@ -544,16 +551,6 @@ PYBIND11_MODULE( base, m )
         return static_cast< GeometryFeature* >( &MeshFactory< PNVertex >::createBall( radius, degree ) );
     }
     , py::return_value_policy::reference, "radius"_a, "degree"_a = 3 );
-
-    py::module math = m.def_submodule( "math" );
-    math.def( "ortho4f", &math::ortho4f );
-    math.def( "frustum4f", py::overload_cast< float, float, float, float >( &math::frustum4f ) );
-    math.def( "deg2rad", &math::deg2rad );
-    math.def( "rotation4f", static_cast< math::Matrix4f( * )( const math::Vector3f&, float ) >( &math::rotation4f ) );
-    math.def( "translation4f", static_cast< math::Matrix4f( * )( float, float, float ) >( &math::translation4f ) );
-    math.def( "scaling4f", static_cast< math::Matrix4f( * )( float, float, float ) >( &math::scaling4f ) );
-    math.def( "plane4f", math__plane4f_by_distance );
-    math.def( "plane4f", math__plane4f_by_support );
 */
 
 }
