@@ -94,9 +94,10 @@ set( PRIVATE_HEADERS
     )
 set( SRC
         src/egl/EGLContext.cpp
+        src/py/Log.cpp
+        src/py/Surface.cpp
         src/py/base.cpp
         src/py/egl.cpp
-        src/py/Surface.cpp
     )
 
 ############################################

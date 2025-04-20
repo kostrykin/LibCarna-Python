@@ -23,6 +23,7 @@ using namespace pybind11::literals; // enables the _a literal
 #include <Carna/helpers/FrameRendererHelper.h>
 #include <Carna/py/base.h>
 #include <Carna/py/Surface.h>
+#include <Carna/py/Log.h>
 
 using namespace Carna::py;
 using namespace Carna::py::base;
@@ -304,6 +305,26 @@ FrameRendererView::~FrameRendererView()
 
 
 // ----------------------------------------------------------------------------------
+// configureCarnaLog
+// ----------------------------------------------------------------------------------
+
+static void configureCarnaLog( bool enabled )
+{
+    if( enabled )
+    {
+        // TODO: use ::py::print to print log messages to `sys.stdout` so they can be tested
+        // https://pybind11.readthedocs.io/en/stable/advanced/pycpp/utilities.html#using-python-s-print-function-in-c
+        Carna::base::Log::instance().setWriter( new Carna::base::Log::StdWriter() );
+    }
+    else
+    {
+        Carna::base::Log::instance().setWriter( new NullWriter() );
+    }
+}
+
+
+
+// ----------------------------------------------------------------------------------
 // PYBIND11_MODULE: base
 // ----------------------------------------------------------------------------------
 
@@ -318,10 +339,9 @@ FrameRendererView::~FrameRendererView()
 PYBIND11_MODULE( base, m )
 {
 
-    //py::register_exception< AssertionFailure >( m, "AssertionFailure" );  // error: 'const class Carna::base::AssertionFailure' has no member named 'what'
-
     #if CARNA_EXTRA_CHECKS
-    m.def( "debug_events", []()->std::vector< std::string >
+    m.def( "debug_events",
+        []()->std::vector< std::string >
         {
             auto debugEvents0 = debugEvents;
             debugEvents.clear();
@@ -329,6 +349,18 @@ PYBIND11_MODULE( base, m )
         }
     );
     #endif // CARNA_EXTRA_CHECKS
+
+    //py::register_exception< AssertionFailure >( m, "AssertionFailure" );  // error: 'const class Carna::base::AssertionFailure' has no member named 'what'
+
+    configureCarnaLog( false );
+
+    m.def( "configure_carna_log",
+        []( bool enabled )
+        {
+            configureCarnaLog( enabled );
+        },
+        "enabled"_a = true
+    );
 
     py::class_< GLContextView, std::shared_ptr< GLContextView > >( m, "GLContext" );
 
