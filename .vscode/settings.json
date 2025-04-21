@@ -1,5 +1,8 @@
 {
     "python.analysis.extraPaths": [
         "./build/make_release"
-    ]
+    ],
+    "files.readonlyInclude": {
+        "build/**": true,
+    }
 }
