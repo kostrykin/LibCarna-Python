@@ -14,6 +14,11 @@ configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/testsuite.py
     ${CMAKE_CURRENT_BINARY_DIR}/../testsuite.py COPYONLY )
 
+execute_process(
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_CURRENT_SOURCE_DIR}/results
+    ${CMAKE_CURRENT_BINARY_DIR}/../test/results )
+
 foreach( TEST_FILE ${TEST_FILES} )
     configure_file(
         ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_FILE}.py

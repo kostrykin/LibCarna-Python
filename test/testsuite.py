@@ -36,6 +36,9 @@ class CarnaRenderingTestCase(CarnaTestCase):
         if isinstance(expected, str):
             expected = pathlib.Path('test/results/expected') / expected
             expected = plt.imread(str(expected))
+            expected = expected[:, :, :3]  # Ignore alpha channel if present
+            if np.issubdtype(expected.dtype, np.floating):
+                expected = (expected * 255).astype(np.uint8)
         np.testing.assert_array_almost_equal(actual, expected, decimal=decimal)
 
     def assert_image_almost_expected(self, actual, **kwargs):
