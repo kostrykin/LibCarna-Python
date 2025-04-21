@@ -257,14 +257,7 @@ public:
         , unsigned int height
         , bool fitSquare );
 
-    /*
-    static std::shared_ptr< FrameRendererView > create
-        ( GLContextView& context
-        , const std::vector< RenderStageView* >& renderStages
-        , unsigned int width
-        , unsigned int height
-        , bool fitSquare );
-    */
+    void appendStage( const std::shared_ptr< RenderStageView >& rsView );
 
     virtual ~FrameRendererView();
 

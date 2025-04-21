@@ -31,7 +31,7 @@ public:
 
     void add_stage( const std::shared_ptr< Carna::py::base::RenderStageView >& stage );
 
-    void commit( bool clear = true );
+    void commit();
 
     void reset();
 

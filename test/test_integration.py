@@ -41,17 +41,29 @@ class FrameRenderer(testsuite.CarnaTestCase):
                 self.assertEqual(self.frame_renderer.width, 801 + tidx)
                 self.assertEqual(self.frame_renderer.height, 601 + tidx)
 
-    def test__render(self):
+    def test__render__without_stages(self):
         root = carna.base.Node()
         camera = carna.base.Camera()
         root.attach_child(camera)
         self.frame_renderer.render(camera)
 
-    def test__render__with_root(self):
+    def test__render__without_stages__with_root(self):
         root = carna.base.Node()
         camera = carna.base.Camera()
         root.attach_child(camera)
         self.frame_renderer.render(camera, root)
+
+    def test__append_stage(self):
+        opaque = carna.presets.OpaqueRenderingStage(0)
+        self.frame_renderer.append_stage(opaque)
+
+    def test__render(self):
+        opaque = carna.presets.OpaqueRenderingStage(0)
+        self.frame_renderer.append_stage(opaque)
+        root = carna.base.Node()
+        camera = carna.base.Camera()
+        root.attach_child(camera)
+        self.frame_renderer.render(camera)
 
 
 class OpaqueRenderingStage(testsuite.CarnaRenderingTestCase):

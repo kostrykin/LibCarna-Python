@@ -1,5 +1,4 @@
 #include <memory>
-#include <iostream> // tmp for debug
 
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
@@ -268,41 +267,17 @@ FrameRendererView::FrameRendererView
 }
 
 
-#if 0
-std::shared_ptr< FrameRendererView > FrameRendererView::create
-    ( GLContextView& context
-    , const std::vector< RenderStageView* >& renderStages
-    , unsigned int width
-    , unsigned int height
-    , bool fitSquare)
+void FrameRendererView::appendStage( const std::shared_ptr< RenderStageView >& rsView )
 {
-    /* Verify that the render stages are not already added to another frame renderer.
+    /* Verify that the render stage was not already added to another frame renderer.
      */
-    for( RenderStageView* renderStage : renderStages )
-    {
-        CARNA_ASSERT_EX( renderStage->ownedBy.get() == nullptr, "Render stage was already added to a frame renderer." );
-    }
-    
-    /* Create the frame renderer.
-     */
-    const std::shared_ptr< FrameRendererView > frameRendererView
-    (
-        new FrameRendererView( context, width, height, fitSquare )
-    );
+    CARNA_ASSERT_EX( rsView->ownedBy.get() == nullptr, "Render stage was already added to a frame renderer." );
 
-    /* Add the render stages to the frame renderer.
+    /* Add the render stage to the frame renderer (and take ownership).
      */
-    Carna::helpers::FrameRendererHelper< > frameRendererHelper( frameRendererView->frameRenderer );
-    for( RenderStageView* renderStage : renderStages )
-    {
-        renderStage->ownedBy = frameRendererView;
-        frameRendererHelper << renderStage->renderStage;
-    }
-    frameRendererHelper.commit();
-
-    return frameRendererView;
+    rsView->ownedBy = this->shared_from_this();
+    frameRenderer.appendStage( rsView->renderStage );
 }
-#endif
 
 
 FrameRendererView::~FrameRendererView()
@@ -497,6 +472,10 @@ PYBIND11_MODULE( base, m )
     py::class_< FrameRendererView, std::shared_ptr< FrameRendererView > >( m, "FrameRenderer" )
         .def( py::init< GLContextView&, unsigned int, unsigned int, bool >(),
             "gl_context"_a, "width"_a, "height"_a, "fit_square"_a = false
+        )
+        .def( "append_stage",
+            &FrameRendererView::appendStage,
+            "stage"_a
         )
         .def_property_readonly( "gl_context",
             VIEW_DELEGATE( FrameRendererView, context.get() )

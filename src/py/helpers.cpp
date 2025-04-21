@@ -82,7 +82,7 @@ void FrameRendererHelperView::reset()
 }
 
 
-void FrameRendererHelperView::commit( bool clear )
+void FrameRendererHelperView::commit()
 {
     /* Verify that the render stages are not already added to another frame renderer.
      */
@@ -91,7 +91,11 @@ void FrameRendererHelperView::commit( bool clear )
         CARNA_ASSERT_EX( rsView->ownedBy.get() == nullptr, "Render stage was already added to a frame renderer." );
     }
     
-    /* Add the render stages to the frame renderer.
+    /* Add the render stages to the frame renderer (that also takes the ownership).
+     * 
+     * Note that there might be still `RenderStageView` objects around, that reference
+     * the render stages that are currently inside the targeted frame renderer. Hence,
+     * we are not allowed to clear the frame renderer here.
      */
     Carna::helpers::FrameRendererHelper< > frameRendererHelper( frameRendererView->frameRenderer );
     for( const std::shared_ptr< Carna::py::base::RenderStageView >& rsView : stages )
@@ -99,7 +103,8 @@ void FrameRendererHelperView::commit( bool clear )
         rsView->ownedBy = frameRendererView;
         frameRendererHelper << rsView->renderStage;
     }
-    frameRendererHelper.commit( clear );
+
+    frameRendererHelper.commit( false );
 }
 
 
@@ -120,7 +125,7 @@ PYBIND11_MODULE( helpers, m )
     py::class_< FrameRendererHelperView >( m, "FrameRendererHelper" )
         .def( py::init< const std::shared_ptr< FrameRendererView >& >() )
         .def( "add_stage", &FrameRendererHelperView::add_stage, "stage"_a )
-        .def( "commit", &FrameRendererHelperView::commit, "clear"_a = true )
+        .def( "commit", &FrameRendererHelperView::commit )
         .def( "reset", &FrameRendererHelperView::reset );
 
     /*
