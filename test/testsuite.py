@@ -1,8 +1,12 @@
 import gc
+import pathlib
 import unittest
 
 import faulthandler
 faulthandler.enable()
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 import carna
 
@@ -22,6 +26,28 @@ class CarnaTestCase(unittest.TestCase):
             memory_leaks, double_frees = analyze_debug_events(debug_events)
             self.assertEqual(memory_leaks, 0, f"Memory leaks detected: {memory_leaks}")
             self.assertEqual(double_frees, 0, f"Double frees detected: {double_frees}")
+
+
+class CarnaRenderingTestCase(CarnaTestCase):
+
+    def assert_image_almost_equal(self, actual, expected, decimal=5):
+        if isinstance(actual, str):
+            actual = plt.imread(actual)
+        if isinstance(expected, str):
+            expected = pathlib.Path('test/results/expected') / expected
+            expected = plt.imread(str(expected))
+        np.testing.assert_array_almost_equal(actual, expected, decimal=decimal)
+
+    def assert_image_almost_expected(self, actual, **kwargs):
+        expected = f'{self.id()}.png'
+        try:
+            self.assert_image_almost_equal(actual, expected, **kwargs)
+        except:
+            actual_path = pathlib.Path('test/results/actual') / f'{expected}'
+            actual_path.parent.mkdir(parents=True, exist_ok=True)
+            plt.imsave(actual_path, actual)
+            print(f'Test result was written to: {actual_path.resolve()}')
+            raise
 
 
 def analyze_debug_events(debug_events):
