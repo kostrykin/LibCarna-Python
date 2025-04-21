@@ -1,20 +1,17 @@
 import numpy as np
 
 import carna
-import carna.egl
-import carna.presets
-import carna.helpers
 import testsuite
 
-carna.base.configure_carna_log(True)
+carna.configure_carna_log(True)
 
 
 class FrameRenderer(testsuite.CarnaTestCase):
 
     def setUp(self):
         super().setUp()
-        self.ctx = carna.egl.EGLContext()
-        self.frame_renderer = carna.base.FrameRenderer(self.ctx, 800, 600)
+        self.ctx = carna.egl_context()
+        self.frame_renderer = carna.frame_renderer(self.ctx, 800, 600)
 
     def tearDown(self):
         del self.ctx
@@ -42,26 +39,24 @@ class FrameRenderer(testsuite.CarnaTestCase):
                 self.assertEqual(self.frame_renderer.height, 601 + tidx)
 
     def test__render__without_stages(self):
-        root = carna.base.Node()
-        camera = carna.base.Camera()
-        root.attach_child(camera)
+        root = carna.node()
+        camera = carna.camera(parent=root)
         self.frame_renderer.render(camera)
 
     def test__render__without_stages__with_root(self):
-        root = carna.base.Node()
-        camera = carna.base.Camera()
-        root.attach_child(camera)
+        root = carna.node()
+        camera = carna.camera(parent=root)
         self.frame_renderer.render(camera, root)
 
     def test__append_stage(self):
-        opaque = carna.presets.OpaqueRenderingStage(0)
+        opaque = carna.opaque_rendering_stage(0)
         self.frame_renderer.append_stage(opaque)
 
     def test__render(self):
-        opaque = carna.presets.OpaqueRenderingStage(0)
+        opaque = carna.opaque_rendering_stage(0)
         self.frame_renderer.append_stage(opaque)
-        root = carna.base.Node()
-        camera = carna.base.Camera()
+        root = carna.node()
+        camera = carna.camera()
         root.attach_child(camera)
         self.frame_renderer.render(camera)
 
@@ -72,47 +67,42 @@ class OpaqueRenderingStage(testsuite.CarnaRenderingTestCase):
 
     def setUp(self):
         super().setUp()
-        self.ctx = carna.egl.EGLContext()
+        self.ctx = carna.egl_context()
 
     def tearDown(self):
         del self.ctx
         super().tearDown()
 
     def test(self):
-        surface = carna.base.Surface(self.ctx, 800, 600)
+        surface = carna.surface(self.ctx, 800, 600)
 
         # Create and configure frame renderer
-        renderer = carna.base.FrameRenderer(self.ctx, surface.width, surface.height)
-        opaque = carna.presets.OpaqueRenderingStage(self.GEOMETRY_TYPE_OPAQUE)
-        renderer_helper = carna.helpers.FrameRendererHelper(renderer)
+        renderer = carna.frame_renderer(self.ctx, surface.width, surface.height)
+        opaque = carna.opaque_rendering_stage(self.GEOMETRY_TYPE_OPAQUE)
+        renderer_helper = carna.frame_renderer_helper(renderer)
         renderer_helper.add_stage(opaque)
         renderer_helper.commit()
 
         # Create mesh
-        box_mesh  = carna.base.MeshFactory.create_box(40, 40, 40)
+        box_mesh  = carna.mesh_factory.create_box(40, 40, 40)
 
         # Create and configure materials
-        material1 = carna.base.Material('unshaded')
-        material2 = carna.base.Material('unshaded')
-        material1['color'] = [1, 0, 0, 1]
-        material2['color'] = [0, 1, 0, 1]
+        material1 = carna.material('unshaded', color=[1, 0, 0, 1])
+        material2 = carna.material('unshaded', color=[0, 1, 0, 1])
 
         # Create and configure scene
-        box1 = carna.base.Geometry(self.GEOMETRY_TYPE_OPAQUE)
-        box2 = carna.base.Geometry(self.GEOMETRY_TYPE_OPAQUE)
-        box1.put_feature(opaque.ROLE_DEFAULT_MESH, box_mesh)
-        box1.put_feature(opaque.ROLE_DEFAULT_MATERIAL, material1)
-        box2.put_feature(opaque.ROLE_DEFAULT_MESH, box_mesh)
-        box2.put_feature(opaque.ROLE_DEFAULT_MATERIAL, material2)
-        root = carna.base.Node()
-        root.attach_child(box1)
-        root.attach_child(box2)
-        box1.local_transform = carna.base.math.translation(-10, -10, -40)
-        box2.local_transform = carna.base.math.translation(+10, +10, +40)
-        camera = carna.base.Camera()
-        root.attach_child(camera)
-        camera.projection = carna.base.math.frustum(np.pi / 2, 1, 10, 200)
-        camera.local_transform = carna.base.math.translation(0, 0, 250)
+        root = carna.node()
+        box1 = carna.geometry(self.GEOMETRY_TYPE_OPAQUE, parent=root)
+        box2 = carna.geometry(self.GEOMETRY_TYPE_OPAQUE, parent=root)
+        box1[opaque.ROLE_DEFAULT_MESH] = box_mesh
+        box1[opaque.ROLE_DEFAULT_MATERIAL] = material1
+        box2[opaque.ROLE_DEFAULT_MESH] = box_mesh
+        box2[opaque.ROLE_DEFAULT_MATERIAL] = material2
+        box1.local_transform = carna.math.translation(-10, -10, -40)
+        box2.local_transform = carna.math.translation(+10, +10, +40)
+        camera = carna.camera(parent=root)
+        camera.projection = carna.math.frustum(np.pi / 2, 1, 10, 200)
+        camera.local_transform = carna.math.translation(0, 0, 250)
 
         # Render scene
         surface.begin()

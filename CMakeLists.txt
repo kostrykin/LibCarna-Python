@@ -80,6 +80,9 @@ set( CARNA_VERSION ${FOUND_VERSION} )
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/misc/__init__.py.in
                 ${CMAKE_CURRENT_BINARY_DIR}/carna/__init__.py @ONLY )
 
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/misc/py.py
+                ${CMAKE_CURRENT_BINARY_DIR}/carna/py.py COPYONLY )
+
 ############################################
 # Project
 ############################################

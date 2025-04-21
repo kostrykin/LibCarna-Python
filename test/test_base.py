@@ -1,6 +1,6 @@
 import numpy as np
 
-import carna
+import carna.base
 import testsuite
 
 
