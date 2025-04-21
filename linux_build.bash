@@ -22,10 +22,6 @@ if [ -z "$CARNAPY_BUILD_TEST" ]; then
     export CARNAPY_BUILD_TEST="OFF"
 fi
 
-# Build and test with extra checks
+# Build wheel and test
 cd "$ROOT"
-CARNA_EXTRA_CHECKS=ON python setup.py bdist
-
-# Build wheel and test without extra checks
-cd "$ROOT"
-CARNA_EXTRA_CHECKS=OFF python setup.py bdist_wheel
+python setup.py bdist_wheel

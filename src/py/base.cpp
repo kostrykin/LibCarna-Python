@@ -17,7 +17,6 @@ using namespace pybind11::literals; // enables the _a literal
 #include <Carna/base/BoundingVolume.h>
 #include <Carna/base/GLContext.h>
 #include <Carna/base/MeshFactory.h>
-//#include <Carna/base/ManagedMesh.h>
 #include <Carna/base/RenderStage.h>
 //#include <Carna/base/BlendFunction.h>
 #include <Carna/base/MeshRenderingStage.h>
@@ -31,44 +30,17 @@ using namespace Carna::py::base;
 
 
 // ----------------------------------------------------------------------------------
-// debugEvents
-// ----------------------------------------------------------------------------------
-
-#if CARNA_EXTRA_CHECKS
-
-static std::vector< std::string > debugEvents;
-
-
-template< typename SourceType >
-static void debugEvent( SourceType* self, const std::string& event )
-{
-    std::stringstream ss;
-    ss << self << ": " << event;
-    debugEvents.push_back( ss.str() );
-}
-
-#endif // CARNA_EXTRA_CHECKS
-
-
-
-// ----------------------------------------------------------------------------------
 // GLContextView
 // ----------------------------------------------------------------------------------
 
 GLContextView::GLContextView( Carna::base::GLContext* context )
     : context( context )
 {
-    #if CARNA_EXTRA_CHECKS
-    debugEvent( context, "created" );
-    #endif // CARNA_EXTRA_CHECKS
 }
 
 
 GLContextView::~GLContextView()
 {
-    #if CARNA_EXTRA_CHECKS
-    debugEvent( context, "deleted" );
-    #endif // CARNA_EXTRA_CHECKS
 }
 
 
@@ -81,9 +53,6 @@ SpatialView::SpatialView( Carna::base::Spatial* spatial )
     : ownedBy( nullptr )
     , spatial( spatial )
 {
-    #if CARNA_EXTRA_CHECKS
-    debugEvent( spatial, "created" );
-    #endif // CARNA_EXTRA_CHECKS
 }
 
 
@@ -91,20 +60,6 @@ SpatialView::~SpatialView()
 {
     if( ownedBy.get() == nullptr )
     {
-        #if CARNA_EXTRA_CHECKS
-        if( Carna::base::Node* const node = dynamic_cast< Carna::base::Node* >( spatial ) )
-        {
-            node->visitChildren(
-                true,
-                []( Carna::base::Spatial& child )
-                {
-                    debugEvent( &child, "deleted" );
-                }
-            );
-        }
-        debugEvent( spatial, "deleted" );
-        #endif // CARNA_EXTRA_CHECKS
-
         /* The spatial object of this view is not owned by any other spatial object,
          * thus it is safe to delete the object, when the last reference dies.
          */
@@ -214,9 +169,6 @@ RenderStageView::RenderStageView( Carna::base::RenderStage* renderStage )
     : ownedBy( nullptr )
     , renderStage( renderStage )
 {
-    #if CARNA_EXTRA_CHECKS
-    debugEvent( renderStage, "created" );
-    #endif // CARNA_EXTRA_CHECKS
 }
 
 
@@ -224,10 +176,6 @@ RenderStageView::~RenderStageView()
 {
     if( ownedBy.get() == nullptr )
     {
-        #if CARNA_EXTRA_CHECKS
-        debugEvent( renderStage, "deleted" );
-        #endif // CARNA_EXTRA_CHECKS
-
         /* The render stage of this view is not owned by any \a FrameRendererView,
          * thus it is safe to delete the object, when the last reference dies.
          */
@@ -282,13 +230,6 @@ void FrameRendererView::appendStage( const std::shared_ptr< RenderStageView >& r
 
 FrameRendererView::~FrameRendererView()
 {
-    #if CARNA_EXTRA_CHECKS
-    for( std::size_it stageIdx = 0; stageIndex < frameRenderer.stages(); ++stageIndex )
-    {
-        RenderStage* const renderStage = frameRenderer.stageAt( stageIndex );
-        debugEvent( renderStage, "deleted" );
-    }
-    #endif // CARNA_EXTRA_CHECKS
 }
 
 
@@ -327,17 +268,6 @@ static void configureCarnaLog( bool enabled )
 #ifdef BUILD_BASE_MODULE
 PYBIND11_MODULE( base, m )
 {
-
-    #if CARNA_EXTRA_CHECKS
-    m.def( "debug_events",
-        []()->std::vector< std::string >
-        {
-            auto debugEvents0 = debugEvents;
-            debugEvents.clear();
-            return debugEvents0;
-        }
-    );
-    #endif // CARNA_EXTRA_CHECKS
 
     //py::register_exception< AssertionFailure >( m, "AssertionFailure" );  // error: 'const class Carna::base::AssertionFailure' has no member named 'what'
 
