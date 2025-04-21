@@ -100,11 +100,11 @@ void Surface::begin() const
 }
 
 
-pybind11::array Surface::end() const
+pybind11::array_t< unsigned char > Surface::end() const
 {
-    pimpl->glContext.makeCurrent();
+    pimpl->grabFrame();
     pimpl->fboBinding.reset();
-    const unsigned char* pixelData = pimpl->frame.get();
+    const unsigned char* const pixelData = pimpl->frame.get();
 
     pybind11::buffer_info buf; // performs flipping
     buf.itemsize = sizeof( unsigned char );
@@ -112,7 +112,7 @@ pybind11::array Surface::end() const
     buf.ndim     = 3;
     buf.shape    = { height(), width(), 3 };
     buf.strides  = { -buf.itemsize * 3 * width(), buf.itemsize * 3, buf.itemsize };
-    buf.ptr      = const_cast< unsigned char* >( pixelData ) + buf.itemsize * 3 * width() * (height() - 1);
+    buf.ptr      = const_cast< unsigned char* >( pixelData ) + buf.itemsize * 3 * width() * ( height() - 1 );
     return pybind11::array( buf );
 }
 

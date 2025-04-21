@@ -41,7 +41,7 @@ public:
 
     void begin() const;
 
-    pybind11::array end() const;
+    pybind11::array_t< unsigned char > end() const;
 
     const std::size_t& size;
 
