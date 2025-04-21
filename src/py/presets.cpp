@@ -53,7 +53,7 @@ OpaqueRenderingStageView::OpaqueRenderingStageView( unsigned int geometryType )
 // ----------------------------------------------------------------------------------
 
 #ifdef BUILD_PRESETS_MODULE
-PYBIND11_MODULE(presets, m)
+PYBIND11_MODULE( presets, m )
 {
 
     py::class_< OpaqueRenderingStageView, std::shared_ptr< OpaqueRenderingStageView >, MeshRenderingStageView >( m, "OpaqueRenderingStage" )

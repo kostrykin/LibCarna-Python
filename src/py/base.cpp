@@ -21,7 +21,7 @@ using namespace pybind11::literals; // enables the _a literal
 //#include <Carna/base/ManagedMesh.h>
 #include <Carna/base/RenderStage.h>
 //#include <Carna/base/BlendFunction.h>
-#include <Carna/helpers/FrameRendererHelper.h>
+#include <Carna/base/MeshRenderingStage.h>
 #include <Carna/py/base.h>
 #include <Carna/py/Surface.h>
 #include <Carna/py/Log.h>
@@ -268,6 +268,7 @@ FrameRendererView::FrameRendererView
 }
 
 
+#if 0
 std::shared_ptr< FrameRendererView > FrameRendererView::create
     ( GLContextView& context
     , const std::vector< RenderStageView* >& renderStages
@@ -301,6 +302,7 @@ std::shared_ptr< FrameRendererView > FrameRendererView::create
 
     return frameRendererView;
 }
+#endif
 
 
 FrameRendererView::~FrameRendererView()
@@ -493,8 +495,8 @@ PYBIND11_MODULE( base, m )
         .def_readonly_static( "ROLE_DEFAULT_MATERIAL", &MeshRenderingStageView::ROLE_DEFAULT_MATERIAL );
 
     py::class_< FrameRendererView, std::shared_ptr< FrameRendererView > >( m, "FrameRenderer" )
-        .def( py::init< >( &FrameRendererView::create ),
-            "gl_context"_a, "render_stages"_a, "width"_a, "height"_a, "fit_square"_a = false
+        .def( py::init< GLContextView&, unsigned int, unsigned int, bool >(),
+            "gl_context"_a, "width"_a, "height"_a, "fit_square"_a = false
         )
         .def_property_readonly( "gl_context",
             VIEW_DELEGATE( FrameRendererView, context.get() )

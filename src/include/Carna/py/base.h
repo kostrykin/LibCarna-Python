@@ -245,24 +245,26 @@ public:
 class FrameRendererView : public std::enable_shared_from_this< FrameRendererView >
 {
 
-    FrameRendererView
-        ( GLContextView& context
-        , unsigned int width
-        , unsigned int height
-        , bool fitSquare );
-
 public:
 
     const std::shared_ptr< GLContextView > context;
 
     Carna::base::FrameRenderer frameRenderer;
 
+    FrameRendererView
+        ( GLContextView& context
+        , unsigned int width
+        , unsigned int height
+        , bool fitSquare );
+
+    /*
     static std::shared_ptr< FrameRendererView > create
         ( GLContextView& context
         , const std::vector< RenderStageView* >& renderStages
         , unsigned int width
         , unsigned int height
         , bool fitSquare );
+    */
 
     virtual ~FrameRendererView();
 

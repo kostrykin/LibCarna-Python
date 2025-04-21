@@ -3,6 +3,7 @@ import numpy as np
 import carna
 import carna.egl
 import carna.presets
+import carna.helpers
 import testsuite
 
 carna.base.configure_carna_log(True)
@@ -13,7 +14,7 @@ class FrameRenderer(testsuite.CarnaTestCase):
     def setUp(self):
         super().setUp()
         self.ctx = carna.egl.EGLContext()
-        self.frame_renderer = carna.base.FrameRenderer(self.ctx, list(), 800, 600)
+        self.frame_renderer = carna.base.FrameRenderer(self.ctx, 800, 600)
 
     def tearDown(self):
         del self.ctx
@@ -69,8 +70,11 @@ class OpaqueRenderingStage(testsuite.CarnaRenderingTestCase):
         surface = carna.base.Surface(self.ctx, 800, 600)
 
         # Create and configure frame renderer
+        renderer = carna.base.FrameRenderer(self.ctx, surface.width, surface.height)
         opaque = carna.presets.OpaqueRenderingStage(self.GEOMETRY_TYPE_OPAQUE)
-        renderer = carna.base.FrameRenderer(self.ctx, [opaque], surface.width, surface.height)
+        renderer_helper = carna.helpers.FrameRendererHelper(renderer)
+        renderer_helper.add_stage(opaque)
+        renderer_helper.commit()
 
         # Create mesh
         box_mesh  = carna.base.MeshFactory.create_box(40, 40, 40)

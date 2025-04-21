@@ -89,9 +89,7 @@ set( MODULES
         base
         egl
         presets
-    )
-set( PRIVATE_HEADERS
-        ""
+        helpers
     )
 set( SRC
         src/egl/EGLContext.cpp
@@ -100,6 +98,7 @@ set( SRC
         src/py/base.cpp
         src/py/egl.cpp
         src/py/presets.cpp
+        src/py/helpers.cpp
     )
 
 ############################################

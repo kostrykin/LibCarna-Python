@@ -5,6 +5,9 @@ namespace py = pybind11;
 
 using namespace pybind11::literals; // enables the _a literal
 
+#include <Carna/py/helpers.h>
+#include <Carna/helpers/FrameRendererHelper.h>
+/*
 #include <Carna/base/glew.h>
 #include <Carna/base/Color.h>
 #include <Carna/base/Geometry.h>
@@ -12,9 +15,11 @@ using namespace pybind11::literals; // enables the _a literal
 #include <Carna/helpers/FrameRendererHelper.h>
 #include <Carna/helpers/PointMarkerHelper.h>
 #include <Carna/helpers/VolumeGridHelper.h>
+*/
 
-using namespace Carna::base;
-using namespace Carna::helpers;
+using namespace Carna::py;
+using namespace Carna::py::base;
+using namespace Carna::py::helpers;
 
 
 
@@ -22,6 +27,7 @@ using namespace Carna::helpers;
 // defineVolumeGridHelper
 // ----------------------------------------------------------------------------------
 
+/*
 template< typename VolumeGridHelperType, typename Module >
 void defineVolumeGridHelper( Module& m, const char* name )
 {
@@ -50,6 +56,51 @@ void defineVolumeGridHelper( Module& m, const char* name )
         .def( "release_geometry_features", &VolumeGridHelperType::releaseGeometryFeatures )
         .DEF_FREE( VolumeGridHelperType );
 }
+*/
+
+
+
+// ----------------------------------------------------------------------------------
+// FrameRendererHelperView
+// ----------------------------------------------------------------------------------
+
+FrameRendererHelperView::FrameRendererHelperView( const std::shared_ptr< Carna::py::base::FrameRendererView >& frameRendererView )
+    : frameRendererView( frameRendererView )
+{
+}
+
+
+void FrameRendererHelperView::add_stage( const std::shared_ptr< Carna::py::base::RenderStageView >& stage )
+{
+    stages.push_back( stage );
+}
+
+
+void FrameRendererHelperView::reset()
+{
+    stages.clear();
+}
+
+
+void FrameRendererHelperView::commit( bool clear )
+{
+    /* Verify that the render stages are not already added to another frame renderer.
+     */
+    for( const std::shared_ptr< Carna::py::base::RenderStageView >& rsView : stages )
+    {
+        CARNA_ASSERT_EX( rsView->ownedBy.get() == nullptr, "Render stage was already added to a frame renderer." );
+    }
+    
+    /* Add the render stages to the frame renderer.
+     */
+    Carna::helpers::FrameRendererHelper< > frameRendererHelper( frameRendererView->frameRenderer );
+    for( const std::shared_ptr< Carna::py::base::RenderStageView >& rsView : stages )
+    {
+        rsView->ownedBy = frameRendererView;
+        frameRendererHelper << rsView->renderStage;
+    }
+    frameRendererHelper.commit( clear );
+}
 
 
 
@@ -57,11 +108,22 @@ void defineVolumeGridHelper( Module& m, const char* name )
 // PYBIND11_MODULE: helpers
 // ----------------------------------------------------------------------------------
 
+/*
 const static auto VolumeGridHelperBase__DEFAULT_MAX_SEGMENT_BYTESIZE = ([](){ return VolumeGridHelperBase::DEFAULT_MAX_SEGMENT_BYTESIZE; })();
+*/
 
-PYBIND11_MODULE(helpers, m)
+
+#ifdef BUILD_HELPERS_MODULE
+PYBIND11_MODULE( helpers, m )
 {
 
+    py::class_< FrameRendererHelperView >( m, "FrameRendererHelper" )
+        .def( py::init< const std::shared_ptr< FrameRendererView >& >() )
+        .def( "add_stage", &FrameRendererHelperView::add_stage, "stage"_a )
+        .def( "commit", &FrameRendererHelperView::commit, "clear"_a = true )
+        .def( "reset", &FrameRendererHelperView::reset );
+
+    /*
     const static auto PointMarkerHelper__DEFAULT_POINT_SIZE = ([](){ return PointMarkerHelper::DEFAULT_POINT_SIZE; })();
 
     py::class_< PointMarkerHelper >( m, "PointMarkerHelper" )
@@ -112,6 +174,7 @@ PYBIND11_MODULE(helpers, m)
         .def( "add_stage", &FrameRendererHelper< >::operator<< )
         .def( "reset", &FrameRendererHelper< >::reset )
         .def( "commit", &FrameRendererHelper< >::commit, "clear"_a = true );
+    */
 
 }
-
+#endif // BUILD_HELPERS_MODULE
