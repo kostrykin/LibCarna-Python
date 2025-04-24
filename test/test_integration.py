@@ -65,23 +65,11 @@ class OpaqueRenderingStage(testsuite.CarnaRenderingTestCase):
 
     GEOMETRY_TYPE_OPAQUE = 1
 
-    def setUp(self):
-        super().setUp()
-        self.ctx = carna.egl_context()
-
-    def tearDown(self):
-        del self.ctx
-        super().tearDown()
-
     def test(self):
-        surface = carna.surface(self.ctx, 800, 600)
 
         # Create and configure frame renderer
-        renderer = carna.frame_renderer(self.ctx, surface.width, surface.height)
         opaque = carna.opaque_rendering_stage(self.GEOMETRY_TYPE_OPAQUE)
-        renderer_helper = carna.frame_renderer_helper(renderer)
-        renderer_helper.add_stage(opaque)
-        renderer_helper.commit()
+        renderer = carna.renderer(800, 600, [opaque])
 
         # Create mesh
         box_mesh  = carna.mesh_factory.create_box(40, 40, 40)
@@ -105,9 +93,7 @@ class OpaqueRenderingStage(testsuite.CarnaRenderingTestCase):
         camera.local_transform = carna.math.translation(0, 0, 250)
 
         # Render scene
-        surface.begin()
-        renderer.render(camera)
-        result = surface.end()
+        result = renderer.render(camera)
 
         # Verify result
         self.assert_image_almost_expected(result)

@@ -1,4 +1,5 @@
 import re
+from typing import Iterable
 
 import carna.base
 import carna.egl
@@ -73,6 +74,32 @@ def material(shader_name: str, **kwargs):
     for key, value in kwargs.items():
         material[key] = value
     return material
+
+
+def renderer(width: int, height: int, stages: Iterable[carna.base.RenderStage], ctx: carna.base.GLContext | None = None):
+    if ctx is None:
+        ctx = carna.egl_context()
+    surface = carna.surface(ctx, width, height)
+    frame_renderer = carna.frame_renderer(ctx, surface.width, surface.height)
+
+    # Add stages to the frame renderer
+    renderer_helper = None
+    for stage in stages:
+        if renderer_helper is None:
+            renderer_helper = carna.frame_renderer_helper(frame_renderer)
+        renderer_helper.add_stage(stage)
+    if renderer_helper is not None:
+        renderer_helper.commit()
+
+    # Build wrapper class that hides the frame renderer (so that it cannot be reshaped, because this would require a new surface)
+    class Renderer:
+
+        def render(self, camera: carna.base.Camera, root: carna.base.Node | None = None):
+            surface.begin()
+            frame_renderer.render(camera, root)
+            return surface.end()
+
+    return Renderer()
 
 
 _expand_module(carna.base)
