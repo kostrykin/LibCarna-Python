@@ -9,3 +9,6 @@ API
 
    carna
    carna.base
+   carna.egl
+   carna.helpers
+   carna.presets

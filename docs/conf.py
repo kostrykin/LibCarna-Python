@@ -7,3 +7,8 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',
 ]
+
+import os
+import sys
+
+sys.path.append(os.environ['CARNA_PYTHON_PATH'])

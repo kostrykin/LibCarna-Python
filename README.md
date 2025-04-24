@@ -67,7 +67,7 @@ docker run --rm --gpus all -p 8890:8890 -t -i kostrykin/carnapy:<TAG>
 
 There is a build script for Ubuntu Linux which builds a wheel file:
 ```bash
-sh linux_build.sh
+CARNAPY_BUILD_TEST=ON ./linux_build.bash
 ```
 Adaption to other distribution should be self-explanatory.
 

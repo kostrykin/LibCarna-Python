@@ -1,5 +1,6 @@
 /.env
 /build
+/docs/build
 /dist
 /CarnaPy.egg-info
 /misc/conda-recipe/carnapy
