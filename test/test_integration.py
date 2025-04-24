@@ -72,7 +72,7 @@ class OpaqueRenderingStage(testsuite.CarnaRenderingTestCase):
         renderer = carna.renderer(800, 600, [opaque])
 
         # Create mesh
-        box_mesh  = carna.mesh_factory.create_box(40, 40, 40)
+        box_mesh = carna.mesh_factory.create_box(40, 40, 40)
 
         # Create and configure materials
         material1 = carna.material('unshaded', color=[1, 0, 0, 1])
@@ -80,17 +80,29 @@ class OpaqueRenderingStage(testsuite.CarnaRenderingTestCase):
 
         # Create and configure scene
         root = carna.node()
-        box1 = carna.geometry(self.GEOMETRY_TYPE_OPAQUE, parent=root)
-        box2 = carna.geometry(self.GEOMETRY_TYPE_OPAQUE, parent=root)
-        box1[opaque.ROLE_DEFAULT_MESH] = box_mesh
-        box1[opaque.ROLE_DEFAULT_MATERIAL] = material1
-        box2[opaque.ROLE_DEFAULT_MESH] = box_mesh
-        box2[opaque.ROLE_DEFAULT_MATERIAL] = material2
-        box1.local_transform = carna.math.translation(-10, -10, -40)
-        box2.local_transform = carna.math.translation(+10, +10, +40)
-        camera = carna.camera(parent=root)
-        camera.projection = carna.math.frustum(np.pi / 2, 1, 10, 200)
-        camera.local_transform = carna.math.translation(0, 0, 250)
+        carna.geometry(
+            self.GEOMETRY_TYPE_OPAQUE,
+            parent=root,
+            local_transform=carna.math.translation(-10, -10, -40),
+            features={
+                opaque.ROLE_DEFAULT_MESH: box_mesh,
+                opaque.ROLE_DEFAULT_MATERIAL: material1,
+            },
+        )
+        carna.geometry(
+            self.GEOMETRY_TYPE_OPAQUE,
+            parent=root,
+            local_transform=carna.math.translation(+10, +10, +40),
+            features={
+                opaque.ROLE_DEFAULT_MESH: box_mesh,
+                opaque.ROLE_DEFAULT_MATERIAL: material2,
+            },
+        )
+        camera = carna.camera(
+            parent=root,
+            projection=carna.math.frustum(np.pi / 2, 1, 10, 200),
+            local_transform=carna.math.translation(0, 0, 250),
+        )
 
         # Render scene
         result = renderer.render(camera)

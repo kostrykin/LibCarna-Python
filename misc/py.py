@@ -30,12 +30,18 @@ def _expand_module(module):
         globals()[target_name] = member
 
 
+def _setup_spatial(spatial, parent: carna.base.Node | None = None, **kwargs):
+    if parent is not None:
+        parent.attach_child(spatial)
+    for key, value in kwargs.items():
+        setattr(spatial, key, value)
+
+
 def _create_spatial_factory(spatial_type_name):
     spatial_type = getattr(carna.base, spatial_type_name)
-    def spatial_factory(*args, parent=None, **kwargs):
-        spatial = spatial_type(*args, **kwargs)
-        if parent is not None:
-            parent.attach_child(spatial)
+    def spatial_factory(*args, parent: carna.base.Node | None = None, **kwargs):
+        spatial = spatial_type(*args)
+        _setup_spatial(spatial, parent, **kwargs)
         return spatial
     return spatial_factory
 
@@ -44,7 +50,7 @@ node = _create_spatial_factory('Node')
 camera = _create_spatial_factory('Camera')
 
 
-def geometry(geometry_type: int, tag: str = '', parent: carna.base.Node | None = None):
+def geometry(geometry_type: int, *args, parent: carna.base.Node | None = None, features: dict | None = None, **kwargs):
     class Geometry(carna.base.Geometry):
 
         def __init__(self, *args, **kwargs):
@@ -53,9 +59,10 @@ def geometry(geometry_type: int, tag: str = '', parent: carna.base.Node | None =
         def __setitem__(self, key, value):
             super().put_feature(key, value)
 
-    geometry = Geometry(geometry_type, tag)
-    if parent is not None:
-        parent.attach_child(geometry)
+    geometry = Geometry(geometry_type, *args)
+    _setup_spatial(geometry, parent, **kwargs)
+    for key, value in (features or dict()).items():
+        geometry[key] = value
     return geometry
 
 
