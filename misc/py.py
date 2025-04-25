@@ -40,6 +40,9 @@ def _setup_spatial(spatial, parent: carna.base.Node | None = None, **kwargs):
 def _create_spatial_factory(spatial_type_name):
     spatial_type = getattr(carna.base, spatial_type_name)
     def spatial_factory(*args, parent: carna.base.Node | None = None, **kwargs):
+        f"""
+        Create a {spatial_type_name} object.
+        """
         spatial = spatial_type(*args)
         _setup_spatial(spatial, parent, **kwargs)
         return spatial
@@ -51,6 +54,9 @@ camera = _create_spatial_factory('Camera')
 
 
 def geometry(geometry_type: int, *args, parent: carna.base.Node | None = None, features: dict | None = None, **kwargs):
+    """
+    Create a :class:`carna.base.Geometry` object.
+    """
     class Geometry(carna.base.Geometry):
 
         def __init__(self, *args, **kwargs):
@@ -67,6 +73,9 @@ def geometry(geometry_type: int, *args, parent: carna.base.Node | None = None, f
 
 
 def material(shader_name: str, **kwargs):
+    """
+    Create a :class:`carna.base.Material` object.
+    """
     class Material(carna.base.Material):
 
         def __init__(self, *args, **kwargs):
@@ -84,6 +93,15 @@ def material(shader_name: str, **kwargs):
 
 
 def renderer(width: int, height: int, stages: Iterable[carna.base.RenderStage], ctx: carna.base.GLContext | None = None):
+    """
+    Creates a renderer, that conveniently combines a :class:`frame_renderer` and a :class:`surface`.
+
+    Arguments:
+        width: Horizontal rendering resolution.
+        height: Vertical rendering resolution.
+        stages: List of stages to be added to the frame renderer.
+        ctx: OpenGL context to be used for rendering. If `None`, a new :class:`egl_context` will be created.
+    """
     if ctx is None:
         ctx = carna.egl_context()
     surface = carna.surface(ctx, width, height)

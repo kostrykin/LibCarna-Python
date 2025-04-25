@@ -27,10 +27,8 @@ cd "$ROOT"
 python setup.py bdist_wheel
 
 # Optionally, build the documentation
-if [ -z "$CARNAPY_BUILD_DOCS" ]; then
+if [ -v CARNAPY_BUILD_DOCS ]; then
     pip install -r docs/requirements.txt
     export CARNA_PYTHON_PATH="$ROOT/build/make_release"
     sphinx-build -M html docs docs/build
-    #cd "$ROOT/build/make_release"
-    #sphinx-build -M html ../../docs ../../docs/build
 fi
