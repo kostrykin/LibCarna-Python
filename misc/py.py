@@ -1,5 +1,5 @@
 import re
-from typing import Iterable
+from typing import Iterable, Protocol
 
 import carna.base
 import carna.egl
@@ -92,9 +92,18 @@ def material(shader_name: str, **kwargs):
     return material
 
 
+class Renderer(Protocol):
+
+    def render(self, camera: carna.base.Camera, root: carna.base.Node | None = None):
+        """
+        Render the scene.
+        """
+        ...
+
+
 def renderer(width: int, height: int, stages: Iterable[carna.base.RenderStage], ctx: carna.base.GLContext | None = None):
     """
-    Creates a renderer, that conveniently combines a :class:`frame_renderer` and a :class:`surface`.
+    Creates a :class:`Renderer`, that conveniently combines a :class:`frame_renderer` and a :class:`surface`.
 
     Arguments:
         width: Horizontal rendering resolution.
@@ -117,14 +126,14 @@ def renderer(width: int, height: int, stages: Iterable[carna.base.RenderStage], 
         renderer_helper.commit()
 
     # Build wrapper class that hides the frame renderer (so that it cannot be reshaped, because this would require a new surface)
-    class Renderer:
+    class _Renderer(Renderer):
 
         def render(self, camera: carna.base.Camera, root: carna.base.Node | None = None):
             surface.begin()
             frame_renderer.render(camera, root)
             return surface.end()
 
-    return Renderer()
+    return _Renderer()
 
 
 _expand_module(carna.base)

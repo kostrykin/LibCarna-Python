@@ -6,3 +6,4 @@ carna
    :members:
    :undoc-members:
    :show-inheritance:
+   :exclude-members: Protocol
