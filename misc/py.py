@@ -1,5 +1,7 @@
 import re
-from typing import Iterable, Protocol
+from typing import Iterable
+
+import numpy as np
 
 import carna.base
 import carna.egl
@@ -92,18 +94,9 @@ def material(shader_name: str, **kwargs):
     return material
 
 
-class Renderer(Protocol):
-
-    def render(self, camera: carna.base.Camera, root: carna.base.Node | None = None):
-        """
-        Render the scene.
-        """
-        ...
-
-
-def renderer(width: int, height: int, stages: Iterable[carna.base.RenderStage], ctx: carna.base.GLContext | None = None):
+class renderer:
     """
-    Creates a :class:`Renderer`, that conveniently combines a :class:`frame_renderer` and a :class:`surface`.
+    Creates a renderer, that conveniently combines a :class:`frame_renderer` and a :class:`surface`.
 
     Arguments:
         width: Horizontal rendering resolution.
@@ -111,29 +104,35 @@ def renderer(width: int, height: int, stages: Iterable[carna.base.RenderStage], 
         stages: List of stages to be added to the frame renderer.
         ctx: OpenGL context to be used for rendering. If `None`, a new :class:`egl_context` will be created.
     """
-    if ctx is None:
-        ctx = carna.egl_context()
-    surface = carna.surface(ctx, width, height)
-    frame_renderer = carna.frame_renderer(ctx, surface.width, surface.height)
 
-    # Add stages to the frame renderer
-    renderer_helper = None
-    for stage in stages:
-        if renderer_helper is None:
-            renderer_helper = carna.frame_renderer_helper(frame_renderer)
-        renderer_helper.add_stage(stage)
-    if renderer_helper is not None:
-        renderer_helper.commit()
+    def __init__(self, width: int, height: int, stages: Iterable[carna.base.RenderStage], ctx: carna.base.GLContext | None = None):
+        if ctx is None:
+            ctx = carna.egl_context()
+        surface = carna.surface(ctx, width, height)
+        frame_renderer = carna.frame_renderer(ctx, surface.width, surface.height)
 
-    # Build wrapper class that hides the frame renderer (so that it cannot be reshaped, because this would require a new surface)
-    class _Renderer(Renderer):
+        # Add stages to the frame renderer
+        renderer_helper = None
+        for stage in stages:
+            if renderer_helper is None:
+                renderer_helper = carna.frame_renderer_helper(frame_renderer)
+            renderer_helper.add_stage(stage)
+        if renderer_helper is not None:
+            renderer_helper.commit()
 
-        def render(self, camera: carna.base.Camera, root: carna.base.Node | None = None):
+        # Build method that hides the frame renderer (so that it cannot be reshaped, because this would require a new surface)
+        def render(camera: carna.base.Camera, root: carna.base.Node | None = None) -> np.ndarray:
             surface.begin()
             frame_renderer.render(camera, root)
             return surface.end()
 
-    return _Renderer()
+        self.render = render
+
+    def render(self, camera: carna.base.Camera, root: carna.base.Node | None = None) -> np.ndarray:
+        """
+        Renders scene `root` from `camera` point of view to a NumPy array.
+        """
+        ...
 
 
 _expand_module(carna.base)
