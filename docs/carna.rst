@@ -17,7 +17,7 @@ These can be used to, for example, quickly assemble a scene of multiple objects,
 Note on ``GEOMETRY_TYPE_OPAQUE``: A *geometry type* is an arbitrary integer constant, that establishes a relation
 between the geometry nodes of a scene graph, and the corresponding rendering stages (see below for details).
 
-This is the image ``array``rendered in the example:
+This is the image ``array`` rendered in the example:
 
 .. image:: ../test/results/expected/test_integration.OpaqueRenderingStage.test.png
    :width: 400
