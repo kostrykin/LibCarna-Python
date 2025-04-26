@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Carna/Carna.h>
+#include <Carna/base/Node.h>
 #include <Carna/base/Material.h>
 #include <Carna/base/FrameRenderer.h>
 
@@ -74,6 +75,8 @@ public:
 
     template< typename... Args >
     explicit NodeView( Args... args );
+
+    explicit NodeView( Carna::base::Node* node );
 
     Carna::base::Node& node();
 

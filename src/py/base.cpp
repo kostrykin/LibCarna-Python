@@ -9,7 +9,6 @@ namespace py = pybind11;
 using namespace pybind11::literals; // enables the _a literal
 
 #include <Carna/base/FrameRenderer.h>
-#include <Carna/base/Node.h>
 #include <Carna/base/Camera.h>
 #include <Carna/base/Geometry.h>
 #include <Carna/base/GeometryFeature.h>
@@ -72,6 +71,12 @@ SpatialView::~SpatialView()
 // ----------------------------------------------------------------------------------
 // NodeView
 // ----------------------------------------------------------------------------------
+
+NodeView::NodeView( Carna::base::Node* node )
+    : SpatialView::SpatialView( node )
+{
+}
+
 
 Carna::base::Node& NodeView::node()
 {

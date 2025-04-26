@@ -4,6 +4,23 @@ import carna
 import testsuite
 
 
+class VolumeGridHelper_IntensityVolumeUInt16(testsuite.CarnaTestCase):
+
+    def test(self):
+        np.random.seed(0)
+        data = np.random.rand(64, 64, 20)
+        helper = carna.helpers.VolumeGridHelper_IntensityVolumeUInt16(
+            native_resolution=data.shape,
+        )
+        helper.load_intensities(data)
+        node = helper.create_node(
+            geometry_type=1,
+            spacing=carna.helpers.VolumeGridHelper_IntensityVolumeUInt16.Spacing((0.1, 0.1, 0.2)),
+        )
+        root = carna.node()
+        root.attach_child(node)
+
+
 class FrameRenderer(testsuite.CarnaTestCase):
 
     def setUp(self):

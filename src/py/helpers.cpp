@@ -95,9 +95,27 @@ void defineVolumeGridHelper( VolumeGridHelperClass& cls )
                 );
             }
             , "intensity_data"_a )
+        .def(
+            "create_node",
+            []( VolumeGridHelperType& self, unsigned int geometryType, const Carna::helpers::VolumeGridHelperBase::Spacing& spacing )
+            {
+                return new NodeView( self.createNode( geometryType, spacing ) );
+            },
+            "geometry_type"_a, "spacing"_a
+        )
+        .def(
+            "create_node",
+            []( VolumeGridHelperType& self, unsigned int geometryType, const Carna::helpers::VolumeGridHelperBase::Dimensions& dimensions )
+            {
+                return new NodeView( self.createNode( geometryType, dimensions ) );
+            },
+            "geometry_type"_a, "dimensions"_a
+        )
         /*
         .def( "create_node", py::overload_cast< unsigned int, const VolumeGridHelperBase::Spacing& >( &VolumeGridHelperType::createNode, py::const_ ), py::return_value_policy::reference )
         .def( "create_node", py::overload_cast< unsigned int, const VolumeGridHelperBase::Dimensions& >( &VolumeGridHelperType::createNode, py::const_ ), py::return_value_policy::reference )
+        */
+        /*
         .def( "release_geometry_features", &VolumeGridHelperType::releaseGeometryFeatures )
         .DEF_FREE( VolumeGridHelperType );
         */
@@ -176,16 +194,16 @@ PYBIND11_MODULE( helpers, m )
         .def( "commit", &FrameRendererHelperView::commit )
         .def( "reset", &FrameRendererHelperView::reset );
 
-    py::class_< Carna::helpers::VolumeGridHelperBase >( m, "VolumeGridHelperBase" )
+    auto VolumeGridHelperBase = py::class_< Carna::helpers::VolumeGridHelperBase >( m, "VolumeGridHelperBase" )
         .def_readonly_static( "DEFAULT_MAX_SEGMENT_BYTESIZE", &VolumeGridHelperBase__DEFAULT_MAX_SEGMENT_BYTESIZE )
         .def_readonly( "native_resolution", &Carna::helpers::VolumeGridHelperBase::nativeResolution );
 
-    py::class_< Carna::helpers::VolumeGridHelperBase::Spacing >( m, "Spacing" )
+    py::class_< Carna::helpers::VolumeGridHelperBase::Spacing >( VolumeGridHelperBase, "Spacing" )
         .def( py::init< const Carna::base::math::Vector3f& >() )
         .def_readwrite( "millimeters", &Carna::helpers::VolumeGridHelperBase::Spacing::millimeters )
         .doc() = "Specifies the spacing between two adjacent voxel centers.";
 
-    py::class_< Carna::helpers::VolumeGridHelperBase::Dimensions >( m, "Dimensions" )
+    py::class_< Carna::helpers::VolumeGridHelperBase::Dimensions >( VolumeGridHelperBase, "Dimensions" )
         .def( py::init< const Carna::base::math::Vector3f& >() )
         .def_readwrite( "millimeters", &Carna::helpers::VolumeGridHelperBase::Dimensions::millimeters )
         .doc() = "Specifies the spatial size of the whole dataset.";

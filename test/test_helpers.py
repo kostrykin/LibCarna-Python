@@ -35,6 +35,20 @@ class VolumeGridHelper:
         helper = self.create_with_max_segment_bytesize()
         helper.load_intensities(data)
 
+    def test__create_node__with_spacing(self):
+        helper = self.create()
+        helper.create_node(
+            geometry_type=1,
+            spacing=self.VolumeGridHelper.Spacing((0.1, 0.1, 0.2)),
+        )
+
+    def test__create_node__with_dimensions(self):
+        helper = self.create()
+        helper.create_node(
+            geometry_type=1,
+            dimensions=self.VolumeGridHelper.Dimensions((100, 100, 80)),
+        )
+
 
 class VolumeGridHelper_IntensityComponent:
 
