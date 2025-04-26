@@ -263,13 +263,6 @@ static void configureLog( bool enabled )
 // PYBIND11_MODULE: base
 // ----------------------------------------------------------------------------------
 
-#define VIEW_DELEGATE( ViewType, delegate, ... ) \
-    []( ViewType& self __VA_OPT__( , __VA_ARGS__ ) ) \
-    { \
-        return self.delegate; \
-    }
-
-
 #ifdef BUILD_BASE_MODULE
 PYBIND11_MODULE( base, m )
 {

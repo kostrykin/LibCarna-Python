@@ -17,3 +17,4 @@ dependencies:
   - pyyaml
   - setuptools
   - matplotlib-base  # for tests
+  - scipy  # for tests

@@ -6,6 +6,7 @@ namespace py = pybind11;
 using namespace pybind11::literals; // enables the _a literal
 
 #include <Carna/base/GLContext.h>
+#include <Carna/presets/MaskRenderingStage.h>
 #include <Carna/py/presets.h>
 /*
 #include <Carna/base/Color.h>
@@ -18,7 +19,6 @@ using namespace pybind11::literals; // enables the _a literal
 #include <Carna/presets/MIPStage.h>
 #include <Carna/presets/OccludedRenderingStage.h>
 #include <Carna/presets/OpaqueRenderingStage.h>
-#include <Carna/presets/MaskRenderingStage.h>
 */
 
 using namespace Carna::py;
@@ -49,6 +49,45 @@ OpaqueRenderingStageView::OpaqueRenderingStageView( unsigned int geometryType )
 
 
 // ----------------------------------------------------------------------------------
+// VolumeRenderingStageView
+// ----------------------------------------------------------------------------------
+
+const unsigned int VolumeRenderingStageView::DEFAULT_SAMPLE_RATE = Carna::presets::VolumeRenderingStage::DEFAULT_SAMPLE_RATE;
+
+
+VolumeRenderingStageView::VolumeRenderingStageView( Carna::presets::VolumeRenderingStage* renderStage )
+    : RenderStageView::RenderStageView( renderStage )
+{
+}
+
+
+Carna::presets::VolumeRenderingStage& VolumeRenderingStageView::volumeRenderingStage()
+{
+    return static_cast< Carna::presets::VolumeRenderingStage& >( *renderStage );
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// MaskRenderingStageView
+// ----------------------------------------------------------------------------------
+
+MaskRenderingStageView::MaskRenderingStageView( unsigned int geometryType, unsigned int maskRole )
+    : VolumeRenderingStageView::VolumeRenderingStageView(
+        new Carna::presets::MaskRenderingStage( geometryType, maskRole )
+    )
+{
+}
+
+
+Carna::presets::MaskRenderingStage& MaskRenderingStageView::maskRenderingStage()
+{
+    return static_cast< Carna::presets::MaskRenderingStage& >( *renderStage );
+}
+
+
+
+// ----------------------------------------------------------------------------------
 // PYBIND11_MODULE: presets
 // ----------------------------------------------------------------------------------
 
@@ -56,18 +95,49 @@ OpaqueRenderingStageView::OpaqueRenderingStageView( unsigned int geometryType )
 PYBIND11_MODULE( presets, m )
 {
 
-    py::class_< OpaqueRenderingStageView, std::shared_ptr< OpaqueRenderingStageView >, MeshRenderingStageView >( m, "OpaqueRenderingStage" )
+    /* OpaqueRenderingStage
+     */
+    py::class_< OpaqueRenderingStageView, std::shared_ptr< OpaqueRenderingStageView >, MeshRenderingStageView >(
+        m, "OpaqueRenderingStage"
+    )
         .def( py::init< unsigned int >(), "geometry_type"_a );
 
-    /*
-    py::class_< OpaqueRenderingStage, RenderStage >( m, "OpaqueRenderingStage" )
-        .def_static( "create", []( unsigned int geometryType )
-        {
-            return new OpaqueRenderingStage( geometryType );
-        }
-        , py::return_value_policy::reference, "geometryType"_a )
-        .def_property_readonly_static( "ROLE_DEFAULT_MATERIAL", []( py::object ) { return OpaqueRenderingStage::ROLE_DEFAULT_MATERIAL; } )
-        .def_property_readonly_static( "ROLE_DEFAULT_MESH", []( py::object ) { return OpaqueRenderingStage::ROLE_DEFAULT_MESH; } );
+    /* VolumeRenderingStage
+     */
+    py::class_< VolumeRenderingStageView, std::shared_ptr< VolumeRenderingStageView >, RenderStageView >(
+        m, "VolumeRenderingStage"
+    )
+        .def_readonly_static( "DEFAULT_SAMPLE_RATE", &VolumeRenderingStageView::DEFAULT_SAMPLE_RATE )
+        .def_property( "sample_rate",
+            VIEW_DELEGATE( VolumeRenderingStageView, volumeRenderingStage().sampleRate() ),
+            VIEW_DELEGATE( VolumeRenderingStageView, volumeRenderingStage().setSampleRate( sampleRate ), unsigned int sampleRate )
+        );
+    
+    /* MaskRenderingStage
+     */
+    py::class_< MaskRenderingStageView, std::shared_ptr< MaskRenderingStageView >, VolumeRenderingStageView >(
+        m, "MaskRenderingStage"
+    )
+        .def(
+            py::init< unsigned int, unsigned int >(),
+            "geometry_type"_a, "mask_role"_a = Carna::presets::MaskRenderingStage::DEFAULT_ROLE_MASK
+        );
+        /*
+        .def_readonly( "mask_role", &MaskRenderingStage::maskRole )
+        .def_property_readonly_static( "DEFAULT_COLOR", []( py::object ) { return MaskRenderingStage::DEFAULT_COLOR; } )
+        .def_property_readonly_static( "DEFAULT_ROLE_MASK", []( py::object ) { return MaskRenderingStage::DEFAULT_ROLE_MASK; } )
+        .def_property
+            ( "color"
+            , []( MaskRenderingStage* self ) -> math::Vector4f
+                {
+                    return self->color();
+                }
+            , []( MaskRenderingStage* self, const math::Vector4f& color )
+                {
+                    self->setColor( color );
+                }
+            )
+        .def_property( "render_borders", &MaskRenderingStage::renderBorders, &MaskRenderingStage::setRenderBorders );
         */
 
 /*

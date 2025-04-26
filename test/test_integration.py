@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.ndimage as ndi
 
 import carna
 import testsuite
@@ -122,6 +123,44 @@ class OpaqueRenderingStage(testsuite.CarnaRenderingTestCase):
         # Render scene
         array = r.render(camera)
         # .. example-end
+
+        # Verify result
+        self.assert_image_almost_expected(array)
+
+
+class MaskRenderingStage(testsuite.CarnaRenderingTestCase):
+
+    def test(self):
+        GEOMETRY_TYPE_VOLUME = 1
+
+        # Create and configure frame renderer
+        mask_rendering = carna.mask_rendering_stage(GEOMETRY_TYPE_VOLUME)
+        r = carna.renderer(800, 600, [mask_rendering])
+        self.assertFalse(True)  # !!! debug !!!
+
+        # Create volume
+        np.random.seed(0)
+        data = (ndi.gaussian_filter(np.random.rand(64, 64, 20), 10.) > 0.5)
+        helper = carna.helpers.VolumeGridHelper_IntensityVolumeUInt8(
+            native_resolution=data.shape,
+        )
+        helper.load_intensities(data)
+        volume_node = helper.create_node(
+            geometry_type=GEOMETRY_TYPE_VOLUME,
+            spacing=carna.helpers.VolumeGridHelper_IntensityVolumeUInt8.Spacing((1, 1, 2)),
+        )
+
+        # Create and configure scene
+        root = carna.node()
+        root.attach_child(volume_node)
+        camera = carna.camera(
+            parent=root,
+            projection=r.frustum(fov=np.pi / 2, z_near=10, z_far=500),
+            local_transform=carna.math.translation(0, 0, 100),
+        )
+
+        # Render scene
+        array = r.render(camera)
 
         # Verify result
         self.assert_image_almost_expected(array)

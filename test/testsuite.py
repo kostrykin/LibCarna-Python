@@ -1,6 +1,4 @@
-import gc
 import pathlib
-import os
 import unittest
 
 import faulthandler

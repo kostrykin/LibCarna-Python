@@ -30,6 +30,42 @@ public:
 
 
 
+// ----------------------------------------------------------------------------------
+// VolumeRenderingStageView
+// ----------------------------------------------------------------------------------
+
+class VolumeRenderingStageView : public Carna::py::base::RenderStageView
+{
+
+public:
+
+    const static unsigned int DEFAULT_SAMPLE_RATE;
+
+    explicit VolumeRenderingStageView( Carna::presets::VolumeRenderingStage* renderStage );
+
+    Carna::presets::VolumeRenderingStage& volumeRenderingStage();
+
+}; // VolumeRenderingStageView
+
+
+
+// ----------------------------------------------------------------------------------
+// MaskRenderingStageView
+// ----------------------------------------------------------------------------------
+
+class MaskRenderingStageView : public VolumeRenderingStageView
+{
+
+public:
+
+    explicit MaskRenderingStageView( unsigned int geometryType, unsigned int maskRole );
+
+    Carna::presets::MaskRenderingStage& maskRenderingStage();
+
+}; // MaskRenderingStageView
+
+
+
 }  // namespace Carna :: py :: presets
 
 }  // namespace Carna :: py
