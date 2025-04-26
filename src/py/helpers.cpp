@@ -6,9 +6,10 @@ namespace py = pybind11;
 using namespace pybind11::literals; // enables the _a literal
 
 #include <Carna/py/helpers.h>
+#include <Carna/base/BufferedIntensityVolume.h>
 #include <Carna/helpers/FrameRendererHelper.h>
 #include <Carna/helpers/VolumeGridHelper.h>
-#include <Carna/base/BufferedIntensityVolume.h>
+#include <Carna/helpers/VolumeGridHelperDetails.h>
 /*
 #include <Carna/base/glew.h>
 #include <Carna/base/Color.h>
@@ -24,6 +25,48 @@ using namespace Carna::py::helpers;
 
 
 // ----------------------------------------------------------------------------------
+// addVolumeGridHelperIntensityComponent
+// ----------------------------------------------------------------------------------
+
+template< typename VolumeGridHelperType, typename VolumeGridHelperClass >
+void addVolumeGridHelperIntensityComponent( VolumeGridHelperClass& cls )
+{
+    const static auto DEFAULT_ROLE_INTENSITIES = VolumeGridHelperType::DEFAULT_ROLE_INTENSITIES;
+    cls.def_readonly_static(
+        "DEFAULT_ROLE_INTENSITIES",
+        &DEFAULT_ROLE_INTENSITIES
+    );
+    cls.def_property(
+        "intensities_role",
+        &VolumeGridHelperType::intensitiesRole,
+        &VolumeGridHelperType::setIntensitiesRole 
+    );
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// addVolumeGridHelperNormalsComponent
+// ----------------------------------------------------------------------------------
+
+template< typename VolumeGridHelperType, typename VolumeGridHelperClass >
+void addVolumeGridHelperNormalsComponent( VolumeGridHelperClass& cls )
+{
+    const static auto DEFAULT_ROLE_NORMALS = VolumeGridHelperType::DEFAULT_ROLE_NORMALS;
+    cls.def_readonly_static(
+        "DEFAULT_ROLE_NORMALS",
+        &DEFAULT_ROLE_NORMALS
+    );
+    cls.def_property(
+        "normals_role",
+        &VolumeGridHelperType::normalsRole,
+        &VolumeGridHelperType::setNormalsRole 
+    );
+}
+
+
+
+// ----------------------------------------------------------------------------------
 // defineVolumeGridHelper
 // ----------------------------------------------------------------------------------
 
@@ -31,11 +74,10 @@ const static auto VolumeGridHelperBase__DEFAULT_MAX_SEGMENT_BYTESIZE = \
     ([](){ return Carna::helpers::VolumeGridHelperBase::DEFAULT_MAX_SEGMENT_BYTESIZE; })();
 
 
-template< typename VolumeType, typename Module >
-void defineVolumeGridHelper( Module& m, const char* name )
+template< typename VolumeGridHelperType, typename VolumeGridHelperClass >
+void defineVolumeGridHelper( VolumeGridHelperClass& cls )
 {
-    typedef Carna::helpers::VolumeGridHelper< VolumeType > VolumeGridHelperType;
-    py::class_< VolumeGridHelperType, Carna::helpers::VolumeGridHelperBase >( m, name )
+    cls
         .def(
             py::init< const Carna::base::math::Vector3ui&, std::size_t >(),
             "native_resolution"_a, "max_segment_bytesize"_a = VolumeGridHelperBase__DEFAULT_MAX_SEGMENT_BYTESIZE
@@ -53,7 +95,6 @@ void defineVolumeGridHelper( Module& m, const char* name )
                 );
             }
             , "intensity_data"_a )
-        .def_property( "intensities_role", &VolumeGridHelperType::intensitiesRole, &VolumeGridHelperType::setIntensitiesRole )
         /*
         .def( "create_node", py::overload_cast< unsigned int, const VolumeGridHelperBase::Spacing& >( &VolumeGridHelperType::createNode, py::const_ ), py::return_value_policy::reference )
         .def( "create_node", py::overload_cast< unsigned int, const VolumeGridHelperBase::Dimensions& >( &VolumeGridHelperType::createNode, py::const_ ), py::return_value_policy::reference )
@@ -149,12 +190,40 @@ PYBIND11_MODULE( helpers, m )
         .def_readwrite( "millimeters", &Carna::helpers::VolumeGridHelperBase::Dimensions::millimeters )
         .doc() = "Specifies the spatial size of the whole dataset.";
 
-    defineVolumeGridHelper< Carna::base::IntensityVolumeUInt16 >( m, "VolumeGridHelper_IntensityVolumeUInt16" );
+    auto VolumeGridHelper_IntensityVolumeUInt16 = py::class_<
+        Carna::helpers::VolumeGridHelper< Carna::base::IntensityVolumeUInt16 >,
+        Carna::helpers::VolumeGridHelperBase
+    >( m, "VolumeGridHelper_IntensityVolumeUInt16" );
+    defineVolumeGridHelper<
+        Carna::helpers::VolumeGridHelper< Carna::base::IntensityVolumeUInt16 >
+    >(
+        VolumeGridHelper_IntensityVolumeUInt16
+    );
+    addVolumeGridHelperIntensityComponent< Carna::helpers::VolumeGridHelper< Carna::base::IntensityVolumeUInt16 > >(
+        VolumeGridHelper_IntensityVolumeUInt16
+    );
+
+    auto VolumeGridHelper_IntensityVolumeUInt16_NormalMap3DInt8 = py::class_<
+        Carna::helpers::VolumeGridHelper< Carna::base::IntensityVolumeUInt16, Carna::base::NormalMap3DInt8 >,
+        Carna::helpers::VolumeGridHelperBase
+    >( m, "VolumeGridHelper_IntensityVolumeUInt16_NormalMap3DInt8" );
+    defineVolumeGridHelper<
+        Carna::helpers::VolumeGridHelper< Carna::base::IntensityVolumeUInt16, Carna::base::NormalMap3DInt8 >
+    >(
+        VolumeGridHelper_IntensityVolumeUInt16_NormalMap3DInt8
+    );
+    addVolumeGridHelperIntensityComponent<
+        Carna::helpers::VolumeGridHelper< Carna::base::IntensityVolumeUInt16, Carna::base::NormalMap3DInt8 >
+    >(
+        VolumeGridHelper_IntensityVolumeUInt16_NormalMap3DInt8
+    );
+    addVolumeGridHelperNormalsComponent<
+        Carna::helpers::VolumeGridHelper< Carna::base::IntensityVolumeUInt16, Carna::base::NormalMap3DInt8 >
+    >(
+        VolumeGridHelper_IntensityVolumeUInt16_NormalMap3DInt8
+    );
+
     /*
-
-    defineVolumeGridHelper< VolumeGridHelper< IntensityVolumeUInt16 > >( m, "VolumeGrid_UInt16Intensity" );
-    defineVolumeGridHelper< VolumeGridHelper< IntensityVolumeUInt16, NormalMap3DInt8 > >( m, "VolumeGrid_UInt16Intensity_Int8Normal" );
-
     defineVolumeGridHelper< VolumeGridHelper< IntensityVolumeUInt8 > >( m, "VolumeGrid_UInt8Intensity" );
     defineVolumeGridHelper< VolumeGridHelper< IntensityVolumeUInt8, NormalMap3DInt8 > >( m, "VolumeGrid_UInt8Intensity_Int8Normal" );
     */
