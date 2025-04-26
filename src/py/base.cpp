@@ -235,10 +235,10 @@ FrameRendererView::~FrameRendererView()
 
 
 // ----------------------------------------------------------------------------------
-// configureCarnaLog
+// configureLog
 // ----------------------------------------------------------------------------------
 
-static void configureCarnaLog( bool enabled )
+static void configureLog( bool enabled )
 {
     if( enabled )
     {
@@ -271,12 +271,10 @@ PYBIND11_MODULE( base, m )
 
     //py::register_exception< AssertionFailure >( m, "AssertionFailure" );  // error: 'const class Carna::base::AssertionFailure' has no member named 'what'
 
-    configureCarnaLog( false );
-
-    m.def( "configure_carna_log",
+    m.def( "logging",
         []( bool enabled )
         {
-            configureCarnaLog( enabled );
+            configureLog( enabled );
         },
         "enabled"_a = true
     );

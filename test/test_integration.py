@@ -3,8 +3,6 @@ import numpy as np
 import carna
 import testsuite
 
-carna.configure_carna_log(True)
-
 
 class FrameRenderer(testsuite.CarnaTestCase):
 
