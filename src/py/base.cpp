@@ -281,7 +281,8 @@ PYBIND11_MODULE( base, m )
         "enabled"_a = true
     );
 
-    py::class_< GLContextView, std::shared_ptr< GLContextView > >( m, "GLContext" );
+    py::class_< GLContextView, std::shared_ptr< GLContextView > >( m, "GLContext" )
+        .doc() = "Wraps and represents an OpenGL context.";
 
     py::class_< SpatialView, std::shared_ptr< SpatialView > >( m, "Spatial" )
         .def_property_readonly( "has_parent",

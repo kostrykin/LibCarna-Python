@@ -34,7 +34,8 @@ PYBIND11_MODULE( egl, m )
 {
 
     py::class_< EGLContextView, std::shared_ptr< EGLContextView >, Carna::py::base::GLContextView >( m, "EGLContext" )
-        .def( py::init<>() );
+        .def( py::init<>() )
+        .doc() = "Create a :class:`carna.base.GLContext` using EGL (useful for off-screen rendering).";
 
 }
 #endif // BUILD_EGL_MODULE

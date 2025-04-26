@@ -63,12 +63,12 @@ class FrameRenderer(testsuite.CarnaTestCase):
 
 class OpaqueRenderingStage(testsuite.CarnaRenderingTestCase):
 
-    GEOMETRY_TYPE_OPAQUE = 1
-
     def test(self):
+        # .. example-start
+        GEOMETRY_TYPE_OPAQUE = 1
 
         # Create and configure frame renderer
-        opaque = carna.opaque_rendering_stage(self.GEOMETRY_TYPE_OPAQUE)
+        opaque = carna.opaque_rendering_stage(GEOMETRY_TYPE_OPAQUE)
         renderer = carna.renderer(800, 600, [opaque])
 
         # Create mesh
@@ -81,7 +81,7 @@ class OpaqueRenderingStage(testsuite.CarnaRenderingTestCase):
         # Create and configure scene
         root = carna.node()
         carna.geometry(
-            self.GEOMETRY_TYPE_OPAQUE,
+            GEOMETRY_TYPE_OPAQUE,
             parent=root,
             local_transform=carna.math.translation(-10, -10, -40),
             features={
@@ -90,7 +90,7 @@ class OpaqueRenderingStage(testsuite.CarnaRenderingTestCase):
             },
         )
         carna.geometry(
-            self.GEOMETRY_TYPE_OPAQUE,
+            GEOMETRY_TYPE_OPAQUE,
             parent=root,
             local_transform=carna.math.translation(+10, +10, +40),
             features={
@@ -105,7 +105,8 @@ class OpaqueRenderingStage(testsuite.CarnaRenderingTestCase):
         )
 
         # Render scene
-        result = renderer.render(camera)
+        array = renderer.render(camera)
+        # .. example-end
 
         # Verify result
-        self.assert_image_almost_expected(result)
+        self.assert_image_almost_expected(array)
