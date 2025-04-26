@@ -190,6 +190,8 @@ PYBIND11_MODULE( helpers, m )
         .def_readwrite( "millimeters", &Carna::helpers::VolumeGridHelperBase::Dimensions::millimeters )
         .doc() = "Specifies the spatial size of the whole dataset.";
 
+    /* VolumeGridHelper_IntensityVolumeUInt16
+     */
     auto VolumeGridHelper_IntensityVolumeUInt16 = py::class_<
         Carna::helpers::VolumeGridHelper< Carna::base::IntensityVolumeUInt16 >,
         Carna::helpers::VolumeGridHelperBase
@@ -203,6 +205,8 @@ PYBIND11_MODULE( helpers, m )
         VolumeGridHelper_IntensityVolumeUInt16
     );
 
+    /* VolumeGridHelper_IntensityVolumeUInt16_NormalMap3DInt8
+     */
     auto VolumeGridHelper_IntensityVolumeUInt16_NormalMap3DInt8 = py::class_<
         Carna::helpers::VolumeGridHelper< Carna::base::IntensityVolumeUInt16, Carna::base::NormalMap3DInt8 >,
         Carna::helpers::VolumeGridHelperBase
@@ -223,6 +227,8 @@ PYBIND11_MODULE( helpers, m )
         VolumeGridHelper_IntensityVolumeUInt16_NormalMap3DInt8
     );
 
+    /* VolumeGridHelper_IntensityVolumeUInt8
+     */
     auto VolumeGridHelper_IntensityVolumeUInt8 = py::class_<
         Carna::helpers::VolumeGridHelper< Carna::base::IntensityVolumeUInt8 >,
         Carna::helpers::VolumeGridHelperBase
@@ -236,10 +242,27 @@ PYBIND11_MODULE( helpers, m )
         VolumeGridHelper_IntensityVolumeUInt8
     );
 
-    /*
-    defineVolumeGridHelper< VolumeGridHelper< IntensityVolumeUInt8 > >( m, "VolumeGrid_UInt8Intensity" );
-    defineVolumeGridHelper< VolumeGridHelper< IntensityVolumeUInt8, NormalMap3DInt8 > >( m, "VolumeGrid_UInt8Intensity_Int8Normal" );
-    */
+    /* VolumeGridHelper_IntensityVolumeUInt8_NormalMap3DInt8
+     */
+    auto VolumeGridHelper_IntensityVolumeUInt8_NormalMap3DInt8 = py::class_<
+        Carna::helpers::VolumeGridHelper< Carna::base::IntensityVolumeUInt8, Carna::base::NormalMap3DInt8 >,
+        Carna::helpers::VolumeGridHelperBase
+    >( m, "VolumeGridHelper_IntensityVolumeUInt8_NormalMap3DInt8" );
+    defineVolumeGridHelper<
+        Carna::helpers::VolumeGridHelper< Carna::base::IntensityVolumeUInt8, Carna::base::NormalMap3DInt8 >
+    >(
+        VolumeGridHelper_IntensityVolumeUInt8_NormalMap3DInt8
+    );
+    addVolumeGridHelperIntensityComponent<
+        Carna::helpers::VolumeGridHelper< Carna::base::IntensityVolumeUInt8, Carna::base::NormalMap3DInt8 >
+    >(
+        VolumeGridHelper_IntensityVolumeUInt8_NormalMap3DInt8
+    );
+    addVolumeGridHelperNormalsComponent<
+        Carna::helpers::VolumeGridHelper< Carna::base::IntensityVolumeUInt8, Carna::base::NormalMap3DInt8 >
+    >(
+        VolumeGridHelper_IntensityVolumeUInt8_NormalMap3DInt8
+    );
 
     /*
     const static auto PointMarkerHelper__DEFAULT_POINT_SIZE = ([](){ return PointMarkerHelper::DEFAULT_POINT_SIZE; })();
