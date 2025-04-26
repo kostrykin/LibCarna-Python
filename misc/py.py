@@ -96,7 +96,7 @@ def material(shader_name: str, **kwargs):
 
 class renderer:
     """
-    Creates a renderer, that conveniently combines a :class:`frame_renderer` and a :class:`surface`.
+    Create a renderer, that conveniently combines a :class:`frame_renderer` and a :class:`surface`.
 
     Arguments:
         width: Horizontal rendering resolution.
@@ -130,19 +130,34 @@ class renderer:
         if renderer_helper is not None:
             renderer_helper.commit()
 
-        # Build method that hides the frame renderer (so that it cannot be reshaped, because this would require a new surface)
+        # Build method for rendering, that hides the frame renderer (so that it cannot be reshaped, because this would
+        # require a new surface)
         def render(camera: carna.base.Camera, root: carna.base.Node | None = None) -> np.ndarray:
             surface.begin()
             frame_renderer.render(camera, root)
             return surface.end()
 
+        # Build auxiliariy methods for projection matrices that fit the aspect ratio of the surface
+        def frustum(fov: float, z_near: float, z_far: float):
+            return carna.base.math.frustum(fov, height / width, z_near, z_far)
+
         self.render = render
+        self.frustum = frustum
         self.width = width
         self.height = height
 
     def render(self, camera: carna.base.Camera, root: carna.base.Node | None = None) -> np.ndarray:
         """
-        Renders scene `root` from `camera` point of view to a NumPy array.
+        Render scene `root` from `camera` point of view to a NumPy array.
+        """
+        ...
+
+    def frustum(self, fov: float, z_near: float, z_far: float) -> np.ndarray:
+        """
+        Create a projection matrix that is described by the frustum.
+        
+        Wrapper for :func:`carna.base.math.frustum` that ensures that the geometry of the frustum fits the aspect ratio
+        of the surface of the renderer.
         """
         ...
 
