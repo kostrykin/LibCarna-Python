@@ -105,6 +105,16 @@ class renderer:
         ctx: OpenGL context to be used for rendering. If `None`, a new :class:`egl_context` will be created.
     """
 
+    width: int
+    """
+    Horizontal rendering resolution.
+    """
+
+    height: int
+    """
+    Vertical rendering resolution.
+    """
+
     def __init__(self, width: int, height: int, stages: Iterable[carna.base.RenderStage], ctx: carna.base.GLContext | None = None):
         if ctx is None:
             ctx = carna.egl_context()
@@ -127,6 +137,8 @@ class renderer:
             return surface.end()
 
         self.render = render
+        self.width = width
+        self.height = height
 
     def render(self, camera: carna.base.Camera, root: carna.base.Node | None = None) -> np.ndarray:
         """

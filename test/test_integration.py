@@ -69,7 +69,7 @@ class OpaqueRenderingStage(testsuite.CarnaRenderingTestCase):
 
         # Create and configure frame renderer
         opaque = carna.opaque_rendering_stage(GEOMETRY_TYPE_OPAQUE)
-        renderer = carna.renderer(800, 600, [opaque])
+        r = carna.renderer(800, 600, [opaque])
 
         # Create mesh
         box_mesh = carna.mesh_factory.create_box(40, 40, 40)
@@ -100,12 +100,12 @@ class OpaqueRenderingStage(testsuite.CarnaRenderingTestCase):
         )
         camera = carna.camera(
             parent=root,
-            projection=carna.math.frustum(np.pi / 2, 1, 10, 200),
+            projection=carna.math.frustum(np.pi / 2, 1, 10, 1000) @ carna.math.scaling(r.height / r.width, 1, 1),
             local_transform=carna.math.translation(0, 0, 250),
         )
 
         # Render scene
-        array = renderer.render(camera)
+        array = r.render(camera)
         # .. example-end
 
         # Verify result

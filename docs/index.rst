@@ -9,6 +9,7 @@ API
 
    carna
    carna.base
+   carna.base.math
    carna.egl
    carna.helpers
    carna.presets
