@@ -223,6 +223,19 @@ PYBIND11_MODULE( helpers, m )
         VolumeGridHelper_IntensityVolumeUInt16_NormalMap3DInt8
     );
 
+    auto VolumeGridHelper_IntensityVolumeUInt8 = py::class_<
+        Carna::helpers::VolumeGridHelper< Carna::base::IntensityVolumeUInt8 >,
+        Carna::helpers::VolumeGridHelperBase
+    >( m, "VolumeGridHelper_IntensityVolumeUInt8" );
+    defineVolumeGridHelper<
+        Carna::helpers::VolumeGridHelper< Carna::base::IntensityVolumeUInt8 >
+    >(
+        VolumeGridHelper_IntensityVolumeUInt8
+    );
+    addVolumeGridHelperIntensityComponent< Carna::helpers::VolumeGridHelper< Carna::base::IntensityVolumeUInt8 > >(
+        VolumeGridHelper_IntensityVolumeUInt8
+    );
+
     /*
     defineVolumeGridHelper< VolumeGridHelper< IntensityVolumeUInt8 > >( m, "VolumeGrid_UInt8Intensity" );
     defineVolumeGridHelper< VolumeGridHelper< IntensityVolumeUInt8, NormalMap3DInt8 > >( m, "VolumeGrid_UInt8Intensity_Int8Normal" );

@@ -79,3 +79,12 @@ class VolumeGridHelper_IntensityVolumeUInt16_NormalMap3DInt8(
 ):
 
     VolumeGridHelper = carna.helpers.VolumeGridHelper_IntensityVolumeUInt16_NormalMap3DInt8
+
+
+class VolumeGridHelper_IntensityVolumeUInt8(
+    testsuite.CarnaTestCase,
+    VolumeGridHelper,
+    VolumeGridHelper_IntensityComponent,
+):
+
+    VolumeGridHelper = carna.helpers.VolumeGridHelper_IntensityVolumeUInt8
