@@ -8,11 +8,11 @@ using namespace pybind11::literals; // enables the _a literal
 #include <Carna/py/helpers.h>
 #include <Carna/helpers/FrameRendererHelper.h>
 #include <Carna/helpers/VolumeGridHelper.h>
+#include <Carna/base/BufferedIntensityVolume.h>
 /*
 #include <Carna/base/glew.h>
 #include <Carna/base/Color.h>
 #include <Carna/base/Geometry.h>
-#include <Carna/base/BufferedIntensityVolume.h>
 #include <Carna/helpers/FrameRendererHelper.h>
 #include <Carna/helpers/PointMarkerHelper.h>
 */
@@ -27,37 +27,48 @@ using namespace Carna::py::helpers;
 // defineVolumeGridHelper
 // ----------------------------------------------------------------------------------
 
-/*
+const static auto VolumeGridHelperBase__DEFAULT_MAX_SEGMENT_BYTESIZE = \
+    ([](){ return Carna::helpers::VolumeGridHelperBase::DEFAULT_MAX_SEGMENT_BYTESIZE; })();
+
+
 template< typename VolumeType, typename Module >
 void defineVolumeGridHelper( Module& m, const char* name )
 {
     typedef Carna::helpers::VolumeGridHelper< VolumeType > VolumeGridHelperType;
-    auto cl = py::class_< VolumeGridHelperType, VolumeGridHelperBase >( m, name )
-        .def_static( "create", []( const math::Vector3ui& nativeResolution, std::size_t maxSegmentBytesize )
-        {
-            return new VolumeGridHelperType( nativeResolution, maxSegmentBytesize );
-        }
-        , py::return_value_policy::reference, "nativeResolution"_a, "maxSegmentBytesize"_a = ([](){ return VolumeGridHelperBase::DEFAULT_MAX_SEGMENT_BYTESIZE; })() )
-        .def( "load_data", []( VolumeGridHelperType* self, py::array_t< double > data, bool test )
-        {
-            const auto rawData = data.unchecked< 3 >();
-            const auto voxel2intensity = [ &rawData, test ]( const math::Vector3ui voxel )
+    py::class_< VolumeGridHelperType, Carna::helpers::VolumeGridHelperBase >( m, name )
+        .def(
+            py::init< const Carna::base::math::Vector3ui&, std::size_t >(),
+            "native_resolution"_a, "max_segment_bytesize"_a = VolumeGridHelperBase__DEFAULT_MAX_SEGMENT_BYTESIZE
+        )
+        .def(
+            "load_intensities",
+            []( VolumeGridHelperType& self, py::array_t< double > intensityData )
             {
-                if (test) {
-                    return 0.f;
-                }
-                else return static_cast< float >( rawData( voxel.x(), voxel.y(), voxel.z() ) );
-            };
-            return self->loadIntensities( voxel2intensity );
-        }
-        , "data"_a, "test"_a = false )
+                const auto rawData = intensityData.unchecked< 3 >();
+                return self.loadIntensities(
+                    [ &rawData ]( const Carna::base::math::Vector3ui& voxel )
+                    {
+                        return static_cast< float >( rawData( voxel.x(), voxel.y(), voxel.z() ) );
+                    }
+                );
+            }
+            , "intensity_data"_a )
+        /*
         .def_property( "intensities_role", &VolumeGridHelperType::intensitiesRole, &VolumeGridHelperType::setIntensitiesRole )
         .def( "create_node", py::overload_cast< unsigned int, const VolumeGridHelperBase::Spacing& >( &VolumeGridHelperType::createNode, py::const_ ), py::return_value_policy::reference )
         .def( "create_node", py::overload_cast< unsigned int, const VolumeGridHelperBase::Dimensions& >( &VolumeGridHelperType::createNode, py::const_ ), py::return_value_policy::reference )
         .def( "release_geometry_features", &VolumeGridHelperType::releaseGeometryFeatures )
         .DEF_FREE( VolumeGridHelperType );
+        */
+        .doc() = R"(Computes the partitioning grid of volume data and the corresponding normal map. Also creates scene
+        nodes that represent the volume data within a scene.
+        
+        Arguments:
+            native_resolution: The resolution the partitioning grid is to be prepared for. This is the resolution that
+                will be expected when the data is loaded.
+            max_segment_bytesize: Maximum memory size of a single volume segment in bytes. Determines the partitioning
+                of the volume into a regular grid of segments.)";
 }
-*/
 
 
 
@@ -114,10 +125,6 @@ void FrameRendererHelperView::commit()
 // PYBIND11_MODULE: helpers
 // ----------------------------------------------------------------------------------
 
-const static auto VolumeGridHelperBase__DEFAULT_MAX_SEGMENT_BYTESIZE = \
-    ([](){ return Carna::helpers::VolumeGridHelperBase::DEFAULT_MAX_SEGMENT_BYTESIZE; })();
-
-
 #ifdef BUILD_HELPERS_MODULE
 PYBIND11_MODULE( helpers, m )
 {
@@ -142,6 +149,7 @@ PYBIND11_MODULE( helpers, m )
         .def_readwrite( "millimeters", &Carna::helpers::VolumeGridHelperBase::Dimensions::millimeters )
         .doc() = "Specifies the spatial size of the whole dataset.";
 
+    defineVolumeGridHelper< Carna::base::IntensityVolumeUInt16 >( m, "VolumeGridHelper_IntensityVolumeUInt16" );
     /*
 
     defineVolumeGridHelper< VolumeGridHelper< IntensityVolumeUInt16 > >( m, "VolumeGrid_UInt16Intensity" );
