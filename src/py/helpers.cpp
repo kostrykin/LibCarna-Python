@@ -53,8 +53,8 @@ void defineVolumeGridHelper( Module& m, const char* name )
                 );
             }
             , "intensity_data"_a )
-        /*
         .def_property( "intensities_role", &VolumeGridHelperType::intensitiesRole, &VolumeGridHelperType::setIntensitiesRole )
+        /*
         .def( "create_node", py::overload_cast< unsigned int, const VolumeGridHelperBase::Spacing& >( &VolumeGridHelperType::createNode, py::const_ ), py::return_value_policy::reference )
         .def( "create_node", py::overload_cast< unsigned int, const VolumeGridHelperBase::Dimensions& >( &VolumeGridHelperType::createNode, py::const_ ), py::return_value_policy::reference )
         .def( "release_geometry_features", &VolumeGridHelperType::releaseGeometryFeatures )

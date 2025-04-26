@@ -26,3 +26,10 @@ class VolumeGridHelper_IntensityVolumeUInt16(testsuite.CarnaTestCase):
         data = np.random.rand(64, 64, 20)
         helper = self.test__init__with_max_segment_bytesize()
         helper.load_intensities(data)
+
+    def test__intensity_role(self):
+        helper = self.test__init()
+        self.assertEqual(helper.intensities_role, 0)
+        for i in [1, 2]:
+            helper.intensities_role = i
+            self.assertEqual(helper.intensities_role, i)
