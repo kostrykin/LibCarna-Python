@@ -41,11 +41,16 @@ def _setup_spatial(spatial, parent: carna.base.Node | None = None, **kwargs):
 
 def _create_spatial_factory(spatial_type_name):
     spatial_type = getattr(carna.base, spatial_type_name)
-    def spatial_factory(*args, parent: carna.base.Node | None = None, **kwargs):
-        f"""
-        Create a {spatial_type_name} object.
+    def spatial_factory(tag: str | None = None, parent: carna.base.Node | None = None, **kwargs):
         """
-        spatial = spatial_type(*args)
+        Create a spatial object of the given type.
+
+        Arguments:
+            tag: An arbitrary string, that helps identifying the object.
+            parent: Parent node to attach the spatial to, or `None`.
+            **kwargs: Attributes to be set on the newly created object.
+        """
+        spatial = spatial_type() if tag is None else spatial_type(tag)
         _setup_spatial(spatial, parent, **kwargs)
         return spatial
     return spatial_factory
@@ -55,9 +60,15 @@ node = _create_spatial_factory('Node')
 camera = _create_spatial_factory('Camera')
 
 
-def geometry(geometry_type: int, *args, parent: carna.base.Node | None = None, features: dict | None = None, **kwargs):
+def geometry(geometry_type: int, tag: str | None = None, parent: carna.base.Node | None = None, features: dict | None = None, **kwargs):
     """
     Create a :class:`carna.base.Geometry` object.
+
+    Arguments:
+        geometry_type: The type of the geometry.
+        tag: An arbitrary string, that helps identifying the object.
+        parent: Parent node to attach the spatial to, or `None`.
+        **kwargs: Attributes to be set on the newly created object.
     """
     class Geometry(carna.base.Geometry):
 
@@ -67,7 +78,7 @@ def geometry(geometry_type: int, *args, parent: carna.base.Node | None = None, f
         def __setitem__(self, key, value):
             super().put_feature(key, value)
 
-    geometry = Geometry(geometry_type, *args)
+    geometry = Geometry(geometry_type) if tag is None else Geometry(geometry_type, tag)
     _setup_spatial(geometry, parent, **kwargs)
     for key, value in (features or dict()).items():
         geometry[key] = value
@@ -77,6 +88,10 @@ def geometry(geometry_type: int, *args, parent: carna.base.Node | None = None, f
 def material(shader_name: str, **kwargs):
     """
     Create a :class:`carna.base.Material` object.
+
+    Arguments:
+        shader_name: The shader to be used for rendering.
+        **kwargs: Uniform shader parameters.
     """
     class Material(carna.base.Material):
 
