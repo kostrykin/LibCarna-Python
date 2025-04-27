@@ -135,6 +135,7 @@ class MaskRenderingStage(testsuite.CarnaRenderingTestCase):
 
         # Create and configure frame renderer
         mask_rendering = carna.mask_rendering_stage(GEOMETRY_TYPE_VOLUME)
+        mask_rendering.render_borders = True
         r = carna.renderer(800, 600, [mask_rendering])
 
         # Create volume

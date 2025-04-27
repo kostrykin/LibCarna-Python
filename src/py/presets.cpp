@@ -6,10 +6,10 @@ namespace py = pybind11;
 using namespace pybind11::literals; // enables the _a literal
 
 #include <Carna/base/GLContext.h>
+#include <Carna/base/Color.h>
 #include <Carna/presets/MaskRenderingStage.h>
 #include <Carna/py/presets.h>
 /*
-#include <Carna/base/Color.h>
 #include <Carna/base/GLContext.h>
 #include <Carna/base/ManagedMesh.h>
 #include <Carna/presets/CuttingPlanesStage.h>
@@ -114,31 +114,35 @@ PYBIND11_MODULE( presets, m )
         );
     
     /* MaskRenderingStage
+     *
+     * `color` is not bound as a property, to prevent assignments of the form `.color.r = 0`, which would not work.
      */
     py::class_< MaskRenderingStageView, std::shared_ptr< MaskRenderingStageView >, VolumeRenderingStageView >(
         m, "MaskRenderingStage"
     )
+        .def_readonly_static( "DEFAULT_ROLE_MASK", &Carna::presets::MaskRenderingStage::DEFAULT_ROLE_MASK )
+        .def_readonly_static( "DEFAULT_COLOR", &Carna::presets::MaskRenderingStage::DEFAULT_COLOR )
         .def(
             py::init< unsigned int, unsigned int >(),
             "geometry_type"_a, "mask_role"_a = Carna::presets::MaskRenderingStage::DEFAULT_ROLE_MASK
+        )
+        .def_property_readonly(
+            "mask_role",
+            VIEW_DELEGATE( MaskRenderingStageView, maskRenderingStage().maskRole )
+        )
+        .def(
+            "color",
+            VIEW_DELEGATE( MaskRenderingStageView,  maskRenderingStage().color() )
+        )
+        .def(
+            "set_color",
+            VIEW_DELEGATE( MaskRenderingStageView, maskRenderingStage().setColor( color ), const Carna::base::Color& color )
+        )
+        .def_property(
+            "render_borders",
+            VIEW_DELEGATE( MaskRenderingStageView, maskRenderingStage().renderBorders() ),
+            VIEW_DELEGATE( MaskRenderingStageView, maskRenderingStage().setRenderBorders( renderBorders ), bool renderBorders )
         );
-        /*
-        .def_readonly( "mask_role", &MaskRenderingStage::maskRole )
-        .def_property_readonly_static( "DEFAULT_COLOR", []( py::object ) { return MaskRenderingStage::DEFAULT_COLOR; } )
-        .def_property_readonly_static( "DEFAULT_ROLE_MASK", []( py::object ) { return MaskRenderingStage::DEFAULT_ROLE_MASK; } )
-        .def_property
-            ( "color"
-            , []( MaskRenderingStage* self ) -> math::Vector4f
-                {
-                    return self->color();
-                }
-            , []( MaskRenderingStage* self, const math::Vector4f& color )
-                {
-                    self->setColor( color );
-                }
-            )
-        .def_property( "render_borders", &MaskRenderingStage::renderBorders, &MaskRenderingStage::setRenderBorders );
-        */
 
 /*
     py::class_< OccludedRenderingStage, RenderStage >( m, "OccludedRenderingStage" )
