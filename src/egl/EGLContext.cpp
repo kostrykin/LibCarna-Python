@@ -122,7 +122,8 @@ Carna::egl::EGLContext* Carna::egl::EGLContext::create()
 
 Carna::egl::EGLContext::~EGLContext()
 {
-    eglTerminate( pimpl->eglDpy );
+    eglDestroyContext( pimpl->eglDpy, pimpl->eglCtx );
+    eglDestroySurface( pimpl->eglDpy, pimpl->eglSurf );
 }
 
 
