@@ -181,6 +181,58 @@ class renderer:
         ...
 
 
+def volume(
+        geometry_type: int,
+        array: np.ndarray,
+        parent: carna.base.Node | None = None,
+        normals: bool = False,
+        *,
+        spacing: np.ndarray | None = None,
+        dimensions: np.ndarray | None = None,
+    ) -> carna.base.Node:
+    """
+    """
+    assert array.ndim == 3, 'Array must be a 3D data.'
+    assert (spacing is None) != (dimensions is None), 'Either spacing or dimensions must be provided.'
+
+    # Choose appropriate intensity component and prepare the data for loading (data is always transferred as float)
+    if array.dtype == np.uint8:
+        intensity_component = 'IntensityVolumeUInt8'
+        array = array / 0xff
+    elif array.dtype == np.bool:
+        intensity_component = 'IntensityVolumeUInt8'
+    elif array.dtype == np.uint16:
+        intensity_component = 'IntensityVolumeUInt16'
+        array = array / 0xffff
+    elif np.issubdtype(array.dtype, np.floating):
+        intensity_component = 'IntensityVolumeUInt16'
+    else:
+        raise ValueError(f'Unsupported data type: {array.dtype}')
+    
+    # Choose appropriate buffer type
+    if normals:
+        volume_type_name = f'VolumeGridHelper_{intensity_component}_NormalMap3DInt8'
+    else:
+        volume_type_name = f'VolumeGridHelper_{intensity_component}'
+    
+    # Create the buffer and load the data
+    volume_type = getattr(carna.helpers, volume_type_name)
+    helper = volume_type(native_resolution=array.shape)
+    helper.load_intensities(array)
+
+    # Deduce the parameters for spacing and dimensions
+    create_node_kwargs = dict()
+    if spacing is not None:
+        create_node_kwargs['spacing'] = volume_type.Spacing(spacing)
+    if dimensions is not None:
+        create_node_kwargs['dimensions'] = volume_type.Dimensions(spacing)
+
+    # Create volume node
+    volume_node = helper.create_node(geometry_type=geometry_type, **create_node_kwargs)
+    _setup_spatial(volume_node, parent)
+    return volume_node
+
+
 _expand_module(carna.base)
 _expand_module(carna.egl)
 _expand_module(carna.presets)
