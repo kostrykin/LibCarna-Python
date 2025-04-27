@@ -10,8 +10,8 @@ Example
 These can be used to, for example, quickly assemble a scene of multiple objects, and then render it into a NumPy array:
 
 .. literalinclude:: ../test/test_integration.py
-   :start-after: # .. example-start
-   :end-before: # .. example-end
+   :start-after: # .. OpaqueRenderingStage: example-start
+   :end-before: # .. OpaqueRenderingStage: example-end
    :dedent: 8
 
 Note on ``GEOMETRY_TYPE_OPAQUE``: A *geometry type* is an arbitrary integer constant, that establishes a relation
@@ -21,7 +21,6 @@ This is the image ``array`` rendered in the example:
 
 .. image:: ../test/results/expected/test_integration.OpaqueRenderingStage.test.png
    :width: 400
-   :alt: Alternative text
 
 Geometry Types
 --------------

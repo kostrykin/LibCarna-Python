@@ -80,7 +80,7 @@ class FrameRenderer(testsuite.CarnaTestCase):
 class OpaqueRenderingStage(testsuite.CarnaRenderingTestCase):
 
     def test(self):
-        # .. example-start
+        # .. OpaqueRenderingStage: example-start
         GEOMETRY_TYPE_OPAQUE = 1
 
         # Create and configure frame renderer
@@ -122,7 +122,7 @@ class OpaqueRenderingStage(testsuite.CarnaRenderingTestCase):
 
         # Render scene
         array = r.render(camera)
-        # .. example-end
+        # .. OpaqueRenderingStage: example-end
 
         # Verify result
         self.assert_image_almost_expected(array)
@@ -131,6 +131,7 @@ class OpaqueRenderingStage(testsuite.CarnaRenderingTestCase):
 class MaskRenderingStage(testsuite.CarnaRenderingTestCase):
 
     def test(self):
+        # .. MaskRenderingStage: example-start
         GEOMETRY_TYPE_VOLUME = 1
 
         # Create and configure frame renderer
@@ -161,6 +162,7 @@ class MaskRenderingStage(testsuite.CarnaRenderingTestCase):
 
         # Render scene
         array = r.render(camera)
+        # .. MaskRenderingStage: example-end
 
         # Verify result
         self.assert_image_almost_expected(array)

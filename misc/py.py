@@ -27,6 +27,10 @@ def _expand_module(module):
         if target_name in globals():
             continue
 
+        # Skip blacklisted members
+        if target_name.startswith('volume_grid_helper_'):
+            continue
+
         # Populate the global namespace with the member
         member = getattr(module, member_name)
         globals()[target_name] = member

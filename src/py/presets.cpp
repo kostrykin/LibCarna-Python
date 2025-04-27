@@ -100,7 +100,18 @@ PYBIND11_MODULE( presets, m )
     py::class_< OpaqueRenderingStageView, std::shared_ptr< OpaqueRenderingStageView >, MeshRenderingStageView >(
         m, "OpaqueRenderingStage"
     )
-        .def( py::init< unsigned int >(), "geometry_type"_a );
+        .def( py::init< unsigned int >(), "geometry_type"_a )
+        .doc() = R"(Implements rendering stage that renders opaque meshes.
+
+        .. literalinclude:: ../test/test_integration.py
+           :start-after: # .. OpaqueRenderingStage: example-start
+           :end-before: # .. OpaqueRenderingStage: example-end
+           :dedent: 8
+
+        This is the image ``array`` rendered in the example:
+
+        .. image:: ../test/results/expected/test_integration.OpaqueRenderingStage.test.png
+           :width: 400)";
 
     /* VolumeRenderingStage
      */
@@ -142,7 +153,18 @@ PYBIND11_MODULE( presets, m )
             "render_borders",
             VIEW_DELEGATE( MaskRenderingStageView, maskRenderingStage().renderBorders() ),
             VIEW_DELEGATE( MaskRenderingStageView, maskRenderingStage().setRenderBorders( renderBorders ), bool renderBorders )
-        );
+        )
+        .doc() = R"(Renders 3D masks.
+
+        .. literalinclude:: ../test/test_integration.py
+           :start-after: # .. MaskRenderingStage: example-start
+           :end-before: # .. MaskRenderingStage: example-end
+           :dedent: 8
+
+        This is the image ``array`` rendered in the example:
+
+        .. image:: ../test/results/expected/test_integration.MaskRenderingStage.test.png
+           :width: 400)";
 
 /*
     py::class_< OccludedRenderingStage, RenderStage >( m, "OccludedRenderingStage" )
