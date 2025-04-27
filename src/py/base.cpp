@@ -505,6 +505,39 @@ PYBIND11_MODULE( base, m )
             "normal"_a, "support"_a 
         );
 
+    py::class_< Carna::base::Color >( m, "Color" )
+        .def_readonly_static( "WHITE", &Carna::base::Color::WHITE )
+        .def_readonly_static( "WHITE_NO_ALPHA", &Carna::base::Color::WHITE_NO_ALPHA )
+        .def_readonly_static( "BLACK", &Carna::base::Color::BLACK )
+        .def_readonly_static( "BLACK_NO_ALPHA", &Carna::base::Color::BLACK_NO_ALPHA )
+        .def_readonly_static( "RED", &Carna::base::Color::RED )
+        .def_readonly_static( "RED_NO_ALPHA", &Carna::base::Color::RED_NO_ALPHA )
+        .def_readonly_static( "GREEN", &Carna::base::Color::GREEN )
+        .def_readonly_static( "GREEN_NO_ALPHA", &Carna::base::Color::GREEN_NO_ALPHA )
+        .def_readonly_static( "BLUE", &Carna::base::Color::BLUE )
+        .def_readonly_static( "BLUE_NO_ALPHA", &Carna::base::Color::BLUE_NO_ALPHA )
+        .def( py::init< unsigned char, unsigned char, unsigned char, unsigned char >(), "r"_a, "g"_a, "b"_a, "a"_a )
+        .def( py::init< const Carna::base::math::Vector4f& >(), "rgba"_a )
+        .def( py::init<>() )
+        .def_readwrite( "r", &Carna::base::Color::r )
+        .def_readwrite( "g", &Carna::base::Color::g )
+        .def_readwrite( "b", &Carna::base::Color::b )
+        .def_readwrite( "a", &Carna::base::Color::a )
+        .def(
+            "__eq__",
+            []( Carna::base::Color& self, Carna::base::Color& other )
+            {
+                return self == other;
+            }
+        )
+        .def(
+            "toarray",
+            []( Carna::base::Color& self )
+            {
+                return static_cast< const Carna::base::math::Vector4f& >( self );
+            }
+        );
+
 /*
     py::class_< BlendFunction >( m, "BlendFunction" )
         .def( py::init< int, int >() )

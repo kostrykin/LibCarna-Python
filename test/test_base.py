@@ -405,3 +405,25 @@ class math(testsuite.CarnaTestCase):
     def test__plane__zero_normal(self):
         with self.assertRaises(RuntimeError):
             carna.base.math.plane(normal=[0, 0, 0], distance=0)
+
+
+class Color(testsuite.CarnaTestCase):
+
+    def test__eq__(self):
+        self.assertTrue(carna.base.Color.WHITE == carna.base.Color.WHITE)
+        self.assertTrue(carna.base.Color.WHITE != carna.base.Color.WHITE_NO_ALPHA)
+
+    def test__init__4ub(self):
+        self.assertEqual(carna.base.Color(255, 255, 255, 0), carna.base.Color.WHITE_NO_ALPHA)
+
+    def test__init__array(self):
+        self.assertEqual(carna.base.Color((1., 1., 1., 0.)), carna.base.Color.WHITE_NO_ALPHA)
+
+    def test__rgba(self):
+        self.assertEqual(carna.base.Color.GREEN.r, 0)
+        self.assertEqual(carna.base.Color.GREEN.g, 255)
+        self.assertEqual(carna.base.Color.GREEN.b, 0)
+        self.assertEqual(carna.base.Color.GREEN.a, 255)
+
+    def test__toarray(self):
+        np.testing.assert_array_equal(carna.base.Color.GREEN.toarray(), (0., 1., 0., 1.))
