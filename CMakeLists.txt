@@ -112,7 +112,7 @@ foreach( MODULE ${MODULES} )
     string( TOUPPER ${MODULE} MODULE_CAPS )
     pybind11_add_module( ${MODULE} ${SRC} )
     target_compile_options( ${MODULE} PRIVATE -fvisibility=default -fno-lto )
-    target_compile_definitions( ${MODULE} PRIVATE -DBUILD_${MODULE_CAPS}_MODULE=1 )
+    target_compile_definitions( ${MODULE} PRIVATE )
     SET_TARGET_PROPERTIES( ${MODULE} PROPERTIES PREFIX "" )
 endforeach( MODULE )
 

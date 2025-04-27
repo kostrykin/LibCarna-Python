@@ -99,7 +99,7 @@ void defineVolumeGridHelper( VolumeGridHelperClass& cls )
             "create_node",
             []( VolumeGridHelperType& self, unsigned int geometryType, const Carna::helpers::VolumeGridHelperBase::Spacing& spacing )
             {
-                return new NodeView( self.createNode( geometryType, spacing ) );
+                return std::shared_ptr< NodeView >( new NodeView( self.createNode( geometryType, spacing ) ) );
             },
             "geometry_type"_a, "spacing"_a
         )
@@ -107,14 +107,10 @@ void defineVolumeGridHelper( VolumeGridHelperClass& cls )
             "create_node",
             []( VolumeGridHelperType& self, unsigned int geometryType, const Carna::helpers::VolumeGridHelperBase::Dimensions& dimensions )
             {
-                return new NodeView( self.createNode( geometryType, dimensions ) );
+                return std::shared_ptr< NodeView >( new NodeView( self.createNode( geometryType, dimensions ) ) );
             },
             "geometry_type"_a, "dimensions"_a
         )
-        /*
-        .def( "create_node", py::overload_cast< unsigned int, const VolumeGridHelperBase::Spacing& >( &VolumeGridHelperType::createNode, py::const_ ), py::return_value_policy::reference )
-        .def( "create_node", py::overload_cast< unsigned int, const VolumeGridHelperBase::Dimensions& >( &VolumeGridHelperType::createNode, py::const_ ), py::return_value_policy::reference )
-        */
         /*
         .def( "release_geometry_features", &VolumeGridHelperType::releaseGeometryFeatures )
         .DEF_FREE( VolumeGridHelperType );
@@ -184,7 +180,6 @@ void FrameRendererHelperView::commit()
 // PYBIND11_MODULE: helpers
 // ----------------------------------------------------------------------------------
 
-#ifdef BUILD_HELPERS_MODULE
 PYBIND11_MODULE( helpers, m )
 {
 
@@ -315,4 +310,3 @@ PYBIND11_MODULE( helpers, m )
     */
 
 }
-#endif // BUILD_HELPERS_MODULE

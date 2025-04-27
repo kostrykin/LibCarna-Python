@@ -29,7 +29,6 @@ EGLContextView::EGLContextView()
 // PYBIND11_MODULE: egl
 // ----------------------------------------------------------------------------------
 
-#ifdef BUILD_EGL_MODULE
 PYBIND11_MODULE( egl, m )
 {
 
@@ -38,4 +37,3 @@ PYBIND11_MODULE( egl, m )
         .doc() = "Create a :class:`carna.base.GLContext` using EGL (useful for off-screen rendering).";
 
 }
-#endif // BUILD_EGL_MODULE

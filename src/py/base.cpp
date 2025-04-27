@@ -263,7 +263,6 @@ static void configureLog( bool enabled )
 // PYBIND11_MODULE: base
 // ----------------------------------------------------------------------------------
 
-#ifdef BUILD_BASE_MODULE
 PYBIND11_MODULE( base, m )
 {
 
@@ -546,4 +545,3 @@ PYBIND11_MODULE( base, m )
 */
 
 }
-#endif // BUILD_BASE_MODULE

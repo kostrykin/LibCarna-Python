@@ -20,13 +20,15 @@ from pathlib import Path
 
 root_dir = Path(os.path.abspath(os.path.dirname(__file__)))
 
-build_dir_debug   = root_dir / 'build' / 'make_debug'
-build_dir_release = root_dir / 'build' / 'make_release'
+build_dirs = dict(
+    debug   = root_dir / 'build' / 'make_debug',
+    release = root_dir / 'build' / 'make_release',
+)
 
 if __name__ == '__main__':
 
-    (build_dir_debug   / 'carna').mkdir(parents=True, exist_ok=True)
-    (build_dir_release / 'carna').mkdir(parents=True, exist_ok=True)
+    (build_dirs['debug']   / 'carna').mkdir(parents=True, exist_ok=True)
+    (build_dirs['release'] / 'carna').mkdir(parents=True, exist_ok=True)
 
     from setuptools import setup, Extension, find_packages
     from setuptools.command.build_ext import build_ext as build_ext_orig
@@ -49,8 +51,9 @@ if __name__ == '__main__':
             version_major, version_minor, version_patch = [int(val) for val in VERSION_CARNA_PY.split('.')]
             build_test = os.environ.get('CARNAPY_BUILD_TEST', 'ON')
             assert build_test in ('ON', 'OFF')
+            build_type = os.environ.get('CMAKE_BUILD_TYPE', 'Release')
             cmake_args = [
-                f'-DCMAKE_BUILD_TYPE=Release',
+                f'-DCMAKE_BUILD_TYPE={build_type}',
                 f'-DBUILD_TEST={build_test}',
                 f'-DBUILD_DOC=ON',
                 f'-DMAJOR_VERSION={version_major}',
@@ -65,7 +68,7 @@ if __name__ == '__main__':
 
             if not self.dry_run:
 
-                os.chdir(str(build_dir_release))
+                os.chdir(str(build_dirs[build_type.lower()]))
                 self.spawn(['cmake'] + cmake_args)
                 self.spawn(['make', 'VERBOSE=1'])
                 if build_test == 'ON':

@@ -91,7 +91,6 @@ Carna::presets::MaskRenderingStage& MaskRenderingStageView::maskRenderingStage()
 // PYBIND11_MODULE: presets
 // ----------------------------------------------------------------------------------
 
-#ifdef BUILD_PRESETS_MODULE
 PYBIND11_MODULE( presets, m )
 {
 
@@ -269,4 +268,3 @@ PYBIND11_MODULE( presets, m )
 */
 
 }
-#endif // BUILD_PRESETS_MODULE
