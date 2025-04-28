@@ -273,3 +273,92 @@ class MIPStage(testsuite.CarnaRenderingTestCase):
 
         # Verify result
         self.assert_image_almost_expected(np.array(frames))
+
+
+class CuttingPlanesStage(testsuite.CarnaRenderingTestCase):
+
+    def setUp(self):
+        # .. CuttingPlanesStage: example-setup-start
+        GEOMETRY_TYPE_VOLUME = 2
+        GEOMETRY_TYPE_PLANE = 3
+
+        # Create and configure frame renderer
+        cp = carna.cutting_planes(
+            volume_geometry_type=GEOMETRY_TYPE_VOLUME,
+            plane_geometry_type=GEOMETRY_TYPE_PLANE,
+        )
+        cp.windowing_level = 0.75
+        cp.windowing_width = 0.5
+        r = carna.renderer(800, 600, [cp])
+
+        # Create volume
+        np.random.seed(0)
+        data = ndi.gaussian_filter(np.random.rand(64, 64, 20), 10)
+        data = data - data.min()
+        data = data / data.max()
+
+        # Create and configure scene
+        root = carna.node()
+        volume = carna.volume(
+            GEOMETRY_TYPE_VOLUME,
+            data,
+            parent=root,
+            spacing=(1, 1, 2),
+        )
+        zplane = carna.geometry(
+            GEOMETRY_TYPE_PLANE,
+            parent=volume,
+            local_transform=carna.math.plane(
+                normal=(0, 0, 1),
+                distance=0,
+            ),
+        )
+        for sign in (-1, +1):  # create left and right planes
+            carna.geometry(
+                GEOMETRY_TYPE_PLANE,
+                parent=volume,
+                local_transform=carna.math.plane(
+                    normal=(1 * sign, 0, 0),
+                    distance=63 / 2,
+                ),
+            )
+        camera = carna.camera(
+            parent=root,
+            projection=r.frustum(fov=np.pi / 2, z_near=1, z_far=500),
+            local_transform=carna.math.translation(0, 0, 100),
+        )
+        # .. CuttingPlanesStage: example-setup-end
+
+        self.r, self.zplane, self.camera = r, zplane, camera
+
+    def test(self):
+        r, camera = self.r, self.camera
+
+        # Render scene
+        array = r.render(camera)
+
+        # Verify result
+        self.assert_image_almost_expected(array)
+
+    def test__animated(self):
+        r, zplane, camera = self.r, self.zplane, self.camera
+
+        # .. CuttingPlanesStage: example-animation-start
+        # Define animation
+        animation = carna.animation(
+            [
+                carna.animation.bounce_local(
+                    zplane,
+                    axis='z',
+                    amplitude=38 / 2,
+                )
+            ],
+            n_frames=50,
+        )
+
+        # Render animation
+        frames = list(animation.render(r, camera))
+        # .. CuttingPlanesStage: example-animation-end
+
+        # Verify result
+        self.assert_image_almost_expected(np.array(frames))

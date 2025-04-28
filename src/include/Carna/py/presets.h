@@ -118,6 +118,23 @@ public:
 
 
 
+// ----------------------------------------------------------------------------------
+// CuttingPlanesStageView
+// ----------------------------------------------------------------------------------
+
+class CuttingPlanesStageView : public Carna::py::base::RenderStageView
+{
+
+public:
+
+    explicit CuttingPlanesStageView( unsigned int volumeGeometryType, unsigned int planeGeometryType );
+
+    Carna::presets::CuttingPlanesStage& cuttingPlanesStage();
+
+}; // CuttingPlanesStageView
+
+
+
 }  // namespace Carna :: py :: presets
 
 }  // namespace Carna :: py

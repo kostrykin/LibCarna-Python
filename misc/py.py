@@ -40,6 +40,12 @@ def _camel_to_snake(name):
     return re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', s).lower()
 
 
+def _strip_suffix(s, suffix):
+    if s.endswith(suffix):
+        return s[:-len(suffix)]
+    return s
+
+
 def _expand_module(module):
     for member_name in dir(module):
 
@@ -54,6 +60,7 @@ def _expand_module(module):
             target_name = _camel_to_snake(member_name)
             if target_name.endswith('_rendering_stage'):
                 target_name = target_name.replace('_rendering_stage', '_renderer')
+            target_name = _strip_suffix(target_name, '_stage')
 
         # Skip if the target already exists
         if target_name in globals():
@@ -246,10 +253,22 @@ class animation:
         """
         Create a step function for rotating an object's local coordinate system.
         """
-        base_transform = spatial.local_transform
         axis = _resolve_axis_hint(axis)
+        base_transform = spatial.local_transform
         def step(t: float):
             spatial.local_transform = carna.math.rotation(axis, radians=2 * np.pi * t) @ base_transform
+        return step
+    
+    @staticmethod
+    def bounce_local(spatial: carna.base.Spatial, axis: AxisHint, amplitude: float = 1.0) -> Callable[[float], None]:
+        """
+        Create a step function for bouncing an object along a given axis.
+        """
+        axis = _resolve_axis_hint(axis)
+        base_transform = spatial.local_transform
+        def step(t: float):
+            offset = np.multiply(axis, amplitude * np.sin(2 * np.pi * t))
+            spatial.local_transform = carna.math.translation(offset) @ base_transform
         return step
 
 

@@ -81,3 +81,21 @@ class MIPStage(VolumeRenderingStage):
         rs.append_layer(layer1)
         rs.remove_layer(layer1)
         rs.append_layer(layer2)
+
+
+class CuttingPlanesStage(testsuite.CarnaTestCase):
+
+    def test__windowing_level(self):
+        rs = carna.presets.CuttingPlanesStage(volume_geometry_type=1, plane_geometry_type=2)
+        self.assertEqual(rs.windowing_level, carna.presets.CuttingPlanesStage.DEFAULT_WINDOWING_LEVEL)
+        for windowing_level in (0.3, 0.5, 0.7):
+            rs.windowing_level = windowing_level
+            self.assertAlmostEqual(rs.windowing_level, windowing_level, places=5)
+
+    def test__windowing_width(self):
+        rs = carna.presets.CuttingPlanesStage(volume_geometry_type=1, plane_geometry_type=2)
+        self.assertEqual(rs.windowing_width, carna.presets.CuttingPlanesStage.DEFAULT_WINDOWING_WIDTH)
+        for windowing_width in (0.3, 0.5, 0.7):
+            rs.windowing_level = windowing_width
+            self.assertAlmostEqual(rs.windowing_level, windowing_width, places=5)
+
