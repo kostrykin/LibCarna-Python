@@ -136,7 +136,6 @@ class OpaqueRenderingStage(testsuite.CarnaRenderingTestCase):
     def test__animated(self):
         r, camera = self.r, self.camera
 
-        # Render the scene once
         # .. OpaqueRenderingStage: example-animation-start
         # Define animation
         animation = carna.animation(

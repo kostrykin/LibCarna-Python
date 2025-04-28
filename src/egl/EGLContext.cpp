@@ -1,6 +1,7 @@
 #include <Carna/egl/EGLContext.h>
 #include <EGL/egl.h>
 #include <cstdlib>
+#include <unordered_set>
 
 // see: https://developer.nvidia.com/blog/egl-eye-opengl-visualization-without-x-server/
 
@@ -83,10 +84,14 @@ void Carna::egl::EGLContext::Details::activate() const
 // Carna :: egl :: EGLContext
 // ----------------------------------------------------------------------------------
 
+static std::unordered_set< Carna::egl::EGLContext* > eglContextInstances;
+
+
 Carna::egl::EGLContext::EGLContext( Details* _pimpl )
     : Carna::base::GLContext( false )
     , pimpl( _pimpl ) // TODO: rename to `pimpl`
 {
+    eglContextInstances.insert( this );
 }
 
 
@@ -111,7 +116,8 @@ Carna::egl::EGLContext* Carna::egl::EGLContext::create()
     pimpl->eglSurf = eglCreatePbufferSurface( pimpl->eglDpy, eglCfg, PBUFFER_ATTRIBS );
     CARNA_ASSERT( pimpl->eglSurf != EGL_NO_SURFACE );
 
-    pimpl->eglCtx = eglCreateContext( pimpl->eglDpy, eglCfg, EGL_NO_CONTEXT, NULL );
+    const ::EGLContext shareContext = eglContextInstances.empty() ? EGL_NO_CONTEXT : ( *eglContextInstances.begin() )->pimpl->eglCtx;
+    pimpl->eglCtx = eglCreateContext( pimpl->eglDpy, eglCfg, shareContext, NULL );
     CARNA_ASSERT( pimpl->eglCtx != EGL_NO_CONTEXT );
 
     pimpl->activate();
@@ -122,6 +128,7 @@ Carna::egl::EGLContext* Carna::egl::EGLContext::create()
 
 Carna::egl::EGLContext::~EGLContext()
 {
+    eglContextInstances.erase( this );
     eglDestroyContext( pimpl->eglDpy, pimpl->eglCtx );
     eglDestroySurface( pimpl->eglDpy, pimpl->eglSurf );
 }
