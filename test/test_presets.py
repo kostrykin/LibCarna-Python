@@ -59,3 +59,25 @@ class MaskRenderingStage(VolumeRenderingStage):
         for render_borders in (True, False):
             rs.render_borders = render_borders
             self.assertEqual(rs.render_borders, render_borders)
+
+
+class MIPStage(VolumeRenderingStage):
+
+    def create(self):
+        return carna.presets.MIPStage(geometry_type=1)
+
+    def test__ROLE_INTENSITIES(self):
+        self.assertEqual(carna.presets.MIPStage.ROLE_INTENSITIES, 0)
+
+    def test__append_layer(self):
+        layer = carna.presets.MIPLayer(0, 1, carna.base.Color.RED)
+        rs = self.create()
+        rs.append_layer(layer)
+
+    def test__remove_layer(self):
+        layer1 = carna.presets.MIPLayer(0, 1, carna.base.Color.RED)
+        layer2 = carna.presets.MIPLayer(0, 1, carna.base.Color.GREEN)
+        rs = self.create()
+        rs.append_layer(layer1)
+        rs.remove_layer(layer1)
+        rs.append_layer(layer2)

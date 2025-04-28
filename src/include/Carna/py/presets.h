@@ -13,6 +13,8 @@ namespace py
 namespace presets
 {
 
+class MIPStageView;
+
 
 
 // ----------------------------------------------------------------------------------
@@ -63,6 +65,56 @@ public:
     Carna::presets::MaskRenderingStage& maskRenderingStage();
 
 }; // MaskRenderingStageView
+
+
+
+// ----------------------------------------------------------------------------------
+// MIPLayerView
+// ----------------------------------------------------------------------------------
+
+class MIPLayerView : public std::enable_shared_from_this< MIPLayerView >
+{
+
+public:
+
+    template< typename... Args >
+    explicit MIPLayerView( Args... args );
+
+    virtual ~MIPLayerView();
+
+    Carna::presets::MIPLayer* mipLayer;
+
+    std::shared_ptr< MIPStageView > ownedBy;
+
+}; // MIPStageView
+
+
+template< typename... Args >
+MIPLayerView::MIPLayerView( Args... args )
+    : mipLayer( new Carna::presets::MIPLayer( args... ) )
+{
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// MIPStageView
+// ----------------------------------------------------------------------------------
+
+class MIPStageView : public VolumeRenderingStageView
+{
+
+public:
+
+    explicit MIPStageView( unsigned int geometryType );
+
+    Carna::presets::MIPStage& mipStage();
+
+    void appendLayer( MIPLayerView* mipLayerView );
+
+    void removeLayer( MIPLayerView& mipLayerView );
+
+}; // MIPStageView
 
 
 

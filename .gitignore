@@ -1,4 +1,5 @@
 /.env
+/condaenv.*
 /build
 /docs/build
 /dist

@@ -213,3 +213,64 @@ class MaskRenderingStage(testsuite.CarnaRenderingTestCase):
 
         # Verify result
         self.assert_image_almost_expected(np.array(frames))
+
+
+class MIPStage(testsuite.CarnaRenderingTestCase):
+
+    def setUp(self):
+        # .. MIPStage: example-setup-start
+        GEOMETRY_TYPE_VOLUME = 2
+
+        # Create and configure frame renderer
+        mip = carna.mip(GEOMETRY_TYPE_VOLUME)
+        mip.append_layer(carna.mip_layer(0.5, 1, carna.color.WHITE))
+        r = carna.renderer(800, 600, [mip])
+
+        # Create volume
+        np.random.seed(0)
+        data = ndi.gaussian_filter(np.random.rand(64, 64, 20), 10)
+        data = data - data.min()
+        data = data / data.max()
+
+        # Create and configure scene
+        root = carna.node()
+        carna.volume(
+            GEOMETRY_TYPE_VOLUME,
+            data,
+            parent=root,
+            spacing=(1, 1, 2),
+        )
+        camera = carna.camera(
+            parent=root,
+            projection=r.frustum(fov=np.pi / 2, z_near=1, z_far=500),
+            local_transform=carna.math.translation(0, 0, 100),
+        )
+        # .. MIPStage: example-setup-end
+
+        self.r, self.camera = r, camera
+
+    def test(self):
+        r, camera = self.r, self.camera
+
+        # Render scene
+        array = r.render(camera)
+
+        # Verify result
+        self.assert_image_almost_expected(array)
+
+    def test__animated(self):
+        r, camera = self.r, self.camera
+
+        # Define animation
+        animation = carna.animation(
+            [
+                carna.animation.rotate_local(camera)
+            ],
+            n_frames=50,
+        )
+
+        # Render animation
+        frames = list(animation.render(r, camera))
+
+        # Verify result
+        self.assert_image_almost_expected(np.array(frames))

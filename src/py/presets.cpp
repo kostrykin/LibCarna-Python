@@ -8,6 +8,8 @@ using namespace pybind11::literals; // enables the _a literal
 #include <Carna/base/GLContext.h>
 #include <Carna/base/Color.h>
 #include <Carna/presets/MaskRenderingStage.h>
+#include <Carna/presets/MIPLayer.h>
+#include <Carna/presets/MIPStage.h>
 #include <Carna/py/presets.h>
 /*
 #include <Carna/base/GLContext.h>
@@ -88,6 +90,60 @@ Carna::presets::MaskRenderingStage& MaskRenderingStageView::maskRenderingStage()
 
 
 // ----------------------------------------------------------------------------------
+// MIPLayerView
+// ----------------------------------------------------------------------------------
+
+MIPLayerView::~MIPLayerView()
+{
+    if( !ownedBy )
+    {
+        delete mipLayer;
+    }
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// MIPStageView
+// ----------------------------------------------------------------------------------
+
+const static auto MIP_STAGE__ROLE_INTENSITIES = Carna::presets::MIPStage::ROLE_INTENSITIES;
+
+
+MIPStageView::MIPStageView( unsigned int geometryType )
+    : VolumeRenderingStageView::VolumeRenderingStageView(
+        new Carna::presets::MIPStage( geometryType )
+    )
+{
+}
+
+
+Carna::presets::MIPStage& MIPStageView::mipStage()
+{
+    return static_cast< Carna::presets::MIPStage& >( *renderStage );
+}
+
+
+void MIPStageView::appendLayer( MIPLayerView* mipLayerView )
+{
+    if( mipLayerView->ownedBy )
+    {
+        mipLayerView->ownedBy->removeLayer( *mipLayerView );
+    }
+    mipLayerView->ownedBy = std::static_pointer_cast< MIPStageView >( this->shared_from_this() );
+    mipStage().appendLayer( mipLayerView->mipLayer );
+}
+
+
+void MIPStageView::removeLayer( MIPLayerView& mipLayerView )
+{
+    mipLayerView.ownedBy.reset();
+    mipStage().removeLayer( *( mipLayerView.mipLayer ) );
+}
+
+
+
+// ----------------------------------------------------------------------------------
 // PYBIND11_MODULE: presets
 // ----------------------------------------------------------------------------------
 
@@ -163,6 +219,30 @@ PYBIND11_MODULE( presets, m )
         Rendering the scene as an animation:
 
         .. image:: ../test/results/expected/test_integration.MaskRenderingStage.test__animated.png
+           :width: 400)";
+
+    /* MIPLayer
+     */
+    py::class_< MIPLayerView, std::shared_ptr< MIPLayerView > >( m, "MIPLayer" )
+        .def( py::init< float, float, const Carna::base::Color& >(), "min_intensity"_a, "max_intensity"_a, "color"_a );
+    
+    /* MIPStage
+     */
+    py::class_< MIPStageView, std::shared_ptr< MIPStageView >, VolumeRenderingStageView >( m, "MIPStage" )
+        .def_readonly_static( "ROLE_INTENSITIES", &MIP_STAGE__ROLE_INTENSITIES )
+        .def( py::init< unsigned int >(), "geometry_type"_a )
+        .def( "append_layer", &MIPStageView::appendLayer, "layer"_a )
+        .def( "remove_layer", &MIPStageView::removeLayer, "layer"_a )
+        .doc() = R"(Renders maximum intensity projections of volume geometries in the scene.
+
+        .. literalinclude:: ../test/test_integration.py
+           :start-after: # .. MIPStage: example-setup-start
+           :end-before: # .. MIPStage: example-setup-end
+           :dedent: 8
+
+        Rendering the scene as an animation:
+
+        .. image:: ../test/results/expected/test_integration.MIPStage.test__animated.png
            :width: 400)";
 
 /*

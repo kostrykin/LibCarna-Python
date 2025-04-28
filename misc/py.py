@@ -47,10 +47,15 @@ def _expand_module(module):
         if member_name.startswith('_'):
             continue
 
+        # Resolve target name
+        if member_name == 'MIPStage':
+            target_name = 'mip'
+        else:
+            target_name = _camel_to_snake(member_name)
+            if target_name.endswith('_rendering_stage'):
+                target_name = target_name.replace('_rendering_stage', '_renderer')
+
         # Skip if the target already exists
-        target_name = _camel_to_snake(member_name)
-        if target_name.endswith('_rendering_stage'):
-            target_name = target_name.replace('_rendering_stage', '_renderer')
         if target_name in globals():
             continue
 
