@@ -116,7 +116,7 @@ class OpaqueRenderingStage(testsuite.CarnaRenderingTestCase):
         )
         camera = carna.camera(
             parent=root,
-            projection=r.frustum(fov=np.pi / 2, z_near=10, z_far=1000),
+            projection=r.frustum(fov=np.pi / 2, z_near=1, z_far=1e3),
             local_transform=carna.math.translation(0, 0, 250),
         )
 
