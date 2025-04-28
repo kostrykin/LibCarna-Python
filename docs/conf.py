@@ -8,6 +8,10 @@ extensions = [
     'sphinx.ext.napoleon',
 ]
 
+html_logo = 'https://kostrykin.github.io/Carna/html/logo.png'
+html_static_path = ['_static']
+html_css_files = ['custom.css']
+
 import os
 import sys
 
