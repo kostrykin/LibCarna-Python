@@ -220,8 +220,8 @@ class animation:
     Create an animation that can be rendered.
 
     Arguments:
-        step_functions: List of function that are called for each frame of the animation. Each function is called with
-            a single argument `t`, which is a float in the range [0, 1]. The function should modify the scene in place.
+        step_functions: List of functions that are called for each frame of the animation. Each function is called with
+            a single argument `t`, which is a float in the range (0, 1]. The function should modify the scene in place.
             To obtain a smooth eternal animation, the scene should be in it's initial state at `t=1`.
         n_frames: Number of frames to be rendered.
     """
