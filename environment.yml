@@ -18,3 +18,7 @@ dependencies:
   - setuptools
   - matplotlib-base  # for tests
   - scipy  # for tests
+  - pip
+  - pip:
+    - numpngw ==0.1.4  # for tests and docs (writes APNG)
+    - apng ==0.3.4  # for tests and docs (reads APNG)

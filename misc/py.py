@@ -1,5 +1,10 @@
 import re
-from typing import Iterable
+from typing import (
+    Callable,
+    Iterable,
+    Literal,
+    Sequence,
+)
 
 import numpy as np
 
@@ -7,6 +12,27 @@ import carna.base
 import carna.egl
 import carna.presets
 import carna.helpers
+
+
+AxisLiteral = Literal['x', 'y', 'z']
+AxisHint = AxisLiteral | tuple[float, float, float] | list[float, float, float]
+
+
+def _resolve_axis_hint(axis: AxisHint) -> tuple[float, float, float]:
+    if isinstance(axis, str):
+        match axis:
+            case 'x':
+                return (1, 0, 0)
+            case 'y':
+                return (0, 1, 0)
+            case 'z':
+                return (0, 0, 1)
+            case _:
+                raise ValueError(f'Invalid axis hint: {axis}')
+    elif len(axis) == 3:
+        return tuple(axis)
+    else:
+        raise ValueError(f'Invalid axis hint: {axis}')
 
 
 def _camel_to_snake(name):
@@ -187,6 +213,38 @@ class renderer:
         of the surface of the renderer.
         """
         ...
+
+
+class animation:
+    """
+    Create an animation that can be rendered.
+
+    Arguments:
+        step: Function that is called for each frame of the animation. The function is called with a single
+            argument `t`, which is a float in the range [0, 1]. The function should modify the scene in place.
+        n_frames: Number of frames to be rendered.
+    """
+
+    def __init__(self, step_functions: list[Callable[[float], None]], n_frames: int = 25):
+        self.step_functions = step_functions
+        self.n_frames = n_frames
+
+    def render(self, r: renderer, *args, **kwargs) -> Iterable[np.ndarray]:
+        for t in np.linspace(0, 1, num=self.n_frames):
+            for step in self.step_functions:
+                step(t)
+            yield r.render(*args, **kwargs)
+
+    @staticmethod
+    def rotate_local(spatial: carna.base.Spatial, axis: AxisHint = 'y') -> Callable[[float], None]:
+        """
+        Create a step function for rotating an object's local coordinate system.
+        """
+        base_transform = spatial.local_transform
+        axis = _resolve_axis_hint(axis)
+        def step(t: float):
+            spatial.local_transform = carna.math.rotation(axis, radians=2 * np.pi * t) @ base_transform
+        return step
 
 
 def volume(

@@ -103,13 +103,13 @@ PYBIND11_MODULE( presets, m )
         .doc() = R"(Implements rendering stage that renders opaque meshes.
 
         .. literalinclude:: ../test/test_integration.py
-           :start-after: # .. OpaqueRenderingStage: example-start
-           :end-before: # .. OpaqueRenderingStage: example-end
+           :start-after: # .. OpaqueRenderingStage: example-setup-start
+           :end-before: # .. OpaqueRenderingStage: example-setup-end
            :dedent: 8
 
-        This is the image ``array`` rendered in the example:
+        Rendering the scene as an animation:
 
-        .. image:: ../test/results/expected/test_integration.OpaqueRenderingStage.test.png
+        .. image:: ../test/results/expected/test_integration.OpaqueRenderingStage.test__animated.png
            :width: 400)";
 
     /* VolumeRenderingStage
@@ -156,13 +156,13 @@ PYBIND11_MODULE( presets, m )
         .doc() = R"(Renders 3D masks.
 
         .. literalinclude:: ../test/test_integration.py
-           :start-after: # .. MaskRenderingStage: example-start
-           :end-before: # .. MaskRenderingStage: example-end
+           :start-after: # .. MaskRenderingStage: example-setup-start
+           :end-before: # .. MaskRenderingStage: example-setup-end
            :dedent: 8
 
-        This is the image ``array`` rendered in the example:
+        Rendering the scene as an animation:
 
-        .. image:: ../test/results/expected/test_integration.MaskRenderingStage.test.png
+        .. image:: ../test/results/expected/test_integration.MaskRenderingStage.test__animated.png
            :width: 400)";
 
 /*

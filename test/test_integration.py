@@ -79,8 +79,8 @@ class FrameRenderer(testsuite.CarnaTestCase):
 
 class OpaqueRenderingStage(testsuite.CarnaRenderingTestCase):
 
-    def test(self):
-        # .. OpaqueRenderingStage: example-start
+    def setUp(self):
+        # .. OpaqueRenderingStage: example-setup-start
         GEOMETRY_TYPE_OPAQUE = 1
 
         # Create and configure frame renderer
@@ -119,19 +119,45 @@ class OpaqueRenderingStage(testsuite.CarnaRenderingTestCase):
             projection=r.frustum(fov=np.pi / 2, z_near=1, z_far=1e3),
             local_transform=carna.math.translation(0, 0, 250),
         )
+        # .. OpaqueRenderingStage: example-setup-end
 
-        # Render scene
+        self.r, self.camera = r, camera
+
+    def test(self):
+        r, camera = self.r, self.camera
+
+        # .. OpaqueRenderingStage: example-single-frame-start
         array = r.render(camera)
-        # .. OpaqueRenderingStage: example-end
+        # .. OpaqueRenderingStage: example-single-frame-end
 
         # Verify result
         self.assert_image_almost_expected(array)
 
+    def test__animated(self):
+        r, camera = self.r, self.camera
+
+        # Render the scene once
+        # .. OpaqueRenderingStage: example-animation-start
+        # Define animation
+        animation = carna.animation(
+            [
+                carna.animation.rotate_local(camera)
+            ],
+            n_frames=50,
+        )
+
+        # Render animation
+        frames = list(animation.render(r, camera))
+        # .. OpaqueRenderingStage: example-animation-end
+
+        # Verify result
+        self.assert_image_almost_expected(np.array(frames))
+
 
 class MaskRenderingStage(testsuite.CarnaRenderingTestCase):
 
-    def test(self):
-        # .. MaskRenderingStage: example-start
+    def setUp(self):
+        # .. MaskRenderingStage: example-setup-start
         GEOMETRY_TYPE_VOLUME = 2
 
         # Create and configure frame renderer
@@ -158,10 +184,32 @@ class MaskRenderingStage(testsuite.CarnaRenderingTestCase):
             projection=r.frustum(fov=np.pi / 2, z_near=1, z_far=500),
             local_transform=carna.math.translation(0, 0, 100),
         )
+        # .. MaskRenderingStage: example-setup-end
+
+        self.r, self.camera = r, camera
+
+    def test(self):
+        r, camera = self.r, self.camera
 
         # Render scene
         array = r.render(camera)
-        # .. MaskRenderingStage: example-end
 
         # Verify result
         self.assert_image_almost_expected(array)
+
+    def test__animated(self):
+        r, camera = self.r, self.camera
+
+        # Define animation
+        animation = carna.animation(
+            [
+                carna.animation.rotate_local(camera)
+            ],
+            n_frames=50,
+        )
+
+        # Render animation
+        frames = list(animation.render(r, camera))
+
+        # Verify result
+        self.assert_image_almost_expected(np.array(frames))
