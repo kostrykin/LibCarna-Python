@@ -78,6 +78,17 @@ NodeView::NodeView( Carna::base::Node* node )
 }
 
 
+NodeView::~NodeView()
+{
+    if( auto parentNodeView = std::dynamic_pointer_cast< NodeView >( ownedBy ) )
+    {
+        /* The spatial object of this view is owned by another spatial object, thus the locks are propagated.
+         */
+        parentNodeView->locks.insert( locks.begin(), locks.end() );
+    }
+}
+
+
 Carna::base::Node& NodeView::node()
 {
     return static_cast< Carna::base::Node& >( *spatial );

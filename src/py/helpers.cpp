@@ -97,17 +97,27 @@ void defineVolumeGridHelper( VolumeGridHelperClass& cls )
             , "intensity_data"_a )
         .def(
             "create_node",
-            []( VolumeGridHelperType& self, unsigned int geometryType, const Carna::helpers::VolumeGridHelperBase::Spacing& spacing )
+            []
+                ( std::shared_ptr< VolumeGridHelperType > self
+                , unsigned int geometryType
+                , const Carna::helpers::VolumeGridHelperBase::Spacing& spacing )
             {
-                return std::shared_ptr< NodeView >( new NodeView( self.createNode( geometryType, spacing ) ) );
+                std::shared_ptr< NodeView > nodeView( new NodeView( self->createNode( geometryType, spacing ) ) );
+                nodeView->locks.insert( self );
+                return nodeView;
             },
             "geometry_type"_a, "spacing"_a
         )
         .def(
             "create_node",
-            []( VolumeGridHelperType& self, unsigned int geometryType, const Carna::helpers::VolumeGridHelperBase::Dimensions& dimensions )
+            []
+                ( std::shared_ptr< VolumeGridHelperType > self
+                , unsigned int geometryType
+                , const Carna::helpers::VolumeGridHelperBase::Dimensions& dimensions )
             {
-                return std::shared_ptr< NodeView >( new NodeView( self.createNode( geometryType, dimensions ) ) );
+                std::shared_ptr< NodeView > nodeView( new NodeView( self->createNode( geometryType, dimensions ) ) );
+                nodeView->locks.insert( self );
+                return nodeView;
             },
             "geometry_type"_a, "dimensions"_a
         )
@@ -189,7 +199,12 @@ PYBIND11_MODULE( helpers, m )
         .def( "commit", &FrameRendererHelperView::commit )
         .def( "reset", &FrameRendererHelperView::reset );
 
-    auto VolumeGridHelperBase = py::class_< Carna::helpers::VolumeGridHelperBase >( m, "VolumeGridHelperBase" )
+    /* The exposed VolumeGridHelper classes need to use a shared holder, due to their lazy data uploading behavior:
+     * https://kostrykin.github.io/Carna/html/classCarna_1_1base_1_1ManagedTexture3D.html#a37f03f311b2d1bd87ccb12f545d70f04
+     */
+    auto VolumeGridHelperBase = py::class_<
+        Carna::helpers::VolumeGridHelperBase, std::shared_ptr< Carna::helpers::VolumeGridHelperBase >
+    >( m, "VolumeGridHelperBase" )
         .def_readonly_static( "DEFAULT_MAX_SEGMENT_BYTESIZE", &VolumeGridHelperBase__DEFAULT_MAX_SEGMENT_BYTESIZE )
         .def_readonly( "native_resolution", &Carna::helpers::VolumeGridHelperBase::nativeResolution );
 
@@ -207,6 +222,7 @@ PYBIND11_MODULE( helpers, m )
      */
     auto VolumeGridHelper_IntensityVolumeUInt16 = py::class_<
         Carna::helpers::VolumeGridHelper< Carna::base::IntensityVolumeUInt16 >,
+        std::shared_ptr< Carna::helpers::VolumeGridHelper< Carna::base::IntensityVolumeUInt16 > >,
         Carna::helpers::VolumeGridHelperBase
     >( m, "VolumeGridHelper_IntensityVolumeUInt16" );
     defineVolumeGridHelper<
@@ -222,6 +238,7 @@ PYBIND11_MODULE( helpers, m )
      */
     auto VolumeGridHelper_IntensityVolumeUInt16_NormalMap3DInt8 = py::class_<
         Carna::helpers::VolumeGridHelper< Carna::base::IntensityVolumeUInt16, Carna::base::NormalMap3DInt8 >,
+        std::shared_ptr< Carna::helpers::VolumeGridHelper< Carna::base::IntensityVolumeUInt16, Carna::base::NormalMap3DInt8 > >,
         Carna::helpers::VolumeGridHelperBase
     >( m, "VolumeGridHelper_IntensityVolumeUInt16_NormalMap3DInt8" );
     defineVolumeGridHelper<
@@ -244,6 +261,7 @@ PYBIND11_MODULE( helpers, m )
      */
     auto VolumeGridHelper_IntensityVolumeUInt8 = py::class_<
         Carna::helpers::VolumeGridHelper< Carna::base::IntensityVolumeUInt8 >,
+        std::shared_ptr< Carna::helpers::VolumeGridHelper< Carna::base::IntensityVolumeUInt8 > >,
         Carna::helpers::VolumeGridHelperBase
     >( m, "VolumeGridHelper_IntensityVolumeUInt8" );
     defineVolumeGridHelper<
@@ -259,6 +277,7 @@ PYBIND11_MODULE( helpers, m )
      */
     auto VolumeGridHelper_IntensityVolumeUInt8_NormalMap3DInt8 = py::class_<
         Carna::helpers::VolumeGridHelper< Carna::base::IntensityVolumeUInt8, Carna::base::NormalMap3DInt8 >,
+        std::shared_ptr< Carna::helpers::VolumeGridHelper< Carna::base::IntensityVolumeUInt8, Carna::base::NormalMap3DInt8 > >,
         Carna::helpers::VolumeGridHelperBase
     >( m, "VolumeGridHelper_IntensityVolumeUInt8_NormalMap3DInt8" );
     defineVolumeGridHelper<

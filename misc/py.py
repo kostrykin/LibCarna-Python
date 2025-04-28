@@ -45,7 +45,7 @@ def _setup_spatial(spatial, parent: carna.base.Node | None = None, **kwargs):
 
 def _create_spatial_factory(spatial_type_name):
     spatial_type = getattr(carna.base, spatial_type_name)
-    def spatial_factory(tag: str | None = None, parent: carna.base.Node | None = None, **kwargs):
+    def spatial_factory(tag: str | None = None, *, parent: carna.base.Node | None = None, **kwargs):
         """
         Create a spatial object of the given type.
 
@@ -64,7 +64,14 @@ node = _create_spatial_factory('Node')
 camera = _create_spatial_factory('Camera')
 
 
-def geometry(geometry_type: int, tag: str | None = None, parent: carna.base.Node | None = None, features: dict | None = None, **kwargs):
+def geometry(
+        geometry_type: int,
+        tag: str | None = None,
+        *,
+        parent: carna.base.Node | None = None,
+        features: dict | None = None,
+        **kwargs,
+    ) -> carna.base.Geometry:
     """
     Create a :class:`carna.base.Geometry` object.
 
@@ -89,7 +96,7 @@ def geometry(geometry_type: int, tag: str | None = None, parent: carna.base.Node
     return geometry
 
 
-def material(shader_name: str, **kwargs):
+def material(shader_name: str, **kwargs) -> carna.base.Material:
     """
     Create a :class:`carna.base.Material` object.
 
@@ -184,15 +191,27 @@ class renderer:
 def volume(
         geometry_type: int,
         array: np.ndarray,
+        tag: str | None = None,
+        *,
         parent: carna.base.Node | None = None,
         normals: bool = False,
-        *,
         spacing: np.ndarray | None = None,
         dimensions: np.ndarray | None = None,
     ) -> carna.base.Node:
     """
+    Create a renderable representation of 3D data using the specified `geometry_type`, that can be put anywhere in the
+    scene graph. The 3D volume is centered in the returned node.
+
+    Arguments:
+        geometry_type: The type of the geometry.
+        array: 3D data to be rendered.
+        tag: An arbitrary string, that helps identifying the object.
+        parent: Parent node to attach the volume to, or `None`.
+        normals: Governs normal mapping (if `True`, the 3D normal map will be pre-computed for the volume).
+        spacing: Specifies the spacing between two adjacent voxel centers. Mutually exclusive with `dimensions`.
+        dimensions: Specifies the spatial size of the whole volume. Mutually exclusive with `spacing`.
     """
-    assert array.ndim == 3, 'Array must be a 3D data.'
+    assert array.ndim == 3, 'Array must be 3D data.'
     assert (spacing is None) != (dimensions is None), 'Either spacing or dimensions must be provided.'
 
     # Choose appropriate intensity component and prepare the data for loading (data is always transferred as float)
@@ -211,12 +230,12 @@ def volume(
     
     # Choose appropriate buffer type
     if normals:
-        volume_type_name = f'VolumeGridHelper_{intensity_component}_NormalMap3DInt8'
+        helper_type_name = f'VolumeGridHelper_{intensity_component}_NormalMap3DInt8'
     else:
-        volume_type_name = f'VolumeGridHelper_{intensity_component}'
+        helper_type_name = f'VolumeGridHelper_{intensity_component}'
     
     # Create the buffer and load the data
-    volume_type = getattr(carna.helpers, volume_type_name)
+    volume_type = getattr(carna.helpers, helper_type_name)
     helper = volume_type(native_resolution=array.shape)
     helper.load_intensities(array)
 
@@ -227,9 +246,15 @@ def volume(
     if dimensions is not None:
         create_node_kwargs['dimensions'] = volume_type.Dimensions(spacing)
 
+    # Create a wrapper node, so that it is safe to modify the `.local_transform` property (making such modifications
+    # directly to the property of the node created by the wrapper is discouraged in the docs)
+    # https://kostrykin.github.io/Carna/html/classCarna_1_1helpers_1_1VolumeGridHelper.html#ab03947088a1de662b7a468516e4b5e24
+    wrapper_node = carna.base.Node(tag) if tag is not None else carna.base.Node()
+    _setup_spatial(wrapper_node, parent)
+
     # Create volume node
     volume_node = helper.create_node(geometry_type=geometry_type, **create_node_kwargs)
-    _setup_spatial(volume_node, parent)
+    wrapper_node.attach_child(volume_node)
     return volume_node
 
 

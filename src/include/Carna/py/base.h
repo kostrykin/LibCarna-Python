@@ -59,8 +59,8 @@ class SpatialView : public std::enable_shared_from_this< SpatialView >
 
 public:
 
-    /* The object that owns the spatial object of this view. The spatial object of
-     * this view is owned by the view, if it is not owned by any other spatial object.
+    /* The view that owns the spatial object of this view. The spatial object of this view is owned by this view, if it
+     * is not owned by any other spatial object.
      */
     std::shared_ptr< SpatialView > ownedBy;
 
@@ -90,9 +90,18 @@ public:
 
     explicit NodeView( Carna::base::Node* node );
 
+    virtual ~NodeView();
+
     Carna::base::Node& node();
 
     void attachChild( SpatialView& child );
+
+    /* Locks objects with shared ownership until this node view dies.
+     *
+     * When this node view dies, and the spatial objects of this view is owned by another view, the locked objects are
+     * propagated to the view that owns the spatial objects of this view.
+     */
+    std::unordered_set< std::shared_ptr< void > > locks;
 
 }; // NodeView
 

@@ -142,18 +142,10 @@ class MaskRenderingStage(testsuite.CarnaRenderingTestCase):
         # Create volume
         np.random.seed(0)
         data = (ndi.gaussian_filter(np.random.rand(64, 64, 20), 10.) > 0.5)
-        helper = carna.helpers.VolumeGridHelper_IntensityVolumeUInt8(
-            native_resolution=data.shape,
-        )
-        helper.load_intensities(data)
-        volume_node = helper.create_node(
-            geometry_type=GEOMETRY_TYPE_VOLUME,
-            spacing=carna.helpers.VolumeGridHelper_IntensityVolumeUInt8.Spacing((1, 1, 2)),
-        )
 
         # Create and configure scene
         root = carna.node()
-        root.attach_child(volume_node)
+        carna.volume(GEOMETRY_TYPE_VOLUME, data, parent=root, spacing=(1, 1, 2))
         camera = carna.camera(
             parent=root,
             projection=r.frustum(fov=np.pi / 2, z_near=10, z_far=500),
