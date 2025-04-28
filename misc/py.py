@@ -220,8 +220,9 @@ class animation:
     Create an animation that can be rendered.
 
     Arguments:
-        step: Function that is called for each frame of the animation. The function is called with a single
-            argument `t`, which is a float in the range [0, 1]. The function should modify the scene in place.
+        step_functions: List of function that are called for each frame of the animation. Each function is called with
+            a single argument `t`, which is a float in the range [0, 1]. The function should modify the scene in place.
+            To obtain a smooth eternal animation, the scene should be in it's initial state at `t=1`.
         n_frames: Number of frames to be rendered.
     """
 
@@ -230,7 +231,7 @@ class animation:
         self.n_frames = n_frames
 
     def render(self, r: renderer, *args, **kwargs) -> Iterable[np.ndarray]:
-        for t in np.linspace(0, 1, num=self.n_frames):
+        for t in np.linspace(1, 0, num=self.n_frames, endpoint=False)[::-1]:
             for step in self.step_functions:
                 step(t)
             yield r.render(*args, **kwargs)
