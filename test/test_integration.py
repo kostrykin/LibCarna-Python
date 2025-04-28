@@ -65,11 +65,11 @@ class FrameRenderer(testsuite.CarnaTestCase):
         self.frame_renderer.render(camera, root)
 
     def test__append_stage(self):
-        opaque = carna.opaque_rendering_stage(0)
+        opaque = carna.opaque_renderer(0)
         self.frame_renderer.append_stage(opaque)
 
     def test__render(self):
-        opaque = carna.opaque_rendering_stage(0)
+        opaque = carna.opaque_renderer(0)
         self.frame_renderer.append_stage(opaque)
         root = carna.node()
         camera = carna.camera()
@@ -84,7 +84,7 @@ class OpaqueRenderingStage(testsuite.CarnaRenderingTestCase):
         GEOMETRY_TYPE_OPAQUE = 1
 
         # Create and configure frame renderer
-        opaque = carna.opaque_rendering_stage(GEOMETRY_TYPE_OPAQUE)
+        opaque = carna.opaque_renderer(GEOMETRY_TYPE_OPAQUE)
         r = carna.renderer(800, 600, [opaque])
 
         # Create mesh
@@ -132,23 +132,30 @@ class MaskRenderingStage(testsuite.CarnaRenderingTestCase):
 
     def test(self):
         # .. MaskRenderingStage: example-start
-        GEOMETRY_TYPE_VOLUME = 1
+        GEOMETRY_TYPE_VOLUME = 2
 
         # Create and configure frame renderer
-        mask_rendering = carna.mask_rendering_stage(GEOMETRY_TYPE_VOLUME)
+        mask_rendering = carna.mask_renderer(GEOMETRY_TYPE_VOLUME)
         mask_rendering.render_borders = True
         r = carna.renderer(800, 600, [mask_rendering])
 
         # Create volume
         np.random.seed(0)
-        data = (ndi.gaussian_filter(np.random.rand(64, 64, 20), 10.) > 0.5)
+        data = (
+            ndi.gaussian_filter(np.random.rand(64, 64, 20), 10) > 0.5
+        )
 
         # Create and configure scene
         root = carna.node()
-        carna.volume(GEOMETRY_TYPE_VOLUME, data, parent=root, spacing=(1, 1, 2))
+        carna.volume(
+            GEOMETRY_TYPE_VOLUME,
+            data,
+            parent=root,
+            spacing=(1, 1, 2),
+        )
         camera = carna.camera(
             parent=root,
-            projection=r.frustum(fov=np.pi / 2, z_near=10, z_far=500),
+            projection=r.frustum(fov=np.pi / 2, z_near=1, z_far=500),
             local_transform=carna.math.translation(0, 0, 100),
         )
 

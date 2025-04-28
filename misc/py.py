@@ -10,7 +10,6 @@ import carna.helpers
 
 
 def _camel_to_snake(name):
-    
     s = re.sub(r'(.)([A-Z][a-z]+)', r'\1_\2', name)
     return re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', s).lower()
 
@@ -24,6 +23,8 @@ def _expand_module(module):
 
         # Skip if the target already exists
         target_name = _camel_to_snake(member_name)
+        if target_name.endswith('_rendering_stage'):
+            target_name = target_name.replace('_rendering_stage', '_renderer')
         if target_name in globals():
             continue
 

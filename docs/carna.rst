@@ -1,8 +1,8 @@
 carna
 =====
 
-The objects in this module provide a simplified convenience interface for the more complex wrappers in the respective
-sub-modules.
+The objects in this module provide a simplified and more Pythonic convenience interface for the natively structured
+wrappers in the respective sub-modules.
 
 Example
 -------
