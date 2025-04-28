@@ -91,8 +91,8 @@ class OpaqueRenderingStage(testsuite.CarnaRenderingTestCase):
         box_mesh = carna.mesh_factory.create_box(40, 40, 40)
 
         # Create and configure materials
-        material1 = carna.material('unshaded', color=[1, 0, 0, 1])
-        material2 = carna.material('unshaded', color=[0, 1, 0, 1])
+        material1 = carna.material('solid', color=[1, 0, 0, 1])
+        material2 = carna.material('solid', color=[0, 1, 0, 1])
 
         # Create and configure scene
         root = carna.node()
