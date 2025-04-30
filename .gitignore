@@ -4,6 +4,6 @@
 /docs/build
 /dist
 /CarnaPy.egg-info
-/misc/conda-recipe/carnapy
+/.carna-dev
 .ipynb_checkpoints
 *.swp

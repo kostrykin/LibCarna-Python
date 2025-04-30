@@ -5,7 +5,7 @@ if [ -z "$CARNA_SRC_PREFIX" ]; then
     echo "CARNA_SRC_PREFIX is not set."
     exit 1
 fi
-export ROOT=$(dirname "$0")
+export ROOT=$PWD/$(dirname "$0")
 export CARNA_INSTALL_PREFIX="$ROOT/.carna-dev"
 
 # Build development version of Carna
