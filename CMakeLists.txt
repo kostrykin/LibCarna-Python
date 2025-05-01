@@ -40,7 +40,7 @@ endmacro()
 ############################################
 
 list( APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/misc/CMake-Modules )
-list( APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/.carna-dev )
+list( PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/.carna-dev )
 
 ############################################
 # Define default paths for the installation
