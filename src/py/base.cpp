@@ -13,6 +13,7 @@ using namespace pybind11::literals; // enables the _a literal
 #include <Carna/base/Geometry.h>
 #include <Carna/base/GeometryFeature.h>
 #include <Carna/base/Color.h>
+#include <Carna/base/ColorMap.h>
 #include <Carna/base/BoundingVolume.h>
 #include <Carna/base/GLContext.h>
 #include <Carna/base/MeshFactory.h>
@@ -245,6 +246,21 @@ void FrameRendererView::appendStage( const std::shared_ptr< RenderStageView >& r
 
 
 FrameRendererView::~FrameRendererView()
+{
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// ColorMapView
+// ----------------------------------------------------------------------------------
+
+ColorMapView::ColorMapView
+    ( const std::shared_ptr< RenderStageView >& ownedBy
+    , Carna::base::ColorMap& colorMap )
+
+    : ownedBy( ownedBy )
+    , colorMap( colorMap )
 {
 }
 
@@ -546,6 +562,32 @@ PYBIND11_MODULE( base, m )
             {
                 return static_cast< const Carna::base::math::Vector4f& >( self );
             }
+        );
+
+    py::class_< ColorMapView, std::shared_ptr< ColorMapView > >( m, "ColorMap" )
+        .def( "clear",
+            VIEW_DELEGATE( ColorMapView, colorMap.clear() )
+        )
+        .def( "write_linear_segment",
+            VIEW_DELEGATE_RETURN_SELF
+                ( const std::shared_ptr< ColorMapView >
+                , get()->colorMap.writeLinearSegment( intensityFirst, intensityLast, colorFirst, colorLast )
+                , float intensityFirst
+                , float intensityLast
+                , const Carna::base::Color& colorFirst
+                , const Carna::base::Color& colorLast ),
+            "intensity_first"_a, "intensity_last"_a, "color_first"_a, "color_last"_a
+        )
+        .def( "write_linear_spline",
+            VIEW_DELEGATE_RETURN_SELF
+                ( const std::shared_ptr< ColorMapView >
+                , get()->colorMap.writeLinearSpline( colors )
+                , const std::vector< Carna::base::Color >& colors ),
+            "colors"_a
+        )
+        .def_property_readonly(
+            "color_list",
+            VIEW_DELEGATE( ColorMapView, colorMap.getColorList() )
         );
 
 /*

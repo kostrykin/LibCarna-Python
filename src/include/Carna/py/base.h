@@ -32,6 +32,19 @@ class FrameRendererView;
 
 
 // ----------------------------------------------------------------------------------
+// VIEW_DELEGATE_RETURN_SELF
+// ----------------------------------------------------------------------------------
+
+#define VIEW_DELEGATE_RETURN_SELF( ViewType, delegate, ... ) \
+    []( ViewType& self __VA_OPT__( , __VA_ARGS__ ) ) \
+    { \
+        self.delegate; \
+        return self; \
+    }
+
+
+
+// ----------------------------------------------------------------------------------
 // GLContextView
 // ----------------------------------------------------------------------------------
 
@@ -286,6 +299,25 @@ public:
     virtual ~FrameRendererView();
 
 }; // FrameRendererView
+
+
+
+// ----------------------------------------------------------------------------------
+// ColorMapView
+// ----------------------------------------------------------------------------------
+
+class ColorMapView : public std::enable_shared_from_this< ColorMapView >
+{
+
+public:
+
+    const std::shared_ptr< RenderStageView > ownedBy;
+
+    Carna::base::ColorMap& colorMap;
+
+    ColorMapView( const std::shared_ptr< RenderStageView >& ownedBy, Carna::base::ColorMap& colorMap );
+
+}; // ColorMapView
 
 
 
