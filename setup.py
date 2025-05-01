@@ -6,17 +6,17 @@
 # > python setup.py sdist
 # > python -m twine upload dist/*.tar.gz
 
+import os
+import sys
+from pathlib import Path
+
 import yaml
+
 with open('misc/versions.yml', 'r') as io:
     versions = yaml.safe_load(io)
 
 VERSION_CARNA_PY = versions['build']['carnapy']
 VERSION_CARNA    = versions['build']['carna'  ]
-
-import sys
-import os
-
-from pathlib import Path
 
 root_dir = Path(os.path.abspath(os.path.dirname(__file__)))
 
@@ -30,7 +30,7 @@ if __name__ == '__main__':
     (build_dirs['debug']   / 'carna').mkdir(parents=True, exist_ok=True)
     (build_dirs['release'] / 'carna').mkdir(parents=True, exist_ok=True)
 
-    from setuptools import setup, Extension, find_packages
+    from setuptools import setup, Extension
     from setuptools.command.build_ext import build_ext as build_ext_orig
 
     with open(root_dir / 'README.md', encoding='utf-8') as io:
