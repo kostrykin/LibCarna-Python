@@ -221,8 +221,7 @@ class MIPStage(testsuite.CarnaRenderingTestCase):
         GEOMETRY_TYPE_VOLUME = 2
 
         # Create and configure frame renderer
-        mip = carna.mip(GEOMETRY_TYPE_VOLUME)
-        mip.append_layer(carna.mip_layer(0.5, 1, carna.color.WHITE))
+        mip = carna.mip(GEOMETRY_TYPE_VOLUME, cmap='jet')
         r = carna.renderer(800, 600, [mip])
 
         # Create volume

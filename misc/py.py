@@ -159,6 +159,20 @@ def material(shader_name: str, **kwargs) -> carna.base.Material:
     return material
 
 
+class color(carna.base.Color):
+
+    def __init__(self, *args, **kwargs):
+        if len(args) == 1 and len(kwargs) == 0 and isinstance(args[0], str) and args[0].startswith('#'):
+            hex_str = args[0][1:]
+            r = int(hex_str[0:2], 16)
+            g = int(hex_str[2:4], 16)
+            b = int(hex_str[4:6], 16)
+            a = int(hex_str[6:8], 16) if len(hex_str) == 8 else 255
+            super().__init__(r, g, b, a)
+        else:
+            super().__init__(*args, **kwargs)
+
+
 class renderer:
     """
     Create a renderer, that conveniently combines a :class:`frame_renderer` and a :class:`surface`.
@@ -340,6 +354,68 @@ def volume(
     volume_node = helper.create_node(geometry_type=geometry_type, **create_node_kwargs)
     wrapper_node.attach_child(volume_node)
     return volume_node
+
+
+class color_map_helper:
+
+    def __init__(self, color_map: carna.base.ColorMap, cmap: str | None = None):
+        self.color_map = color_map
+        cmap = cmap or 'viridis'
+        if hasattr(self, cmap) and cmap != 'write_colors':
+            getattr(self, cmap)()
+        else:
+            raise ValueError(f'Unknown color map: "{cmap}"')
+
+    def write_colors(self, *colors, start: Literal['opaque', 'make-transparent', 'add-transparent'] = 'opaque'):
+        colors = list(colors)
+        if start == 'make-transparent':
+            colors[0] += '00'
+        elif start == 'add-transparent':
+            colors.insert(0, colors[0] + '00')
+        self.color_map.write_linear_spline(colors)
+
+    def gray(self, **kwargs):
+        self.write_colors(
+            carna.color('#000000'),
+            carna.color('#ffffff'),
+            **kwargs,
+        )
+
+    def viridis(self, **kwargs):
+        self.write_colors(
+            carna.color('#440154'),
+            carna.color('#482777'),
+            carna.color('#3e4989'),
+            carna.color('#31688e'),
+            carna.color('#26828e'),
+            carna.color('#1f9e89'),
+            carna.color('#35b779'),
+            carna.color('#6ece58'),
+            carna.color('#b5de2b'),
+            carna.color('#fde725'),
+            **kwargs,
+        )
+
+    def jet(self, **kwargs):
+        self.write_colors(
+            carna.color('#00007f'),
+            carna.color('#0000ff'),
+            carna.color('#007fff'),
+            carna.color('#00ffff'),
+            carna.color('#7fff7f'),
+            carna.color('#ffff00'),
+            carna.color('#ff7f00'),
+            carna.color('#ff0000'),
+            carna.color('#7f0000'),
+            **kwargs,
+        )
+
+
+class mip(carna.presets.MIPStage):
+
+    def __init__(self, *args, cmap: str | None = None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.cmap = color_map_helper(self.color_map, cmap)
 
 
 _expand_module(carna.base)
