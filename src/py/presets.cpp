@@ -90,20 +90,6 @@ Carna::presets::MaskRenderingStage& MaskRenderingStageView::maskRenderingStage()
 
 
 // ----------------------------------------------------------------------------------
-// MIPLayerView
-// ----------------------------------------------------------------------------------
-
-MIPLayerView::~MIPLayerView()
-{
-    if( !ownedBy )
-    {
-        delete mipLayer;
-    }
-}
-
-
-
-// ----------------------------------------------------------------------------------
 // MIPStageView
 // ----------------------------------------------------------------------------------
 
@@ -123,22 +109,11 @@ Carna::presets::MIPStage& MIPStageView::mipStage()
     return static_cast< Carna::presets::MIPStage& >( *renderStage );
 }
 
-
-void MIPStageView::appendLayer( MIPLayerView* mipLayerView )
+std::shared_ptr< base::ColorMapView > MIPStageView::colorMap()
 {
-    if( mipLayerView->ownedBy )
-    {
-        mipLayerView->ownedBy->removeLayer( *mipLayerView );
-    }
-    mipLayerView->ownedBy = std::static_pointer_cast< MIPStageView >( this->shared_from_this() );
-    mipStage().appendLayer( mipLayerView->mipLayer );
-}
-
-
-void MIPStageView::removeLayer( MIPLayerView& mipLayerView )
-{
-    mipLayerView.ownedBy.reset();
-    mipStage().removeLayer( *( mipLayerView.mipLayer ) );
+    return std::shared_ptr< base::ColorMapView >(
+        new base::ColorMapView( this->shared_from_this(), mipStage().colorMap )
+    );
 }
 
 
@@ -242,19 +217,13 @@ PYBIND11_MODULE( presets, m )
 
         .. image:: ../test/results/expected/test_integration.MaskRenderingStage.test__animated.png
            :width: 400)";
-
-    /* MIPLayer
-     */
-    py::class_< MIPLayerView, std::shared_ptr< MIPLayerView > >( m, "MIPLayer" )
-        .def( py::init< float, float, const Carna::base::Color& >(), "min_intensity"_a, "max_intensity"_a, "color"_a );
     
     /* MIPStage
      */
     py::class_< MIPStageView, std::shared_ptr< MIPStageView >, VolumeRenderingStageView >( m, "MIPStage" )
         .def_readonly_static( "ROLE_INTENSITIES", &MIP_STAGE__ROLE_INTENSITIES )
         .def( py::init< unsigned int >(), "geometry_type"_a )
-        .def( "append_layer", &MIPStageView::appendLayer, "layer"_a )
-        .def( "remove_layer", &MIPStageView::removeLayer, "layer"_a )
+        .def_property_readonly( "color_map", &MIPStageView::colorMap )
         .doc() = R"(Renders maximum intensity projections of volume geometries in the scene.
 
         .. literalinclude:: ../test/test_integration.py

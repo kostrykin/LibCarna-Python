@@ -69,35 +69,6 @@ public:
 
 
 // ----------------------------------------------------------------------------------
-// MIPLayerView
-// ----------------------------------------------------------------------------------
-
-class MIPLayerView : public std::enable_shared_from_this< MIPLayerView >
-{
-
-public:
-
-    template< typename... Args >
-    explicit MIPLayerView( Args... args );
-
-    virtual ~MIPLayerView();
-
-    Carna::presets::MIPLayer* mipLayer;
-
-    std::shared_ptr< MIPStageView > ownedBy;
-
-}; // MIPStageView
-
-
-template< typename... Args >
-MIPLayerView::MIPLayerView( Args... args )
-    : mipLayer( new Carna::presets::MIPLayer( args... ) )
-{
-}
-
-
-
-// ----------------------------------------------------------------------------------
 // MIPStageView
 // ----------------------------------------------------------------------------------
 
@@ -110,9 +81,7 @@ public:
 
     Carna::presets::MIPStage& mipStage();
 
-    void appendLayer( MIPLayerView* mipLayerView );
-
-    void removeLayer( MIPLayerView& mipLayerView );
+    std::shared_ptr< base::ColorMapView > colorMap();
 
 }; // MIPStageView
 

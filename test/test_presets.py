@@ -69,18 +69,43 @@ class MIPStage(VolumeRenderingStage):
     def test__ROLE_INTENSITIES(self):
         self.assertEqual(carna.presets.MIPStage.ROLE_INTENSITIES, 0)
 
-    def test__append_layer(self):
-        layer = carna.presets.MIPLayer(0, 1, carna.base.Color.RED)
+    def test__color_map(self):
+        """
+        Test that, despite that `.color_map` returns a new `ColorMapView` each time it is called, the actual color map
+        is shared between the `ColorMapView` instances.
+        """
         rs = self.create()
-        rs.append_layer(layer)
+        cmap1 = rs.color_map
+        cmap1.write_linear_spline([carna.color.RED, carna.color.BLUE])
+        cmap2 = rs.color_map
+        self.assertEqual(cmap1.color_list, cmap2.color_list)
 
-    def test__remove_layer(self):
-        layer1 = carna.presets.MIPLayer(0, 1, carna.base.Color.RED)
-        layer2 = carna.presets.MIPLayer(0, 1, carna.base.Color.GREEN)
+    def test__color_map__color_list(self):
         rs = self.create()
-        rs.append_layer(layer1)
-        rs.remove_layer(layer1)
-        rs.append_layer(layer2)
+        self.assertEqual(rs.color_map.color_list[0], carna.color.BLACK_NO_ALPHA)
+        self.assertEqual(rs.color_map.color_list[-1], carna.color.BLACK_NO_ALPHA)
+
+    def test__color_map__write_linear_segment(self):
+        rs = self.create()
+        cmap = rs.color_map
+        cmap.write_linear_segment(0.0, 0.5, carna.color.RED, carna.color.BLUE)
+        self.assertEqual(cmap.color_list[0], carna.color.RED)
+        self.assertEqual(cmap.color_list[len(cmap.color_list) // 2], carna.color.BLUE)
+
+    def test__color_map__write_linear_spline(self):
+        rs = self.create()
+        cmap = rs.color_map
+        cmap.write_linear_spline([carna.color.RED, carna.color.GREEN, carna.color.BLUE])
+        self.assertEqual(cmap.color_list[0], carna.color.RED)
+        self.assertEqual(cmap.color_list[len(cmap.color_list) // 2], carna.color.GREEN)
+        self.assertEqual(cmap.color_list[-1], carna.color.BLUE)
+
+    def test__color_map__clear(self):
+        rs = self.create()
+        cmap = rs.color_map
+        cmap.write_linear_segment(0.0, 0.5, carna.color.RED, carna.color.BLUE)
+        cmap.clear()
+        self.assertEqual(cmap.color_list[0], carna.color.BLACK_NO_ALPHA)
 
 
 class CuttingPlanesStage(testsuite.CarnaTestCase):
