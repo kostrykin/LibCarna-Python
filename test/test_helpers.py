@@ -42,11 +42,11 @@ class VolumeGridHelper:
             spacing=self.VolumeGridHelper.Spacing((0.1, 0.1, 0.2)),
         )
 
-    def test__create_node__with_dimensions(self):
+    def test__create_node__with_extent(self):
         helper = self.create()
         helper.create_node(
             geometry_type=1,
-            dimensions=self.VolumeGridHelper.Dimensions((100, 100, 80)),
+            extent=self.VolumeGridHelper.Extent((100, 100, 80)),
         )
 
 

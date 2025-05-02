@@ -294,7 +294,7 @@ def volume(
         parent: carna.base.Node | None = None,
         normals: bool = False,
         spacing: np.ndarray | None = None,
-        dimensions: np.ndarray | None = None,
+        extent: np.ndarray | None = None,
     ) -> carna.base.Node:
     """
     Create a renderable representation of 3D data using the specified `geometry_type`, that can be put anywhere in the
@@ -306,11 +306,11 @@ def volume(
         tag: An arbitrary string, that helps identifying the object.
         parent: Parent node to attach the volume to, or `None`.
         normals: Governs normal mapping (if `True`, the 3D normal map will be pre-computed for the volume).
-        spacing: Specifies the spacing between two adjacent voxel centers. Mutually exclusive with `dimensions`.
-        dimensions: Specifies the spatial size of the whole volume. Mutually exclusive with `spacing`.
+        spacing: Specifies the spacing between two adjacent voxel centers. Mutually exclusive with `extent`.
+        extent: Specifies the spatial size of the whole volume. Mutually exclusive with `spacing`.
     """
     assert array.ndim == 3, 'Array must be 3D data.'
-    assert (spacing is None) != (dimensions is None), 'Either spacing or dimensions must be provided.'
+    assert (spacing is None) != (extent is None), 'Either spacing or extent must be provided.'
 
     # Choose appropriate intensity component and prepare the data for loading (data is always transferred as float)
     if array.dtype == np.uint8:
@@ -337,12 +337,12 @@ def volume(
     helper = volume_type(native_resolution=array.shape)
     helper.load_intensities(array)
 
-    # Deduce the parameters for spacing and dimensions
+    # Deduce the parameters for spacing and extent
     create_node_kwargs = dict()
     if spacing is not None:
         create_node_kwargs['spacing'] = volume_type.Spacing(spacing)
-    if dimensions is not None:
-        create_node_kwargs['dimensions'] = volume_type.Dimensions(spacing)
+    if extent is not None:
+        create_node_kwargs['extent'] = volume_type.Extent(extent)
 
     # Create a wrapper node, so that it is safe to modify the `.local_transform` property (making such modifications
     # directly to the property of the node created by the wrapper is discouraged in the docs)
