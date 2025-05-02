@@ -57,17 +57,12 @@ conda install -c kostrykin carnapy
 
 Conda packages are available for Python 3.7–3.9.
 
-Or you can use the Docker image which comes with Jupyter Lab:
-```bash
-docker run --rm --gpus all -p 8890:8890 -t -i kostrykin/carnapy:<TAG>
-```
-
 ---
 ## 4. Build instructions
 
 There is a build script for Ubuntu Linux which builds a wheel file:
 ```bash
-CARNAPY_BUILD_TEST=ON ./linux_build.bash
+CARNAPY_BUILD_DOCS=ON CARNAPY_BUILD_TEST=ON ./linux_build.bash
 ```
 Adaption to other distribution should be self-explanatory.
 
@@ -75,3 +70,11 @@ After building the wheel file, it can be installed using:
 ```bash
 python -m pip install --force-reinstall $(find . -name 'CarnaPy*.whl')
 ```
+
+To build against a development version of Carna, install it locally,
+```bash
+CARNA_SRC_PREFIX="../Carna" ./install_carna_dev.bash
+```
+where you make `CARNA_SRC_PREFIX` point to the source directory.
+
+This will create a local directory `.carna-dev`. The build process will give precedence to Carna from this directory over other versions. Simply remove `.carna-dev` to stop building agaisnt the development version of Carna.
