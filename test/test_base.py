@@ -68,7 +68,7 @@ class Node(testsuite.CarnaTestCase, SpatialMixin):
         node1 = carna.base.Node()
         node2 = carna.base.Node()
         node1.attach_child(node2)
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(carna.base.AssertionFailure):
             node2.attach_child(node1)
 
     def test__attach_child__nonfree(self):
@@ -76,7 +76,7 @@ class Node(testsuite.CarnaTestCase, SpatialMixin):
         node2 = carna.base.Node()
         node3 = carna.base.Node()
         node1.attach_child(node2)
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(carna.base.AssertionFailure):
             node3.attach_child(node2)
 
 
@@ -403,7 +403,7 @@ class math(testsuite.CarnaTestCase):
         )
 
     def test__plane__zero_normal(self):
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(carna.base.AssertionFailure):
             carna.base.math.plane(normal=[0, 0, 0], distance=0)
 
 

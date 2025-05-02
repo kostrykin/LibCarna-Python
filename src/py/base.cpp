@@ -293,7 +293,8 @@ static void configureLog( bool enabled )
 PYBIND11_MODULE( base, m )
 {
 
-    //py::register_exception< AssertionFailure >( m, "AssertionFailure" );  // error: 'const class Carna::base::AssertionFailure' has no member named 'what'
+    py::register_exception< Carna::base::CarnaException >( m, "CarnaException" );
+    py::register_exception< Carna::base::AssertionFailure >( m, "AssertionFailure" );
 
     m.def( "logging",
         []( bool enabled )
