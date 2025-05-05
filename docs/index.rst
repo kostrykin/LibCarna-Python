@@ -10,6 +10,7 @@ Examples
 .. toctree::
    
    examples/cells
+   examples/cthead
 
 API
 ---
