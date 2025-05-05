@@ -55,7 +55,6 @@ if __name__ == '__main__':
             cmake_args = [
                 f'-DCMAKE_BUILD_TYPE={build_type}',
                 f'-DBUILD_TEST={build_test}',
-                f'-DBUILD_DOC=ON',
                 f'-DMAJOR_VERSION={version_major}',
                 f'-DMINOR_VERSION={version_minor}',
                 f'-DPATCH_VERSION={version_patch}',

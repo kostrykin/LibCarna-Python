@@ -1,16 +1,25 @@
+import base64
+import io
 import re
 from typing import (
+    Any,
     Callable,
     Iterable,
     Literal,
 )
 
+import numpngw
 import numpy as np
 
 import libcarna.base
 import libcarna.egl
 import libcarna.presets
 import libcarna.helpers
+
+try:
+    from IPython.core.display import HTML as IPythonHTML
+except ImportError:
+    IPythonHTML = None
 
 
 AxisLiteral = Literal['x', 'y', 'z']
@@ -273,6 +282,18 @@ class animation:
         return step
     
     @staticmethod
+    def swing_local(spatial: libcarna.base.Spatial, axis: AxisHint = 'y', amplitude: float = np.pi / 4) -> Callable[[float], None]:
+        """
+        Create a step function for swinging an object's local coordinate system.
+        """
+        axis = _resolve_axis_hint(axis)
+        base_transform = spatial.local_transform
+        def step(t: float):
+            radians = amplitude * np.sin(2 * np.pi * t)
+            spatial.local_transform = libcarna.math.rotation(axis, radians=radians) @ base_transform
+        return step
+    
+    @staticmethod
     def bounce_local(spatial: libcarna.base.Spatial, axis: AxisHint, amplitude: float = 1.0) -> Callable[[float], None]:
         """
         Create a step function for bouncing an object along a given axis.
@@ -283,6 +304,30 @@ class animation:
             offset = np.multiply(axis, amplitude * np.sin(2 * np.pi * t))
             spatial.local_transform = libcarna.math.translation(offset) @ base_transform
         return step
+    
+
+def imshow(array: np.ndarray | Iterable[np.ndarray], fps: float = 25) -> Any:
+    assert IPythonHTML is not None, 'Please install IPython to use this function.'
+
+    # The image is a single frame, create an animation with a single frame
+    if isinstance(array, np.ndarray) and array.ndim == 3:
+        return imshow([array], fps=fps)
+    
+    # Assume that the image is a list of frames, create a temporal stack
+    elif not isinstance(array, np.ndarray):
+        return imshow(np.array(list(array)), fps=fps)
+    
+    # The image is a temporal stack, create an animated PNG
+    elif isinstance(array, np.ndarray) and array.ndim == 4:
+        buf = io.BytesIO()
+        numpngw.write_apng(buf, array, delay=1000 / fps, use_palette=False)
+        buf.seek(0)
+        buf_base64_str = base64.b64encode(buf.read()).decode('ascii')
+        return IPythonHTML(f'<img src="data:image/apng;base64, {buf_base64_str}"/>')
+    
+    # The image is not a valid type
+    else:
+        raise ValueError('Array must be 3D or 4D data.')
 
 
 def volume(
@@ -294,6 +339,7 @@ def volume(
         normals: bool = False,
         spacing: np.ndarray | None = None,
         extent: np.ndarray | None = None,
+        **kwargs,
     ) -> libcarna.base.Node:
     """
     Create a renderable representation of 3D data using the specified `geometry_type`, that can be put anywhere in the
@@ -302,11 +348,12 @@ def volume(
     Arguments:
         geometry_type: The type of the geometry.
         array: 3D data to be rendered.
-        tag: An arbitrary string, that helps identifying the object.
+        tag: An arbitrary string, that helps identifying the created node.
         parent: Parent node to attach the volume to, or `None`.
         normals: Governs normal mapping (if `True`, the 3D normal map will be pre-computed for the volume).
         spacing: Specifies the spacing between two adjacent voxel centers. Mutually exclusive with `extent`.
         extent: Specifies the spatial size of the whole volume. Mutually exclusive with `spacing`.
+        **kwargs: Attributes to be set on the created node.
     """
     assert array.ndim == 3, 'Array must be 3D data.'
     assert (spacing is None) != (extent is None), 'Either spacing or extent must be provided.'
@@ -347,7 +394,7 @@ def volume(
     # directly to the property of the node created by the wrapper is discouraged in the docs)
     # https://kostrykin.github.io/LibCarna/html/classLibCarna_1_1helpers_1_1VolumeGridHelper.html#ab03947088a1de662b7a468516e4b5e24
     wrapper_node = libcarna.base.Node(tag) if tag is not None else libcarna.base.Node()
-    _setup_spatial(wrapper_node, parent)
+    _setup_spatial(wrapper_node, parent, **kwargs)
 
     # Create volume node
     volume_node = helper.create_node(geometry_type=geometry_type, **create_node_kwargs)

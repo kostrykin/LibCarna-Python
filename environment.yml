@@ -4,6 +4,10 @@ channels:
   - bioconda
 dependencies:
   - python ~=3.12
+
+  # ---------------------------------------------------------------------------
+  # Build dependencies
+
   - pybind11 <3
   - libcarna ==3.3.3
   - libgl-devel
@@ -16,9 +20,23 @@ dependencies:
   - eigen >=3.0.5
   - pyyaml
   - setuptools
-  - matplotlib-base  # for tests
-  - scipy  # for tests
+
+  # ---------------------------------------------------------------------------
+  # Runtime dependencies (general)
+  - numpngw ==0.1.4  # writes APNG
+
+  # ---------------------------------------------------------------------------
+  # Runtime dependencies (tests)
+  - matplotlib-base
+  - scipy
+
+  # ---------------------------------------------------------------------------
+  # Runtime dependencies (examples/docs)
+  - scikit-image
+
+  # ---------------------------------------------------------------------------
+  # pip dependencies
   - pip
   - pip:
-    - numpngw ==0.1.4  # for tests and docs (writes APNG)
-    - apng ==0.3.4  # for tests and docs (reads APNG)
+    - apng ==0.3.4  # for tests (reads APNG)
+    - pooch  # for examples/docs

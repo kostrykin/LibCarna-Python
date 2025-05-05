@@ -1,1 +1,4 @@
 sphinx==8.2.3
+nbsphinx==0.9.5
+ipykernel~=6.29
+pandoc==2.4

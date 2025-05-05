@@ -2,7 +2,7 @@
 set -ex
 
 # Create or update conda environment
-export ROOT=$(dirname "$0")
+export ROOT="$PWD"/$(dirname "$0")
 if [ ! -d "$ROOT/.env" ]; then
     conda env create -f "$ROOT/environment.yml" --prefix "$ROOT/.env"
 else
