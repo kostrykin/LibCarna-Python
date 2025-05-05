@@ -1,6 +1,21 @@
 py_version = '@MAJOR_VERSION@.@MINOR_VERSION@.@PATCH_VERSION@'
 version    = '@LIBCARNA_VERSION@'
 
-from .py import *
+
+from ._py import *
+
+from ._animation import animation
+from ._color import color
+from ._imshow import imshow
+from ._material import material
+from ._mip import mip
+from ._renderer import renderer
+from ._spatial import (
+    camera,
+    geometry,
+    node,
+    volume,
+)
+
 
 logging(False)
