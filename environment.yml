@@ -9,7 +9,6 @@ dependencies:
   # Build dependencies
 
   - pybind11 <3
-  - libcarna ==3.3.3
   - libgl-devel
   - libegl-devel
   - libopengl-devel
@@ -24,6 +23,9 @@ dependencies:
   # ---------------------------------------------------------------------------
   # Runtime dependencies (general)
   - numpngw ==0.1.4  # writes APNG
+  - libcarna ==3.3.3
+  - scikit-video ==1.1.11  # API for ffmpeg
+  - ffmpeg  # writes h264
 
   # ---------------------------------------------------------------------------
   # Runtime dependencies (tests)

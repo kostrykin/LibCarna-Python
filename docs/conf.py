@@ -19,9 +19,5 @@ import sys
 LIBCARNA_PYTHON_PATH = os.environ.get('LIBCARNA_PYTHON_PATH')
 sys.path.append(LIBCARNA_PYTHON_PATH)
 os.environ['PYTHONPATH'] = LIBCARNA_PYTHON_PATH + ':' + os.environ.get('PYTHONPATH', '')
-print('*** LIBCARNA_PYTHON_PATH:', LIBCARNA_PYTHON_PATH)
-#LIBCARNA_PYTHON_PATH = os.path.abspath(os.environ.get('LIBCARNA_PYTHON_PATH'))
-#sys.path.append(LIBCARNA_PYTHON_PATH)
-#os.environ['PYTHONPATH'] = LIBCARNA_PYTHON_PATH + ':' + os.environ.get('PYTHONPATH', '')
 
 nbsphinx_execute = 'always'

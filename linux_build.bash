@@ -31,4 +31,5 @@ if [ -v LIBCARNA_PYTHON_BUILD_DOCS ]; then
     pip install -r docs/requirements.txt
     export LIBCARNA_PYTHON_PATH="$ROOT/build/make_release"
     sphinx-build -M html docs docs/build
+    cp $ROOT/docs/build/html/examples/*.ipynb $ROOT/examples/
 fi
