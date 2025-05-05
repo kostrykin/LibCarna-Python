@@ -1,5 +1,9 @@
 img.logo {
-    padding: 1em;
-    padding-left: 0;
-    box-sizing: border-box;
+    margin-bottom: 1rem;
+    margin-left: -0.9rem;
+}
+
+h1.logo {
+    font-size: 1.4rem;
+    white-space: nowrap;
 }

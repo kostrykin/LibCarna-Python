@@ -1,5 +1,5 @@
 project = 'libcarna-python'
-copyright = '2021-2025 Leonid Kostrykin, Biomedical Computer Vision Group, Heidelberg University'
+copyright = '2021-2025 Leonid Kostrykin'
 author = 'Leonid Kostrykin'
 
 extensions = [
@@ -8,7 +8,7 @@ extensions = [
     'sphinx.ext.napoleon',
 ]
 
-html_logo = 'https://kostrykin.github.io/LibCarna/html/logo.png'
+html_logo = 'logo.png'
 html_static_path = ['_static']
 html_css_files = ['custom.css']
 
