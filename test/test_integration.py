@@ -99,7 +99,7 @@ class OpaqueRenderingStage(testsuite.LibCarnaRenderingTestCase):
         libcarna.geometry(
             GEOMETRY_TYPE_OPAQUE,
             parent=root,
-            local_transform=libcarna.math.translation(-10, -10, -40),
+            local_transform=libcarna.translate(-10, -10, -40),
             features={
                 opaque.ROLE_DEFAULT_MESH: box_mesh,
                 opaque.ROLE_DEFAULT_MATERIAL: material1,
@@ -108,7 +108,7 @@ class OpaqueRenderingStage(testsuite.LibCarnaRenderingTestCase):
         libcarna.geometry(
             GEOMETRY_TYPE_OPAQUE,
             parent=root,
-            local_transform=libcarna.math.translation(+10, +10, +40),
+            local_transform=libcarna.translate(+10, +10, +40),
             features={
                 opaque.ROLE_DEFAULT_MESH: box_mesh,
                 opaque.ROLE_DEFAULT_MATERIAL: material2,
@@ -116,8 +116,8 @@ class OpaqueRenderingStage(testsuite.LibCarnaRenderingTestCase):
         )
         camera = libcarna.camera(
             parent=root,
-            projection=r.frustum(fov=np.pi / 2, z_near=1, z_far=1e3),
-            local_transform=libcarna.math.translation(0, 0, 250),
+            projection=r.frustum(fov=90, z_near=1, z_far=1e3),
+            local_transform=libcarna.translate(0, 0, 250),
         )
         # .. OpaqueRenderingStage: example-setup-end
 
@@ -180,8 +180,8 @@ class MaskRenderingStage(testsuite.LibCarnaRenderingTestCase):
         )
         camera = libcarna.camera(
             parent=root,
-            projection=r.frustum(fov=np.pi / 2, z_near=1, z_far=500),
-            local_transform=libcarna.math.translation(0, 0, 100),
+            projection=r.frustum(fov=90, z_near=1, z_far=500),
+            local_transform=libcarna.translate(0, 0, 100),
         )
         # .. MaskRenderingStage: example-setup-end
 
@@ -240,8 +240,8 @@ class MIPStage(testsuite.LibCarnaRenderingTestCase):
         )
         camera = libcarna.camera(
             parent=root,
-            projection=r.frustum(fov=np.pi / 2, z_near=1, z_far=500),
-            local_transform=libcarna.math.translation(0, 0, 100),
+            projection=r.frustum(fov=90, z_near=1, z_far=500),
+            local_transform=libcarna.translate(0, 0, 100),
         )
         # .. MIPStage: example-setup-end
 
@@ -307,7 +307,7 @@ class CuttingPlanesStage(testsuite.LibCarnaRenderingTestCase):
         zplane = libcarna.geometry(
             GEOMETRY_TYPE_PLANE,
             parent=volume,
-            local_transform=libcarna.math.plane(
+            local_transform=libcarna.plane(
                 normal=(0, 0, 1),
                 distance=0,
             ),
@@ -316,15 +316,15 @@ class CuttingPlanesStage(testsuite.LibCarnaRenderingTestCase):
             libcarna.geometry(
                 GEOMETRY_TYPE_PLANE,
                 parent=volume,
-                local_transform=libcarna.math.plane(
+                local_transform=libcarna.plane(
                     normal=(1 * sign, 0, 0),
                     distance=63 / 2,
                 ),
             )
         camera = libcarna.camera(
             parent=root,
-            projection=r.frustum(fov=np.pi / 2, z_near=1, z_far=500),
-            local_transform=libcarna.math.translation(0, 0, 100),
+            projection=r.frustum(fov=90, z_near=1, z_far=500),
+            local_transform=libcarna.translate(0, 0, 100),
         )
         # .. CuttingPlanesStage: example-setup-end
 

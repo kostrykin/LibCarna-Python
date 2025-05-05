@@ -7,6 +7,16 @@ def _setup_spatial(spatial, parent: libcarna.base.Node | None = None, **kwargs):
     if parent is not None:
         parent.attach_child(spatial)
     for key, value in kwargs.items():
+
+        # If value is not a `np.ndarray`, check whether it has a `mat` attribute and if it is a `np.ndarray`
+        if (
+            key == 'local_transform' and
+            not isinstance(value, np.ndarray) and
+            hasattr(value, 'mat') and
+            isinstance(value.mat, np.ndarray)
+        ):
+            value = value.mat
+            
         setattr(spatial, key, value)
 
 

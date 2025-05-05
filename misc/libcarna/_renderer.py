@@ -50,7 +50,7 @@ class renderer:
 
         # Build auxiliariy methods for projection matrices that fit the aspect ratio of the surface
         def frustum(fov: float, z_near: float, z_far: float):
-            return libcarna.base.math.frustum(fov, height / width, z_near, z_far)
+            return libcarna.base.math.frustum(libcarna.base.math.deg2rad(fov), height / width, z_near, z_far)
 
         self.render = render
         self.frustum = frustum
@@ -69,5 +69,10 @@ class renderer:
         
         Wrapper for :func:`libcarna.base.math.frustum` that ensures that the geometry of the frustum fits the aspect
         ratio of the surface of the renderer.
+
+        Arguments:
+            fov: Field of view in degrees.
+            z_near: Near clipping plane.
+            z_far: Far clipping plane.
         """
         ...

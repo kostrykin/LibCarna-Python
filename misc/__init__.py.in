@@ -16,6 +16,12 @@ from ._spatial import (
     node,
     volume,
 )
+from ._transform import (
+    plane,
+    rotate,
+    scale,
+    translate
+)
 
 
 logging(False)

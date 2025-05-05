@@ -35,6 +35,10 @@ class animation:
     def rotate_local(spatial: libcarna.base.Spatial, axis: AxisHint = 'y') -> Callable[[float], None]:
         """
         Create a step function for rotating an object's local coordinate system.
+
+        Arguments:
+            spatial: The spatial object to be animated.
+            axis: The axis of rotation. Can be 'x', 'y', 'z', or an arbitrary axis (vector with 3 components).
         """
         axis = resolve_axis_hint(axis)
         base_transform = spatial.local_transform
@@ -43,14 +47,19 @@ class animation:
         return step
     
     @staticmethod
-    def swing_local(spatial: libcarna.base.Spatial, axis: AxisHint = 'y', amplitude: float = np.pi / 4) -> Callable[[float], None]:
+    def swing_local(spatial: libcarna.base.Spatial, axis: AxisHint = 'y', amplitude: float = 45) -> Callable[[float], None]:
         """
         Create a step function for swinging an object's local coordinate system.
+
+        Arguments:
+            spatial: The spatial object to be animated.
+            axis: The axis of rotation. Can be 'x', 'y', 'z', or an arbitrary axis (vector with 3 components).
+            amplitude: The amplitude of the swing in degrees.
         """
         axis = resolve_axis_hint(axis)
         base_transform = spatial.local_transform
         def step(t: float):
-            radians = amplitude * np.sin(2 * np.pi * t)
+            radians = libcarna.base.math.deg2rad(amplitude) * np.sin(2 * np.pi * t)
             spatial.local_transform = libcarna.math.rotation(axis, radians=radians) @ base_transform
         return step
     
@@ -58,6 +67,11 @@ class animation:
     def bounce_local(spatial: libcarna.base.Spatial, axis: AxisHint, amplitude: float = 1.0) -> Callable[[float], None]:
         """
         Create a step function for bouncing an object along a given axis.
+
+        Arguments:
+            spatial: The spatial object to be animated.
+            axis: The axis of the bounce. Can be 'x', 'y', 'z', or an arbitrary axis (vector with 3 components).
+            amplitude: The amplitude of the bounce.
         """
         axis = resolve_axis_hint(axis)
         base_transform = spatial.local_transform
