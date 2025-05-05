@@ -7,10 +7,10 @@ namespace py = pybind11;
 
 using namespace pybind11::literals; // enables the _a literal
 
-#include <Carna/egl/EGLContext.h>
-#include <Carna/py/egl.h>
+#include <LibCarna/egl/EGLContext.hpp>
+#include <LibCarna/py/egl.hpp>
 
-using namespace Carna::py::egl;
+using namespace LibCarna::py::egl;
 
 
 
@@ -19,7 +19,7 @@ using namespace Carna::py::egl;
 // ----------------------------------------------------------------------------------
 
 EGLContextView::EGLContextView()
-    : Carna::py::base::GLContextView( Carna::egl::EGLContext::create() )
+    : LibCarna::py::base::GLContextView( LibCarna::egl::EGLContext::create() )
 {
 }
 
@@ -32,7 +32,7 @@ EGLContextView::EGLContextView()
 PYBIND11_MODULE( egl, m )
 {
 
-    py::class_< EGLContextView, std::shared_ptr< EGLContextView >, Carna::py::base::GLContextView >( m, "EGLContext" )
+    py::class_< EGLContextView, std::shared_ptr< EGLContextView >, LibCarna::py::base::GLContextView >( m, "EGLContext" )
         .def( py::init<>() )
         .doc() = "Create a :class:`carna.base.GLContext` using EGL (useful for off-screen rendering).";
 

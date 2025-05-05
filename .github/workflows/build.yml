@@ -1,4 +1,4 @@
-name: Build CarnaPy and Docker image
+name: Build LibCarnaPy and Docker image
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   build_carnapy:
-    name: Build CarnaPy
+    name: Build LibCarnaPy
     runs-on: ubuntu-latest
     steps:
       -

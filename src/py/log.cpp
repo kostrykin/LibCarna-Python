@@ -1,6 +1,6 @@
-#include <Carna/py/Log.h>
+#include <LibCarna/py/log.hpp>
 
-using namespace Carna::py;
+using namespace LibCarna::py;
 
 
 
@@ -8,6 +8,6 @@ using namespace Carna::py;
 // NullWriter
 // ----------------------------------------------------------------------------------
 
-void NullWriter::writeLine( Carna::base::Log::Severity, const std::string& ) const
+void NullWriter::writeLine( LibCarna::base::Log::Severity, const std::string& ) const
 {
 }

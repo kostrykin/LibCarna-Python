@@ -1,33 +1,33 @@
 import numpy as np
 import scipy.ndimage as ndi
 
-import carna
+import libcarna
 import testsuite
 
 
-class VolumeGridHelper_IntensityVolumeUInt16(testsuite.CarnaTestCase):
+class VolumeGridHelper_IntensityVolumeUInt16(testsuite.LibCarnaTestCase):
 
     def test(self):
         np.random.seed(0)
         data = np.random.rand(64, 64, 20)
-        helper = carna.helpers.VolumeGridHelper_IntensityVolumeUInt16(
+        helper = libcarna.helpers.VolumeGridHelper_IntensityVolumeUInt16(
             native_resolution=data.shape,
         )
         helper.load_intensities(data)
         node = helper.create_node(
             geometry_type=1,
-            spacing=carna.helpers.VolumeGridHelper_IntensityVolumeUInt16.Spacing((0.1, 0.1, 0.2)),
+            spacing=libcarna.helpers.VolumeGridHelper_IntensityVolumeUInt16.Spacing((0.1, 0.1, 0.2)),
         )
-        root = carna.node()
+        root = libcarna.node()
         root.attach_child(node)
 
 
-class FrameRenderer(testsuite.CarnaTestCase):
+class FrameRenderer(testsuite.LibCarnaTestCase):
 
     def setUp(self):
         super().setUp()
-        self.ctx = carna.egl_context()
-        self.frame_renderer = carna.frame_renderer(self.ctx, 800, 600)
+        self.ctx = libcarna.egl_context()
+        self.frame_renderer = libcarna.frame_renderer(self.ctx, 800, 600)
 
     def tearDown(self):
         del self.ctx
@@ -55,69 +55,69 @@ class FrameRenderer(testsuite.CarnaTestCase):
                 self.assertEqual(self.frame_renderer.height, 601 + tidx)
 
     def test__render__without_stages(self):
-        root = carna.node()
-        camera = carna.camera(parent=root)
+        root = libcarna.node()
+        camera = libcarna.camera(parent=root)
         self.frame_renderer.render(camera)
 
     def test__render__without_stages__with_root(self):
-        root = carna.node()
-        camera = carna.camera(parent=root)
+        root = libcarna.node()
+        camera = libcarna.camera(parent=root)
         self.frame_renderer.render(camera, root)
 
     def test__append_stage(self):
-        opaque = carna.opaque_renderer(0)
+        opaque = libcarna.opaque_renderer(0)
         self.frame_renderer.append_stage(opaque)
 
     def test__render(self):
-        opaque = carna.opaque_renderer(0)
+        opaque = libcarna.opaque_renderer(0)
         self.frame_renderer.append_stage(opaque)
-        root = carna.node()
-        camera = carna.camera()
+        root = libcarna.node()
+        camera = libcarna.camera()
         root.attach_child(camera)
         self.frame_renderer.render(camera)
 
 
-class OpaqueRenderingStage(testsuite.CarnaRenderingTestCase):
+class OpaqueRenderingStage(testsuite.LibCarnaRenderingTestCase):
 
     def setUp(self):
         # .. OpaqueRenderingStage: example-setup-start
         GEOMETRY_TYPE_OPAQUE = 1
 
         # Create and configure frame renderer
-        opaque = carna.opaque_renderer(GEOMETRY_TYPE_OPAQUE)
-        r = carna.renderer(800, 600, [opaque])
+        opaque = libcarna.opaque_renderer(GEOMETRY_TYPE_OPAQUE)
+        r = libcarna.renderer(800, 600, [opaque])
 
         # Create mesh
-        box_mesh = carna.mesh_factory.create_box(40, 40, 40)
+        box_mesh = libcarna.mesh_factory.create_box(40, 40, 40)
 
         # Create and configure materials
-        material1 = carna.material('solid', color=[1, 0, 0, 1])
-        material2 = carna.material('solid', color=[0, 1, 0, 1])
+        material1 = libcarna.material('solid', color=[1, 0, 0, 1])
+        material2 = libcarna.material('solid', color=[0, 1, 0, 1])
 
         # Create and configure scene
-        root = carna.node()
-        carna.geometry(
+        root = libcarna.node()
+        libcarna.geometry(
             GEOMETRY_TYPE_OPAQUE,
             parent=root,
-            local_transform=carna.math.translation(-10, -10, -40),
+            local_transform=libcarna.math.translation(-10, -10, -40),
             features={
                 opaque.ROLE_DEFAULT_MESH: box_mesh,
                 opaque.ROLE_DEFAULT_MATERIAL: material1,
             },
         )
-        carna.geometry(
+        libcarna.geometry(
             GEOMETRY_TYPE_OPAQUE,
             parent=root,
-            local_transform=carna.math.translation(+10, +10, +40),
+            local_transform=libcarna.math.translation(+10, +10, +40),
             features={
                 opaque.ROLE_DEFAULT_MESH: box_mesh,
                 opaque.ROLE_DEFAULT_MATERIAL: material2,
             },
         )
-        camera = carna.camera(
+        camera = libcarna.camera(
             parent=root,
             projection=r.frustum(fov=np.pi / 2, z_near=1, z_far=1e3),
-            local_transform=carna.math.translation(0, 0, 250),
+            local_transform=libcarna.math.translation(0, 0, 250),
         )
         # .. OpaqueRenderingStage: example-setup-end
 
@@ -138,9 +138,9 @@ class OpaqueRenderingStage(testsuite.CarnaRenderingTestCase):
 
         # .. OpaqueRenderingStage: example-animation-start
         # Define animation
-        animation = carna.animation(
+        animation = libcarna.animation(
             [
-                carna.animation.rotate_local(camera)
+                libcarna.animation.rotate_local(camera)
             ],
             n_frames=50,
         )
@@ -153,16 +153,16 @@ class OpaqueRenderingStage(testsuite.CarnaRenderingTestCase):
         self.assert_image_almost_expected(np.array(frames))
 
 
-class MaskRenderingStage(testsuite.CarnaRenderingTestCase):
+class MaskRenderingStage(testsuite.LibCarnaRenderingTestCase):
 
     def setUp(self):
         # .. MaskRenderingStage: example-setup-start
         GEOMETRY_TYPE_VOLUME = 2
 
         # Create and configure frame renderer
-        mask_rendering = carna.mask_renderer(GEOMETRY_TYPE_VOLUME)
+        mask_rendering = libcarna.mask_renderer(GEOMETRY_TYPE_VOLUME)
         mask_rendering.render_borders = True
-        r = carna.renderer(800, 600, [mask_rendering])
+        r = libcarna.renderer(800, 600, [mask_rendering])
 
         # Create volume
         np.random.seed(0)
@@ -171,17 +171,17 @@ class MaskRenderingStage(testsuite.CarnaRenderingTestCase):
         )
 
         # Create and configure scene
-        root = carna.node()
-        carna.volume(
+        root = libcarna.node()
+        libcarna.volume(
             GEOMETRY_TYPE_VOLUME,
             data,
             parent=root,
             spacing=(1, 1, 2),
         )
-        camera = carna.camera(
+        camera = libcarna.camera(
             parent=root,
             projection=r.frustum(fov=np.pi / 2, z_near=1, z_far=500),
-            local_transform=carna.math.translation(0, 0, 100),
+            local_transform=libcarna.math.translation(0, 0, 100),
         )
         # .. MaskRenderingStage: example-setup-end
 
@@ -200,9 +200,9 @@ class MaskRenderingStage(testsuite.CarnaRenderingTestCase):
         r, camera = self.r, self.camera
 
         # Define animation
-        animation = carna.animation(
+        animation = libcarna.animation(
             [
-                carna.animation.rotate_local(camera)
+                libcarna.animation.rotate_local(camera)
             ],
             n_frames=50,
         )
@@ -214,15 +214,15 @@ class MaskRenderingStage(testsuite.CarnaRenderingTestCase):
         self.assert_image_almost_expected(np.array(frames))
 
 
-class MIPStage(testsuite.CarnaRenderingTestCase):
+class MIPStage(testsuite.LibCarnaRenderingTestCase):
 
     def setUp(self):
         # .. MIPStage: example-setup-start
         GEOMETRY_TYPE_VOLUME = 2
 
         # Create and configure frame renderer
-        mip = carna.mip(GEOMETRY_TYPE_VOLUME, cmap='jet')
-        r = carna.renderer(800, 600, [mip])
+        mip = libcarna.mip(GEOMETRY_TYPE_VOLUME, cmap='jet')
+        r = libcarna.renderer(800, 600, [mip])
 
         # Create volume
         np.random.seed(0)
@@ -231,17 +231,17 @@ class MIPStage(testsuite.CarnaRenderingTestCase):
         data = data / data.max()
 
         # Create and configure scene
-        root = carna.node()
-        carna.volume(
+        root = libcarna.node()
+        libcarna.volume(
             GEOMETRY_TYPE_VOLUME,
             data,
             parent=root,
             spacing=(1, 1, 2),
         )
-        camera = carna.camera(
+        camera = libcarna.camera(
             parent=root,
             projection=r.frustum(fov=np.pi / 2, z_near=1, z_far=500),
-            local_transform=carna.math.translation(0, 0, 100),
+            local_transform=libcarna.math.translation(0, 0, 100),
         )
         # .. MIPStage: example-setup-end
 
@@ -260,9 +260,9 @@ class MIPStage(testsuite.CarnaRenderingTestCase):
         r, camera = self.r, self.camera
 
         # Define animation
-        animation = carna.animation(
+        animation = libcarna.animation(
             [
-                carna.animation.rotate_local(camera)
+                libcarna.animation.rotate_local(camera)
             ],
             n_frames=50,
         )
@@ -274,7 +274,7 @@ class MIPStage(testsuite.CarnaRenderingTestCase):
         self.assert_image_almost_expected(np.array(frames))
 
 
-class CuttingPlanesStage(testsuite.CarnaRenderingTestCase):
+class CuttingPlanesStage(testsuite.LibCarnaRenderingTestCase):
 
     def setUp(self):
         # .. CuttingPlanesStage: example-setup-start
@@ -282,13 +282,13 @@ class CuttingPlanesStage(testsuite.CarnaRenderingTestCase):
         GEOMETRY_TYPE_PLANE = 3
 
         # Create and configure frame renderer
-        cp = carna.cutting_planes(
+        cp = libcarna.cutting_planes(
             volume_geometry_type=GEOMETRY_TYPE_VOLUME,
             plane_geometry_type=GEOMETRY_TYPE_PLANE,
         )
         cp.windowing_level = 0.75
         cp.windowing_width = 0.5
-        r = carna.renderer(800, 600, [cp])
+        r = libcarna.renderer(800, 600, [cp])
 
         # Create volume
         np.random.seed(0)
@@ -297,34 +297,34 @@ class CuttingPlanesStage(testsuite.CarnaRenderingTestCase):
         data = data / data.max()
 
         # Create and configure scene
-        root = carna.node()
-        volume = carna.volume(
+        root = libcarna.node()
+        volume = libcarna.volume(
             GEOMETRY_TYPE_VOLUME,
             data,
             parent=root,
             spacing=(1, 1, 2),
         )
-        zplane = carna.geometry(
+        zplane = libcarna.geometry(
             GEOMETRY_TYPE_PLANE,
             parent=volume,
-            local_transform=carna.math.plane(
+            local_transform=libcarna.math.plane(
                 normal=(0, 0, 1),
                 distance=0,
             ),
         )
         for sign in (-1, +1):  # create left and right planes
-            carna.geometry(
+            libcarna.geometry(
                 GEOMETRY_TYPE_PLANE,
                 parent=volume,
-                local_transform=carna.math.plane(
+                local_transform=libcarna.math.plane(
                     normal=(1 * sign, 0, 0),
                     distance=63 / 2,
                 ),
             )
-        camera = carna.camera(
+        camera = libcarna.camera(
             parent=root,
             projection=r.frustum(fov=np.pi / 2, z_near=1, z_far=500),
-            local_transform=carna.math.translation(0, 0, 100),
+            local_transform=libcarna.math.translation(0, 0, 100),
         )
         # .. CuttingPlanesStage: example-setup-end
 
@@ -344,9 +344,9 @@ class CuttingPlanesStage(testsuite.CarnaRenderingTestCase):
 
         # .. CuttingPlanesStage: example-animation-start
         # Define animation
-        animation = carna.animation(
+        animation = libcarna.animation(
             [
-                carna.animation.bounce_local(
+                libcarna.animation.bounce_local(
                     zplane,
                     axis='z',
                     amplitude=38 / 2,

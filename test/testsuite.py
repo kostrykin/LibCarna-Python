@@ -48,12 +48,12 @@ def _imsave(path: str, array: np.ndarray):
         plt.imsave(path, array)
 
 
-class CarnaTestCase(unittest.TestCase):
+class LibCarnaTestCase(unittest.TestCase):
 
     pass
 
 
-class CarnaRenderingTestCase(CarnaTestCase):
+class LibCarnaRenderingTestCase(LibCarnaTestCase):
 
     def assert_image_almost_equal(self, actual, expected, decimal=5):
         if isinstance(actual, str):

@@ -87,6 +87,13 @@ if __name__ == '__main__':
         url = 'https://github.com/kostrykin/LibCarna-Python',
         include_package_data = True,
         license = 'MIT',
+        license_files = [
+            'LICENSE',
+            'build/make_release/licenses/LICENSE-Carna',
+            'build/make_release/licenses/LICENSE-LibCarna',
+            'build/make_release/licenses/LICENSE-Eigen',
+            'build/make_release/licenses/LICENSE-GLEW',
+        ],
         package_dir = {
             'libcarna': 'build/make_release/libcarna',
         },

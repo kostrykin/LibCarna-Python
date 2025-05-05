@@ -8,11 +8,11 @@ extensions = [
     'sphinx.ext.napoleon',
 ]
 
-html_logo = 'https://kostrykin.github.io/Carna/html/logo.png'
+html_logo = 'https://kostrykin.github.io/LibCarna/html/logo.png'
 html_static_path = ['_static']
 html_css_files = ['custom.css']
 
 import os
 import sys
 
-sys.path.append(os.environ['CARNA_PYTHON_PATH'])
+sys.path.append(os.environ['LIBCARNA_PYTHON_PATH'])

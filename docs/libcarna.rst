@@ -1,5 +1,5 @@
-carna
-=====
+libcarna
+========
 
 The objects in this module provide a simplified and more Pythonic convenience interface for the natively structured
 wrappers in the respective sub-modules.
@@ -58,7 +58,7 @@ windowing settings.
 API
 ---
 
-.. automodule:: carna
+.. automodule:: libcarna
    :imported-members:
    :members:
    :undoc-members:

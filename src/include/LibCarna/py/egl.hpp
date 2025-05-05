@@ -1,8 +1,8 @@
 #pragma once
 
-#include <Carna/py/base.h>
+#include <LibCarna/py/base.hpp>
 
-namespace Carna
+namespace LibCarna
 {
 
 namespace py
@@ -17,7 +17,7 @@ namespace egl
 // EGLContextView
 // ----------------------------------------------------------------------------------
 
-class EGLContextView : public Carna::py::base::GLContextView
+class EGLContextView : public LibCarna::py::base::GLContextView
 {
 
 public:
@@ -28,8 +28,8 @@ public:
 
 
 
-}  // namespace Carna :: py :: egl
+}  // namespace LibCarna :: py :: egl
 
-}  // namespace Carna :: py
+}  // namespace LibCarna :: py
 
-}  // namespace Carna
+}  // namespace LibCarna

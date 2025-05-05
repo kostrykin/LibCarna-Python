@@ -1,7 +1,7 @@
-carna.helpers
+libcarna.base
 =============
 
-.. automodule:: carna.helpers
+.. automodule:: libcarna.base
    :imported-members:
    :members:
    :undoc-members:

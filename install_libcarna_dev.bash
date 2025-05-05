@@ -8,7 +8,7 @@ fi
 export ROOT=$PWD/$(dirname "$0")
 export LIBCARNA_INSTALL_PREFIX="$ROOT/.libcarna-dev"
 
-# Build development version of Carna
+# Build development version of LibCarna
 cd "$LIBCARNA_SRC_PREFIX"
 export BUILD=only_release
 export LIBCARNA_NO_INSTALL=1

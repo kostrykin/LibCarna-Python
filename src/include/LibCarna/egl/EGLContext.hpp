@@ -1,9 +1,9 @@
 #pragma once
 
-#include <Carna/base/GLContext.h>
-#include <Carna/base/noncopyable.h>
+#include <LibCarna/base/GLContext.hpp>
+#include <LibCarna/base/noncopyable.hpp>
 
-namespace Carna
+namespace LibCarna
 {
 
 namespace egl
@@ -39,7 +39,7 @@ protected:
 
 
 
-}  // namespace Carna :: egl
+}  // namespace LibCarna :: egl
 
-}  // namespace Carna
+}  // namespace LibCarna
 

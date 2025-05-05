@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export CARNAPY_VERSION=`python - << END
+export LIBCARNA_PYTHON_VERSION=`python - << END
 import yaml
 with open('VERSIONS.yaml', 'r') as io:
     versions = yaml.safe_load(io)
@@ -9,5 +9,5 @@ END`
 
 cd ..
 python setup.py sdist
-python -m twine upload dist/CarnaPy-$CARNAPY_VERSION.tar.gz
+python -m twine upload dist/LibCarnaPy-$LIBCARNA_PYTHON_VERSION.tar.gz
 

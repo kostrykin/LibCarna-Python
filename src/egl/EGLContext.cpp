@@ -1,4 +1,4 @@
-#include <Carna/egl/EGLContext.h>
+#include <LibCarna/egl/EGLContext.hpp>
 #include <EGL/egl.h>
 #include <cstdlib>
 #include <unordered_set>
@@ -13,11 +13,11 @@
 
 #ifndef NO_EGL_ERROR_CHECKING
 
-    #include <Carna/base/CarnaException.h>
+    #include <LibCarna/base/LibCarnaException.hpp>
 
     #define REPORT_EGL_ERROR { \
             const unsigned int err = eglGetError(); \
-            CARNA_ASSERT_EX( err == EGL_SUCCESS, "EGL Error State in " \
+            LIBCARNA_ASSERT_EX( err == EGL_SUCCESS, "EGL Error State in " \
                 << __func__ \
                 << " [" << err << "] (" << __FILE__ << ":" << __LINE__ << ")" ); }
 #else
@@ -59,10 +59,10 @@ static const EGLint PBUFFER_ATTRIBS[] =
 
 
 // ----------------------------------------------------------------------------------
-// Carna :: egl :: EGLContext :: Details
+// LibCarna :: egl :: EGLContext :: Details
 // ----------------------------------------------------------------------------------
 
-struct Carna::egl::EGLContext::Details
+struct LibCarna::egl::EGLContext::Details
 {
     ::EGLDisplay eglDpy;
     ::EGLSurface eglSurf;
@@ -72,7 +72,7 @@ struct Carna::egl::EGLContext::Details
 };
 
 
-void Carna::egl::EGLContext::Details::activate() const
+void LibCarna::egl::EGLContext::Details::activate() const
 {
     eglMakeCurrent( this->eglDpy, this->eglSurf, this->eglSurf, this->eglCtx );
     REPORT_EGL_ERROR;
@@ -81,21 +81,21 @@ void Carna::egl::EGLContext::Details::activate() const
 
 
 // ----------------------------------------------------------------------------------
-// Carna :: egl :: EGLContext
+// LibCarna :: egl :: EGLContext
 // ----------------------------------------------------------------------------------
 
-static std::unordered_set< Carna::egl::EGLContext* > eglContextInstances;
+static std::unordered_set< LibCarna::egl::EGLContext* > eglContextInstances;
 
 
-Carna::egl::EGLContext::EGLContext( Details* _pimpl )
-    : Carna::base::GLContext( false )
+LibCarna::egl::EGLContext::EGLContext( Details* _pimpl )
+    : LibCarna::base::GLContext( false )
     , pimpl( _pimpl ) // TODO: rename to `pimpl`
 {
     eglContextInstances.insert( this );
 }
 
 
-Carna::egl::EGLContext* Carna::egl::EGLContext::create()
+LibCarna::egl::EGLContext* LibCarna::egl::EGLContext::create()
 {
     using EGLContext = ::EGLContext;
     unsetenv( "DISPLAY" ); // see https://stackoverflow.com/q/67885750/1444073
@@ -114,19 +114,19 @@ Carna::egl::EGLContext* Carna::egl::EGLContext::create()
     eglChooseConfig( pimpl->eglDpy, CONFIG_ATTRIBS, &eglCfg, 1, &numConfigs );
 
     pimpl->eglSurf = eglCreatePbufferSurface( pimpl->eglDpy, eglCfg, PBUFFER_ATTRIBS );
-    CARNA_ASSERT( pimpl->eglSurf != EGL_NO_SURFACE );
+    LIBCARNA_ASSERT( pimpl->eglSurf != EGL_NO_SURFACE );
 
     const ::EGLContext shareContext = eglContextInstances.empty() ? EGL_NO_CONTEXT : ( *eglContextInstances.begin() )->pimpl->eglCtx;
     pimpl->eglCtx = eglCreateContext( pimpl->eglDpy, eglCfg, shareContext, NULL );
-    CARNA_ASSERT( pimpl->eglCtx != EGL_NO_CONTEXT );
+    LIBCARNA_ASSERT( pimpl->eglCtx != EGL_NO_CONTEXT );
 
     pimpl->activate();
     REPORT_EGL_ERROR;
-    return new Carna::egl::EGLContext( pimpl );
+    return new LibCarna::egl::EGLContext( pimpl );
 }
 
 
-Carna::egl::EGLContext::~EGLContext()
+LibCarna::egl::EGLContext::~EGLContext()
 {
     eglContextInstances.erase( this );
     eglDestroyContext( pimpl->eglDpy, pimpl->eglCtx );
@@ -134,7 +134,7 @@ Carna::egl::EGLContext::~EGLContext()
 }
 
 
-void Carna::egl::EGLContext::activate() const
+void LibCarna::egl::EGLContext::activate() const
 {
     pimpl->activate();
 }

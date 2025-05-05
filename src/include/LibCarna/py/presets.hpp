@@ -1,10 +1,10 @@
 #pragma once
 
-#include <Carna/Carna.h>
-#include <Carna/presets/OpaqueRenderingStage.h>
-#include <Carna/py/base.h>
+#include <LibCarna/LibCarna.hpp>
+#include <LibCarna/presets/OpaqueRenderingStage.hpp>
+#include <LibCarna/py/base.hpp>
 
-namespace Carna
+namespace LibCarna
 {
 
 namespace py
@@ -21,7 +21,7 @@ class MIPStageView;
 // OpaqueRenderingStageView
 // ----------------------------------------------------------------------------------
 
-class OpaqueRenderingStageView : public Carna::py::base::MeshRenderingStageView
+class OpaqueRenderingStageView : public LibCarna::py::base::MeshRenderingStageView
 {
 
 public:
@@ -36,16 +36,16 @@ public:
 // VolumeRenderingStageView
 // ----------------------------------------------------------------------------------
 
-class VolumeRenderingStageView : public Carna::py::base::RenderStageView
+class VolumeRenderingStageView : public LibCarna::py::base::RenderStageView
 {
 
 public:
 
     const static unsigned int DEFAULT_SAMPLE_RATE;
 
-    explicit VolumeRenderingStageView( Carna::presets::VolumeRenderingStage* renderStage );
+    explicit VolumeRenderingStageView( LibCarna::presets::VolumeRenderingStage* renderStage );
 
-    Carna::presets::VolumeRenderingStage& volumeRenderingStage();
+    LibCarna::presets::VolumeRenderingStage& volumeRenderingStage();
 
 }; // VolumeRenderingStageView
 
@@ -62,7 +62,7 @@ public:
 
     explicit MaskRenderingStageView( unsigned int geometryType, unsigned int maskRole );
 
-    Carna::presets::MaskRenderingStage& maskRenderingStage();
+    LibCarna::presets::MaskRenderingStage& maskRenderingStage();
 
 }; // MaskRenderingStageView
 
@@ -79,7 +79,7 @@ public:
 
     explicit MIPStageView( unsigned int geometryType );
 
-    Carna::presets::MIPStage& mipStage();
+    LibCarna::presets::MIPStage& mipStage();
 
     std::shared_ptr< base::ColorMapView > colorMap();
 
@@ -91,21 +91,21 @@ public:
 // CuttingPlanesStageView
 // ----------------------------------------------------------------------------------
 
-class CuttingPlanesStageView : public Carna::py::base::RenderStageView
+class CuttingPlanesStageView : public LibCarna::py::base::RenderStageView
 {
 
 public:
 
     explicit CuttingPlanesStageView( unsigned int volumeGeometryType, unsigned int planeGeometryType );
 
-    Carna::presets::CuttingPlanesStage& cuttingPlanesStage();
+    LibCarna::presets::CuttingPlanesStage& cuttingPlanesStage();
 
 }; // CuttingPlanesStageView
 
 
 
-}  // namespace Carna :: py :: presets
+}  // namespace LibCarna :: py :: presets
 
-}  // namespace Carna :: py
+}  // namespace LibCarna :: py
 
-}  // namespace Carna
+}  // namespace LibCarna

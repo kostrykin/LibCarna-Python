@@ -5,27 +5,26 @@ namespace py = pybind11;
 
 using namespace pybind11::literals; // enables the _a literal
 
-#include <Carna/base/GLContext.h>
-#include <Carna/base/Color.h>
-#include <Carna/presets/MaskRenderingStage.h>
-#include <Carna/presets/MIPLayer.h>
-#include <Carna/presets/MIPStage.h>
-#include <Carna/presets/CuttingPlanesStage.h>
-#include <Carna/py/presets.h>
+#include <LibCarna/base/GLContext.hpp>
+#include <LibCarna/base/Color.hpp>
+#include <LibCarna/presets/MaskRenderingStage.hpp>
+#include <LibCarna/presets/MIPStage.hpp>
+#include <LibCarna/presets/CuttingPlanesStage.hpp>
+#include <LibCarna/py/presets.hpp>
 /*
-#include <Carna/base/GLContext.h>
-#include <Carna/base/ManagedMesh.h>
-#include <Carna/presets/DRRStage.h>
-#include <Carna/presets/DVRStage.h>
-#include <Carna/presets/MIPLayer.h>
-#include <Carna/presets/MIPStage.h>
-#include <Carna/presets/OccludedRenderingStage.h>
-#include <Carna/presets/OpaqueRenderingStage.h>
+#include <LibCarna/base/GLContext.hpp>
+#include <LibCarna/base/ManagedMesh.hpp>
+#include <LibCarna/presets/DRRStage.hpp>
+#include <LibCarna/presets/DVRStage.hpp>
+#include <LibCarna/presets/MIPLayer.hpp>
+#include <LibCarna/presets/MIPStage.hpp>
+#include <LibCarna/presets/OccludedRenderingStage.hpp>
+#include <LibCarna/presets/OpaqueRenderingStage.hpp>
 */
 
-using namespace Carna::py;
-using namespace Carna::py::base;
-using namespace Carna::py::presets;
+using namespace LibCarna::py;
+using namespace LibCarna::py::base;
+using namespace LibCarna::py::presets;
 
 /*
 void CuttingPlanesStage__set_windowing( CuttingPlanesStage* self, float min, float max )
@@ -44,7 +43,7 @@ void CuttingPlanesStage__set_windowing( CuttingPlanesStage* self, float min, flo
 // ----------------------------------------------------------------------------------
 
 OpaqueRenderingStageView::OpaqueRenderingStageView( unsigned int geometryType )
-    : MeshRenderingStageView::MeshRenderingStageView( new Carna::presets::OpaqueRenderingStage( geometryType ) )
+    : MeshRenderingStageView::MeshRenderingStageView( new LibCarna::presets::OpaqueRenderingStage( geometryType ) )
 {
 }
 
@@ -54,18 +53,18 @@ OpaqueRenderingStageView::OpaqueRenderingStageView( unsigned int geometryType )
 // VolumeRenderingStageView
 // ----------------------------------------------------------------------------------
 
-const unsigned int VolumeRenderingStageView::DEFAULT_SAMPLE_RATE = Carna::presets::VolumeRenderingStage::DEFAULT_SAMPLE_RATE;
+const unsigned int VolumeRenderingStageView::DEFAULT_SAMPLE_RATE = LibCarna::presets::VolumeRenderingStage::DEFAULT_SAMPLE_RATE;
 
 
-VolumeRenderingStageView::VolumeRenderingStageView( Carna::presets::VolumeRenderingStage* renderStage )
+VolumeRenderingStageView::VolumeRenderingStageView( LibCarna::presets::VolumeRenderingStage* renderStage )
     : RenderStageView::RenderStageView( renderStage )
 {
 }
 
 
-Carna::presets::VolumeRenderingStage& VolumeRenderingStageView::volumeRenderingStage()
+LibCarna::presets::VolumeRenderingStage& VolumeRenderingStageView::volumeRenderingStage()
 {
-    return static_cast< Carna::presets::VolumeRenderingStage& >( *renderStage );
+    return static_cast< LibCarna::presets::VolumeRenderingStage& >( *renderStage );
 }
 
 
@@ -76,15 +75,15 @@ Carna::presets::VolumeRenderingStage& VolumeRenderingStageView::volumeRenderingS
 
 MaskRenderingStageView::MaskRenderingStageView( unsigned int geometryType, unsigned int maskRole )
     : VolumeRenderingStageView::VolumeRenderingStageView(
-        new Carna::presets::MaskRenderingStage( geometryType, maskRole )
+        new LibCarna::presets::MaskRenderingStage( geometryType, maskRole )
     )
 {
 }
 
 
-Carna::presets::MaskRenderingStage& MaskRenderingStageView::maskRenderingStage()
+LibCarna::presets::MaskRenderingStage& MaskRenderingStageView::maskRenderingStage()
 {
-    return static_cast< Carna::presets::MaskRenderingStage& >( *renderStage );
+    return static_cast< LibCarna::presets::MaskRenderingStage& >( *renderStage );
 }
 
 
@@ -93,20 +92,20 @@ Carna::presets::MaskRenderingStage& MaskRenderingStageView::maskRenderingStage()
 // MIPStageView
 // ----------------------------------------------------------------------------------
 
-const static auto MIP_STAGE__ROLE_INTENSITIES = Carna::presets::MIPStage::ROLE_INTENSITIES;
+const static auto MIP_STAGE__ROLE_INTENSITIES = LibCarna::presets::MIPStage::ROLE_INTENSITIES;
 
 
 MIPStageView::MIPStageView( unsigned int geometryType )
     : VolumeRenderingStageView::VolumeRenderingStageView(
-        new Carna::presets::MIPStage( geometryType )
+        new LibCarna::presets::MIPStage( geometryType )
     )
 {
 }
 
 
-Carna::presets::MIPStage& MIPStageView::mipStage()
+LibCarna::presets::MIPStage& MIPStageView::mipStage()
 {
-    return static_cast< Carna::presets::MIPStage& >( *renderStage );
+    return static_cast< LibCarna::presets::MIPStage& >( *renderStage );
 }
 
 std::shared_ptr< base::ColorMapView > MIPStageView::colorMap()
@@ -122,20 +121,20 @@ std::shared_ptr< base::ColorMapView > MIPStageView::colorMap()
 // CuttingPlanesStageView
 // ----------------------------------------------------------------------------------
 
-const static auto CUTTING_PLANES_STAGE__ROLE_INTENSITIES = Carna::presets::CuttingPlanesStage::ROLE_INTENSITIES;
+const static auto CUTTING_PLANES_STAGE__ROLE_INTENSITIES = LibCarna::presets::CuttingPlanesStage::ROLE_INTENSITIES;
 
 
 CuttingPlanesStageView::CuttingPlanesStageView( unsigned int volumeGeometryType, unsigned int planeGeometryType )
     : RenderStageView::RenderStageView(
-        new Carna::presets::CuttingPlanesStage( volumeGeometryType, planeGeometryType )
+        new LibCarna::presets::CuttingPlanesStage( volumeGeometryType, planeGeometryType )
     )
 {
 }
 
 
-Carna::presets::CuttingPlanesStage& CuttingPlanesStageView::cuttingPlanesStage()
+LibCarna::presets::CuttingPlanesStage& CuttingPlanesStageView::cuttingPlanesStage()
 {
-    return static_cast< Carna::presets::CuttingPlanesStage& >( *renderStage );
+    return static_cast< LibCarna::presets::CuttingPlanesStage& >( *renderStage );
 }
 
 
@@ -183,11 +182,11 @@ PYBIND11_MODULE( presets, m )
     py::class_< MaskRenderingStageView, std::shared_ptr< MaskRenderingStageView >, VolumeRenderingStageView >(
         m, "MaskRenderingStage"
     )
-        .def_readonly_static( "DEFAULT_ROLE_MASK", &Carna::presets::MaskRenderingStage::DEFAULT_ROLE_MASK )
-        .def_readonly_static( "DEFAULT_COLOR", &Carna::presets::MaskRenderingStage::DEFAULT_COLOR )
+        .def_readonly_static( "DEFAULT_ROLE_MASK", &LibCarna::presets::MaskRenderingStage::DEFAULT_ROLE_MASK )
+        .def_readonly_static( "DEFAULT_COLOR", &LibCarna::presets::MaskRenderingStage::DEFAULT_COLOR )
         .def(
             py::init< unsigned int, unsigned int >(),
-            "geometry_type"_a, "mask_role"_a = Carna::presets::MaskRenderingStage::DEFAULT_ROLE_MASK
+            "geometry_type"_a, "mask_role"_a = LibCarna::presets::MaskRenderingStage::DEFAULT_ROLE_MASK
         )
         .def_property_readonly(
             "mask_role",
@@ -199,7 +198,7 @@ PYBIND11_MODULE( presets, m )
         )
         .def(
             "set_color",
-            VIEW_DELEGATE( MaskRenderingStageView, maskRenderingStage().setColor( color ), const Carna::base::Color& color )
+            VIEW_DELEGATE( MaskRenderingStageView, maskRenderingStage().setColor( color ), const LibCarna::base::Color& color )
         )
         .def_property(
             "render_borders",
@@ -240,8 +239,8 @@ PYBIND11_MODULE( presets, m )
      */
     py::class_< CuttingPlanesStageView, std::shared_ptr< CuttingPlanesStageView >, RenderStageView >( m, "CuttingPlanesStage" )
         .def_readonly_static( "ROLE_INTENSITIES", &CUTTING_PLANES_STAGE__ROLE_INTENSITIES )
-        .def_readonly_static( "DEFAULT_WINDOWING_WIDTH", &Carna::presets::CuttingPlanesStage::DEFAULT_WINDOWING_WIDTH )
-        .def_readonly_static( "DEFAULT_WINDOWING_LEVEL", &Carna::presets::CuttingPlanesStage::DEFAULT_WINDOWING_LEVEL )
+        .def_readonly_static( "DEFAULT_WINDOWING_WIDTH", &LibCarna::presets::CuttingPlanesStage::DEFAULT_WINDOWING_WIDTH )
+        .def_readonly_static( "DEFAULT_WINDOWING_LEVEL", &LibCarna::presets::CuttingPlanesStage::DEFAULT_WINDOWING_LEVEL )
         .def( py::init< unsigned int, unsigned int >(), "volume_geometry_type"_a, "plane_geometry_type"_a )
         .def_property(
             "windowing_width",

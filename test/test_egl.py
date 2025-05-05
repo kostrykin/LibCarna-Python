@@ -1,22 +1,22 @@
 import gc
 
-import carna.egl
+import libcarna.egl
 
 import testsuite
 
 
-class EGLContext(testsuite.CarnaTestCase):
+class EGLContext(testsuite.LibCarnaTestCase):
 
     def test__init__(self):
-        ctx = carna.egl.EGLContext()
+        ctx = libcarna.egl.EGLContext()
         del ctx
 
     def test__stack(self):
         """
-        Test destruction of the active EGL context while another EGL context still exists (and will be activated by Carna).
+        Test destruction of the active EGL context while another EGL context still exists (and will be activated by LibCarna).
         """
-        ctx1 = carna.egl.EGLContext()
-        ctx2 = carna.egl.EGLContext()
+        ctx1 = libcarna.egl.EGLContext()
+        ctx2 = libcarna.egl.EGLContext()
         del ctx2
         gc.collect()
         del ctx1

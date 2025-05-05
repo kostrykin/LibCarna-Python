@@ -1,10 +1,10 @@
-#include <Carna/py/Surface.h>
-#include <Carna/base/Framebuffer.h>
-#include <Carna/base/GLContext.h>
-#include <Carna/base/Texture.h>
-#include <Carna/base/glew.h>
+#include <LibCarna/py/Surface.hpp>
+#include <LibCarna/base/Framebuffer.hpp>
+#include <LibCarna/base/GLContext.hpp>
+#include <LibCarna/base/Texture.hpp>
+#include <LibCarna/base/glew.hpp>
 
-namespace Carna
+namespace LibCarna
 {
 
 namespace py
@@ -16,10 +16,10 @@ namespace py
 // createRenderTexture
 // ----------------------------------------------------------------------------------
 
-static Carna::base::Texture< 2 >* createRenderTexture( const Carna::base::GLContext& glContext )
+static LibCarna::base::Texture< 2 >* createRenderTexture( const LibCarna::base::GLContext& glContext )
 {
     glContext.makeCurrent();
-    return Carna::base::Framebuffer::createRenderTexture();
+    return LibCarna::base::Framebuffer::createRenderTexture();
 }
 
 
@@ -30,25 +30,25 @@ static Carna::base::Texture< 2 >* createRenderTexture( const Carna::base::GLCont
 
 struct Surface::Details
 {
-    Details( const Carna::base::GLContext& glContext, unsigned int width, unsigned int height );
+    Details( const LibCarna::base::GLContext& glContext, unsigned int width, unsigned int height );
 
-    const Carna::base::GLContext& glContext;
+    const LibCarna::base::GLContext& glContext;
     const std::size_t frameSize;
     const std::unique_ptr< unsigned char[] > frame;
-    const std::unique_ptr< Carna::base::Texture< 2 > > renderTexture;
-    const std::unique_ptr< Carna::base::Framebuffer > fbo;
-    std::unique_ptr< Carna::base::Framebuffer::Binding > fboBinding;
+    const std::unique_ptr< LibCarna::base::Texture< 2 > > renderTexture;
+    const std::unique_ptr< LibCarna::base::Framebuffer > fbo;
+    std::unique_ptr< LibCarna::base::Framebuffer::Binding > fboBinding;
 
     void grabFrame();
 };
 
 
-Surface::Details::Details( const Carna::base::GLContext& glContext, unsigned int width, unsigned int height )
+Surface::Details::Details( const LibCarna::base::GLContext& glContext, unsigned int width, unsigned int height )
     : glContext( glContext )
     , frameSize( width * height * 3 )
     , frame( new unsigned char[ frameSize ] )
     , renderTexture( createRenderTexture( glContext ) )
-    , fbo( new Carna::base::Framebuffer( width, height, *renderTexture ) )
+    , fbo( new LibCarna::base::Framebuffer( width, height, *renderTexture ) )
 {
 }
 
@@ -67,7 +67,7 @@ void Surface::Details::grabFrame()
 // Surface
 // ----------------------------------------------------------------------------------
 
-Surface::Surface( const Carna::py::base::GLContextView& contextView, unsigned int width, unsigned int height )
+Surface::Surface( const LibCarna::py::base::GLContextView& contextView, unsigned int width, unsigned int height )
     : pimpl( new Details( *contextView.context, width, height ) )
     , contextView( contextView.shared_from_this() )
     , size( pimpl->frameSize )
@@ -96,7 +96,7 @@ unsigned int Surface::height() const
 void Surface::begin() const
 {
     pimpl->glContext.makeCurrent();
-    pimpl->fboBinding.reset( new Carna::base::Framebuffer::Binding( *pimpl->fbo ) );
+    pimpl->fboBinding.reset( new LibCarna::base::Framebuffer::Binding( *pimpl->fbo ) );
 }
 
 
@@ -118,7 +118,7 @@ pybind11::array_t< unsigned char > Surface::end() const
 
 
 
-}  // namespace Carna :: py
+}  // namespace LibCarna :: py
 
-}  // namespace Carna
+}  // namespace LibCarna
 

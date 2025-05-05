@@ -1,11 +1,11 @@
 #pragma once
 
-#include <Carna/Carna.h>
-#include <Carna/base/Node.h>
-#include <Carna/base/Material.h>
-#include <Carna/base/FrameRenderer.h>
+#include <LibCarna/LibCarna.hpp>
+#include <LibCarna/base/Node.hpp>
+#include <LibCarna/base/Material.hpp>
+#include <LibCarna/base/FrameRenderer.hpp>
 
-namespace Carna
+namespace LibCarna
 {
 
 namespace py
@@ -53,9 +53,9 @@ class GLContextView : public std::enable_shared_from_this< GLContextView >
 
 public:
 
-    const std::unique_ptr< Carna::base::GLContext > context;
+    const std::unique_ptr< LibCarna::base::GLContext > context;
 
-    explicit GLContextView( Carna::base::GLContext* context );
+    explicit GLContextView( LibCarna::base::GLContext* context );
 
     virtual ~GLContextView();
 
@@ -79,9 +79,9 @@ public:
 
     /* The spatial object of this view.
      */
-    Carna::base::Spatial* const spatial;
+    LibCarna::base::Spatial* const spatial;
 
-    explicit SpatialView( Carna::base::Spatial* spatial );
+    explicit SpatialView( LibCarna::base::Spatial* spatial );
 
     virtual ~SpatialView();
 
@@ -101,11 +101,11 @@ public:
     template< typename... Args >
     explicit NodeView( Args... args );
 
-    explicit NodeView( Carna::base::Node* node );
+    explicit NodeView( LibCarna::base::Node* node );
 
     virtual ~NodeView();
 
-    Carna::base::Node& node();
+    LibCarna::base::Node& node();
 
     void attachChild( SpatialView& child );
 
@@ -121,7 +121,7 @@ public:
 
 template< typename... Args >
 NodeView::NodeView( Args... args )
-    : SpatialView::SpatialView( new Carna::base::Node( args... ) )
+    : SpatialView::SpatialView( new LibCarna::base::Node( args... ) )
 {
 }
 
@@ -139,14 +139,14 @@ public:
     template< typename... Args >
     explicit CameraView( Args... args );
 
-    Carna::base::Camera& camera();
+    LibCarna::base::Camera& camera();
 
 }; // CameraView
 
 
 template< typename... Args >
 CameraView::CameraView( Args... args )
-    : SpatialView::SpatialView( new Carna::base::Camera( args... ) )
+    : SpatialView::SpatialView( new LibCarna::base::Camera( args... ) )
 {
 }
 
@@ -164,14 +164,14 @@ public:
     template< typename... Args >
     explicit GeometryView( Args... args );
 
-    Carna::base::Geometry& geometry();
+    LibCarna::base::Geometry& geometry();
 
 }; // GeometryView
 
 
 template< typename... Args >
 GeometryView::GeometryView( Args... args )
-    : SpatialView::SpatialView( new Carna::base::Geometry( args... ) )
+    : SpatialView::SpatialView( new LibCarna::base::Geometry( args... ) )
 {
 }
 
@@ -187,9 +187,9 @@ public:
 
     /* The geometry feature of this view.
      */
-    Carna::base::GeometryFeature& geometryFeature;
+    LibCarna::base::GeometryFeature& geometryFeature;
 
-    explicit GeometryFeatureView( Carna::base::GeometryFeature& geometryFeature );
+    explicit GeometryFeatureView( LibCarna::base::GeometryFeature& geometryFeature );
 
     virtual ~GeometryFeatureView();
 
@@ -208,7 +208,7 @@ public:
     template< typename... Args >
     explicit MaterialView( Args... args );
 
-    Carna::base::Material& material();
+    LibCarna::base::Material& material();
 
     template< typename ParameterType >
     void setParameter( const std::string& name, const ParameterType& value );
@@ -218,7 +218,7 @@ public:
 
 template< typename... Args >
 MaterialView::MaterialView( Args... args )
-    : GeometryFeatureView::GeometryFeatureView( Carna::base::Material::create( args... ) )
+    : GeometryFeatureView::GeometryFeatureView( LibCarna::base::Material::create( args... ) )
 {
 }
 
@@ -247,9 +247,9 @@ public:
 
     /* The spatial object of this view.
      */
-    Carna::base::RenderStage* const renderStage;
+    LibCarna::base::RenderStage* const renderStage;
 
-    explicit RenderStageView( Carna::base::RenderStage* renderStage );
+    explicit RenderStageView( LibCarna::base::RenderStage* renderStage );
 
     virtual ~RenderStageView();
 
@@ -261,7 +261,7 @@ public:
 // MeshRenderingStageView
 // ----------------------------------------------------------------------------------
 
-class MeshRenderingStageView : public Carna::py::base::RenderStageView
+class MeshRenderingStageView : public LibCarna::py::base::RenderStageView
 {
 
 public:
@@ -269,7 +269,7 @@ public:
     const static unsigned int ROLE_DEFAULT_MESH;
     const static unsigned int ROLE_DEFAULT_MATERIAL;
 
-    explicit MeshRenderingStageView( Carna::base::RenderStage* renderStage );
+    explicit MeshRenderingStageView( LibCarna::base::RenderStage* renderStage );
 
 }; // MeshRenderingStageView
 
@@ -286,7 +286,7 @@ public:
 
     const std::shared_ptr< GLContextView > context;
 
-    Carna::base::FrameRenderer frameRenderer;
+    LibCarna::base::FrameRenderer frameRenderer;
 
     FrameRendererView
         ( GLContextView& context
@@ -313,16 +313,16 @@ public:
 
     const std::shared_ptr< RenderStageView > ownedBy;
 
-    Carna::base::ColorMap& colorMap;
+    LibCarna::base::ColorMap& colorMap;
 
-    ColorMapView( const std::shared_ptr< RenderStageView >& ownedBy, Carna::base::ColorMap& colorMap );
+    ColorMapView( const std::shared_ptr< RenderStageView >& ownedBy, LibCarna::base::ColorMap& colorMap );
 
 }; // ColorMapView
 
 
 
-}  // namespace Carna :: py :: base
+}  // namespace LibCarna :: py :: base
 
-}  // namespace Carna :: py
+}  // namespace LibCarna :: py
 
-}  // namespace Carna
+}  // namespace LibCarna

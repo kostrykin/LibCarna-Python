@@ -85,6 +85,9 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/misc/__init__.py.in
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/misc/py.py
                 ${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_MODULE_NAME}/py.py COPYONLY )
 
+file( GLOB LICENSES "${LibCarna_LICENSE_DIR}/LICENSE*" )
+file( COPY ${LICENSES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/licenses/" )
+
 ############################################
 # Project
 ############################################
@@ -98,7 +101,7 @@ set( MODULES
     )
 set( SRC
         src/egl/EGLContext.cpp
-        src/py/Log.cpp
+        src/py/log.cpp
         src/py/Surface.cpp
         src/py/base.cpp
         src/py/egl.cpp

@@ -1,7 +1,7 @@
-carna.presets
-=============
+libcarna.base.math
+==================
 
-.. automodule:: carna.presets
+.. automodule:: libcarna.base.math
    :imported-members:
    :members:
    :undoc-members:

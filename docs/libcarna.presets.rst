@@ -1,7 +1,7 @@
-carna.egl
-=========
+libcarna.presets
+================
 
-.. automodule:: carna.egl
+.. automodule:: libcarna.presets
    :imported-members:
    :members:
    :undoc-members:

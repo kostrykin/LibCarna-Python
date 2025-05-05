@@ -3,15 +3,14 @@ from typing import (
     Callable,
     Iterable,
     Literal,
-    Sequence,
 )
 
 import numpy as np
 
-import carna.base
-import carna.egl
-import carna.presets
-import carna.helpers
+import libcarna.base
+import libcarna.egl
+import libcarna.presets
+import libcarna.helpers
 
 
 AxisLiteral = Literal['x', 'y', 'z']
@@ -75,7 +74,7 @@ def _expand_module(module):
         globals()[target_name] = member
 
 
-def _setup_spatial(spatial, parent: carna.base.Node | None = None, **kwargs):
+def _setup_spatial(spatial, parent: libcarna.base.Node | None = None, **kwargs):
     if parent is not None:
         parent.attach_child(spatial)
     for key, value in kwargs.items():
@@ -83,8 +82,8 @@ def _setup_spatial(spatial, parent: carna.base.Node | None = None, **kwargs):
 
 
 def _create_spatial_factory(spatial_type_name):
-    spatial_type = getattr(carna.base, spatial_type_name)
-    def spatial_factory(tag: str | None = None, *, parent: carna.base.Node | None = None, **kwargs):
+    spatial_type = getattr(libcarna.base, spatial_type_name)
+    def spatial_factory(tag: str | None = None, *, parent: libcarna.base.Node | None = None, **kwargs):
         """
         Create a spatial object of the given type.
 
@@ -107,10 +106,10 @@ def geometry(
         geometry_type: int,
         tag: str | None = None,
         *,
-        parent: carna.base.Node | None = None,
+        parent: libcarna.base.Node | None = None,
         features: dict | None = None,
         **kwargs,
-    ) -> carna.base.Geometry:
+    ) -> libcarna.base.Geometry:
     """
     Create a :class:`carna.base.Geometry` object.
 
@@ -120,7 +119,7 @@ def geometry(
         parent: Parent node to attach the spatial to, or `None`.
         **kwargs: Attributes to be set on the newly created object.
     """
-    class Geometry(carna.base.Geometry):
+    class Geometry(libcarna.base.Geometry):
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
@@ -135,15 +134,15 @@ def geometry(
     return geometry
 
 
-def material(shader_name: str, **kwargs) -> carna.base.Material:
+def material(shader_name: str, **kwargs) -> libcarna.base.Material:
     """
-    Create a :class:`carna.base.Material` object.
+    Create a :class:`libcarna.base.Material` object.
 
     Arguments:
         shader_name: The shader to be used for rendering.
         **kwargs: Uniform shader parameters.
     """
-    class Material(carna.base.Material):
+    class Material(libcarna.base.Material):
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
@@ -159,7 +158,7 @@ def material(shader_name: str, **kwargs) -> carna.base.Material:
     return material
 
 
-class color(carna.base.Color):
+class color(libcarna.base.Color):
 
     def __init__(self, *args, **kwargs):
         if len(args) == 1 and len(kwargs) == 0 and isinstance(args[0], str) and args[0].startswith('#'):
@@ -194,38 +193,38 @@ class renderer:
     Vertical rendering resolution.
     """
 
-    def __init__(self, width: int, height: int, stages: Iterable[carna.base.RenderStage], ctx: carna.base.GLContext | None = None):
+    def __init__(self, width: int, height: int, stages: Iterable[libcarna.base.RenderStage], ctx: libcarna.base.GLContext | None = None):
         if ctx is None:
-            ctx = carna.egl_context()
-        surface = carna.surface(ctx, width, height)
-        frame_renderer = carna.frame_renderer(ctx, surface.width, surface.height)
+            ctx = libcarna.egl_context()
+        surface = libcarna.surface(ctx, width, height)
+        frame_renderer = libcarna.frame_renderer(ctx, surface.width, surface.height)
 
         # Add stages to the frame renderer
         renderer_helper = None
         for stage in stages:
             if renderer_helper is None:
-                renderer_helper = carna.frame_renderer_helper(frame_renderer)
+                renderer_helper = libcarna.frame_renderer_helper(frame_renderer)
             renderer_helper.add_stage(stage)
         if renderer_helper is not None:
             renderer_helper.commit()
 
         # Build method for rendering, that hides the frame renderer (so that it cannot be reshaped, because this would
         # require a new surface)
-        def render(camera: carna.base.Camera, root: carna.base.Node | None = None) -> np.ndarray:
+        def render(camera: libcarna.base.Camera, root: libcarna.base.Node | None = None) -> np.ndarray:
             surface.begin()
             frame_renderer.render(camera, root)
             return surface.end()
 
         # Build auxiliariy methods for projection matrices that fit the aspect ratio of the surface
         def frustum(fov: float, z_near: float, z_far: float):
-            return carna.base.math.frustum(fov, height / width, z_near, z_far)
+            return libcarna.base.math.frustum(fov, height / width, z_near, z_far)
 
         self.render = render
         self.frustum = frustum
         self.width = width
         self.height = height
 
-    def render(self, camera: carna.base.Camera, root: carna.base.Node | None = None) -> np.ndarray:
+    def render(self, camera: libcarna.base.Camera, root: libcarna.base.Node | None = None) -> np.ndarray:
         """
         Render scene `root` from `camera` point of view to a NumPy array.
         """
@@ -235,8 +234,8 @@ class renderer:
         """
         Create a projection matrix that is described by the frustum.
         
-        Wrapper for :func:`carna.base.math.frustum` that ensures that the geometry of the frustum fits the aspect ratio
-        of the surface of the renderer.
+        Wrapper for :func:`libcarna.base.math.frustum` that ensures that the geometry of the frustum fits the aspect
+        ratio of the surface of the renderer.
         """
         ...
 
@@ -263,18 +262,18 @@ class animation:
             yield r.render(*args, **kwargs)
 
     @staticmethod
-    def rotate_local(spatial: carna.base.Spatial, axis: AxisHint = 'y') -> Callable[[float], None]:
+    def rotate_local(spatial: libcarna.base.Spatial, axis: AxisHint = 'y') -> Callable[[float], None]:
         """
         Create a step function for rotating an object's local coordinate system.
         """
         axis = _resolve_axis_hint(axis)
         base_transform = spatial.local_transform
         def step(t: float):
-            spatial.local_transform = carna.math.rotation(axis, radians=2 * np.pi * t) @ base_transform
+            spatial.local_transform = libcarna.math.rotation(axis, radians=2 * np.pi * t) @ base_transform
         return step
     
     @staticmethod
-    def bounce_local(spatial: carna.base.Spatial, axis: AxisHint, amplitude: float = 1.0) -> Callable[[float], None]:
+    def bounce_local(spatial: libcarna.base.Spatial, axis: AxisHint, amplitude: float = 1.0) -> Callable[[float], None]:
         """
         Create a step function for bouncing an object along a given axis.
         """
@@ -282,7 +281,7 @@ class animation:
         base_transform = spatial.local_transform
         def step(t: float):
             offset = np.multiply(axis, amplitude * np.sin(2 * np.pi * t))
-            spatial.local_transform = carna.math.translation(offset) @ base_transform
+            spatial.local_transform = libcarna.math.translation(offset) @ base_transform
         return step
 
 
@@ -291,11 +290,11 @@ def volume(
         array: np.ndarray,
         tag: str | None = None,
         *,
-        parent: carna.base.Node | None = None,
+        parent: libcarna.base.Node | None = None,
         normals: bool = False,
         spacing: np.ndarray | None = None,
         extent: np.ndarray | None = None,
-    ) -> carna.base.Node:
+    ) -> libcarna.base.Node:
     """
     Create a renderable representation of 3D data using the specified `geometry_type`, that can be put anywhere in the
     scene graph. The 3D volume is centered in the returned node.
@@ -333,7 +332,7 @@ def volume(
         helper_type_name = f'VolumeGridHelper_{intensity_component}'
     
     # Create the buffer and load the data
-    volume_type = getattr(carna.helpers, helper_type_name)
+    volume_type = getattr(libcarna.helpers, helper_type_name)
     helper = volume_type(native_resolution=array.shape)
     helper.load_intensities(array)
 
@@ -346,8 +345,8 @@ def volume(
 
     # Create a wrapper node, so that it is safe to modify the `.local_transform` property (making such modifications
     # directly to the property of the node created by the wrapper is discouraged in the docs)
-    # https://kostrykin.github.io/Carna/html/classCarna_1_1helpers_1_1VolumeGridHelper.html#ab03947088a1de662b7a468516e4b5e24
-    wrapper_node = carna.base.Node(tag) if tag is not None else carna.base.Node()
+    # https://kostrykin.github.io/LibCarna/html/classLibCarna_1_1helpers_1_1VolumeGridHelper.html#ab03947088a1de662b7a468516e4b5e24
+    wrapper_node = libcarna.base.Node(tag) if tag is not None else libcarna.base.Node()
     _setup_spatial(wrapper_node, parent)
 
     # Create volume node
@@ -358,7 +357,7 @@ def volume(
 
 class color_map_helper:
 
-    def __init__(self, color_map: carna.base.ColorMap, cmap: str | None = None):
+    def __init__(self, color_map: libcarna.base.ColorMap, cmap: str | None = None):
         self.color_map = color_map
         cmap = cmap or 'viridis'
         if hasattr(self, cmap) and cmap != 'write_colors':
@@ -376,49 +375,49 @@ class color_map_helper:
 
     def gray(self, **kwargs):
         self.write_colors(
-            carna.color('#000000'),
-            carna.color('#ffffff'),
+            libcarna.color('#000000'),
+            libcarna.color('#ffffff'),
             **kwargs,
         )
 
     def viridis(self, **kwargs):
         self.write_colors(
-            carna.color('#440154'),
-            carna.color('#482777'),
-            carna.color('#3e4989'),
-            carna.color('#31688e'),
-            carna.color('#26828e'),
-            carna.color('#1f9e89'),
-            carna.color('#35b779'),
-            carna.color('#6ece58'),
-            carna.color('#b5de2b'),
-            carna.color('#fde725'),
+            libcarna.color('#440154'),
+            libcarna.color('#482777'),
+            libcarna.color('#3e4989'),
+            libcarna.color('#31688e'),
+            libcarna.color('#26828e'),
+            libcarna.color('#1f9e89'),
+            libcarna.color('#35b779'),
+            libcarna.color('#6ece58'),
+            libcarna.color('#b5de2b'),
+            libcarna.color('#fde725'),
             **kwargs,
         )
 
     def jet(self, **kwargs):
         self.write_colors(
-            carna.color('#00007f'),
-            carna.color('#0000ff'),
-            carna.color('#007fff'),
-            carna.color('#00ffff'),
-            carna.color('#7fff7f'),
-            carna.color('#ffff00'),
-            carna.color('#ff7f00'),
-            carna.color('#ff0000'),
-            carna.color('#7f0000'),
+            libcarna.color('#00007f'),
+            libcarna.color('#0000ff'),
+            libcarna.color('#007fff'),
+            libcarna.color('#00ffff'),
+            libcarna.color('#7fff7f'),
+            libcarna.color('#ffff00'),
+            libcarna.color('#ff7f00'),
+            libcarna.color('#ff0000'),
+            libcarna.color('#7f0000'),
             **kwargs,
         )
 
 
-class mip(carna.presets.MIPStage):
+class mip(libcarna.presets.MIPStage):
 
     def __init__(self, *args, cmap: str | None = None, **kwargs):
         super().__init__(*args, **kwargs)
         self.cmap = color_map_helper(self.color_map, cmap)
 
 
-_expand_module(carna.base)
-_expand_module(carna.egl)
-_expand_module(carna.presets)
-_expand_module(carna.helpers)
+_expand_module(libcarna.base)
+_expand_module(libcarna.egl)
+_expand_module(libcarna.presets)
+_expand_module(libcarna.helpers)

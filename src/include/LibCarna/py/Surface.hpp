@@ -4,10 +4,10 @@
 
 #include <pybind11/numpy.h>
 
-#include <Carna/py/base.h>
-#include <Carna/base/noncopyable.h>
+#include <LibCarna/py/base.hpp>
+#include <LibCarna/base/noncopyable.hpp>
 
-namespace Carna
+namespace LibCarna
 {
 
 namespace py
@@ -29,7 +29,7 @@ class Surface
 
 public:
 
-    Surface( const Carna::py::base::GLContextView& contextView, unsigned int width, unsigned int height );
+    Surface( const LibCarna::py::base::GLContextView& contextView, unsigned int width, unsigned int height );
 
     virtual ~Surface();
 
@@ -37,7 +37,7 @@ public:
 
     unsigned int height() const;
 
-    const std::shared_ptr< const Carna::py::base::GLContextView > contextView;
+    const std::shared_ptr< const LibCarna::py::base::GLContextView > contextView;
 
     void begin() const;
 
@@ -49,7 +49,7 @@ public:
 
 
 
-}  // namespace Carna :: py
+}  // namespace LibCarna :: py
 
-}  // namespace Carna
+}  // namespace LibCarna
 

@@ -1,8 +1,8 @@
 libcarna-python
 ===============
 
-These are the Python bindings for the Carna library. The documentation of the original Carna library can be found at:
-https://kostrykin.github.io/Carna/html.
+These are the Python bindings for the LibCarna library. The documentation of the original LibCarna library can be found at:
+https://kostrykin.github.io/LibCarna/html.
 
 API
 ---
@@ -10,9 +10,9 @@ API
 .. toctree::
    :maxdepth: 1
 
-   carna
-   carna.base
-   carna.base.math
-   carna.egl
-   carna.helpers
-   carna.presets
+   libcarna
+   libcarna.base
+   libcarna.base.math
+   libcarna.egl
+   libcarna.helpers
+   libcarna.presets

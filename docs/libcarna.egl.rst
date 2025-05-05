@@ -1,7 +1,7 @@
-carna.base.math
-===============
+libcarna.egl
+============
 
-.. automodule:: carna.base.math
+.. automodule:: libcarna.egl
    :imported-members:
    :members:
    :undoc-members:

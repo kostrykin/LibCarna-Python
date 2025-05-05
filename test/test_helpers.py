@@ -1,4 +1,4 @@
-import carna.helpers
+import libcarna.helpers
 import numpy as np
 
 import testsuite
@@ -77,38 +77,38 @@ class VolumeGridHelper_NormalsComponent:
 
 
 class VolumeGridHelper_IntensityVolumeUInt16(
-    testsuite.CarnaTestCase,
+    testsuite.LibCarnaTestCase,
     VolumeGridHelper,
     VolumeGridHelper_IntensityComponent,
 ):
 
-    VolumeGridHelper = carna.helpers.VolumeGridHelper_IntensityVolumeUInt16
+    VolumeGridHelper = libcarna.helpers.VolumeGridHelper_IntensityVolumeUInt16
 
 
 class VolumeGridHelper_IntensityVolumeUInt16_NormalMap3DInt8(
-    testsuite.CarnaTestCase,
+    testsuite.LibCarnaTestCase,
     VolumeGridHelper,
     VolumeGridHelper_IntensityComponent,
     VolumeGridHelper_NormalsComponent,
 ):
 
-    VolumeGridHelper = carna.helpers.VolumeGridHelper_IntensityVolumeUInt16_NormalMap3DInt8
+    VolumeGridHelper = libcarna.helpers.VolumeGridHelper_IntensityVolumeUInt16_NormalMap3DInt8
 
 
 class VolumeGridHelper_IntensityVolumeUInt8(
-    testsuite.CarnaTestCase,
+    testsuite.LibCarnaTestCase,
     VolumeGridHelper,
     VolumeGridHelper_IntensityComponent,
 ):
 
-    VolumeGridHelper = carna.helpers.VolumeGridHelper_IntensityVolumeUInt8
+    VolumeGridHelper = libcarna.helpers.VolumeGridHelper_IntensityVolumeUInt8
 
 
 class VolumeGridHelper_IntensityVolumeUInt8_NormalMap3DInt8(
-    testsuite.CarnaTestCase,
+    testsuite.LibCarnaTestCase,
     VolumeGridHelper,
     VolumeGridHelper_IntensityComponent,
     VolumeGridHelper_NormalsComponent,
 ):
 
-    VolumeGridHelper = carna.helpers.VolumeGridHelper_IntensityVolumeUInt8_NormalMap3DInt8
+    VolumeGridHelper = libcarna.helpers.VolumeGridHelper_IntensityVolumeUInt8_NormalMap3DInt8

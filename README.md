@@ -5,7 +5,7 @@ The aim of this package is to provide real-time 3D visualization in Python for s
 
 See [examples/kalinin2018.ipynb](examples/kalinin2018.ipynb) for an example.
 
-[![Build CarnaPy and Docker image](https://github.com/kostrykin/CarnaPy/actions/workflows/build.yml/badge.svg)](https://github.com/kostrykin/CarnaPy/actions/workflows/build.yml)
+[![Build LibCarnaPy and Docker image](https://github.com/kostrykin/LibCarnaPy/actions/workflows/build.yml/badge.svg)](https://github.com/kostrykin/LibCarnaPy/actions/workflows/build.yml)
 ![Docker Image Version (latest semver)](https://img.shields.io/docker/v/kostrykin/carnapy?label=DockerHub%3A)
 [![Anaconda-Server Badge](https://img.shields.io/badge/Install%20with-conda-%2387c305)](https://anaconda.org/kostrykin/carnapy)
 [![Anaconda-Server Badge](https://img.shields.io/conda/v/kostrykin/carnapy.svg?label=Version)](https://anaconda.org/kostrykin/carnapy)
@@ -71,10 +71,10 @@ After building the wheel file, it can be installed using:
 python -m pip install --force-reinstall $(find . -name 'LibCarna_Python*.whl')
 ```
 
-To build against a development version of Carna, install it locally,
+To build against a development version of LibCarna, install it locally,
 ```bash
 LIBCARNA_SRC_PREFIX="../LibCarna" ./install_carna_dev.bash
 ```
 where you make `LIBCARNA_SRC_PREFIX` point to the source directory.
 
-This will create a local directory `.libcarna-dev`. The build process will give precedence to Carna from this directory over other versions. Simply remove `.libcarna-dev` to stop building agaisnt the development version of Carna.
+This will create a local directory `.libcarna-dev`. The build process will give precedence to LibCarna from this directory over other versions. Simply remove `.libcarna-dev` to stop building agaisnt the development version of LibCarna.
