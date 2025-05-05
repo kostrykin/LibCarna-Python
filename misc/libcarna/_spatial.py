@@ -105,7 +105,7 @@ def volume(
     if array.dtype == np.uint8:
         intensity_component = 'IntensityVolumeUInt8'
         array = array / 0xff
-    elif array.dtype == np.bool:
+    elif array.dtype == bool:
         intensity_component = 'IntensityVolumeUInt8'
     elif array.dtype == np.uint16:
         intensity_component = 'IntensityVolumeUInt16'
