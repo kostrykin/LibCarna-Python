@@ -1,6 +1,6 @@
 build:
-  carnapy: 0.2.0
-  carna: 3.3.3
+  LibCarna-Python: 0.2.0
+  LibCarna: 3.4.0
 
 package:
-  carna: 3.3.3
+  LibCarna: 3.4.0

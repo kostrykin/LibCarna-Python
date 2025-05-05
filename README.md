@@ -1,7 +1,7 @@
-CarnaPy
-========
+LibCarna-Python
+===============
 
-The aim of this package is to provide real-time 3D visualization in Python for specifically, but not limited to, biomedical data. The library is based on [Carna](https://github.com/kostrykin/Carna).
+The aim of this package is to provide real-time 3D visualization in Python for specifically, but not limited to, biomedical data. The library is based on [LibCarna](https://github.com/kostrykin/LibCarna).
 
 See [examples/kalinin2018.ipynb](examples/kalinin2018.ipynb) for an example.
 
@@ -36,7 +36,7 @@ Using the library requires the following dependencies:
 * Python ≥ 3.7
 
 The following dependencies must be satisfied for the build process:
-* [Carna](https://github.com/kostrykin/Carna) ≥ 3.1
+* [LibCarna](https://github.com/kostrykin/LibCarna) ≥ 3.4
 * [Eigen](http://eigen.tuxfamily.org/) ≥ 3.0.5
 * [libboost-iostreams](https://www.boost.org/doc/libs/1_76_0/libs/iostreams/doc/index.html)
 * [pybind11](https://github.com/pybind/pybind11)
@@ -62,19 +62,19 @@ Conda packages are available for Python 3.7–3.9.
 
 There is a build script for Ubuntu Linux which builds a wheel file:
 ```bash
-CARNAPY_BUILD_DOCS=ON CARNAPY_BUILD_TEST=ON ./linux_build.bash
+LIBCARNA_PYTHON_BUILD_DOCS=ON LIBCARNA_PYTHON_BUILD_TEST=ON ./linux_build.bash
 ```
 Adaption to other distribution should be self-explanatory.
 
 After building the wheel file, it can be installed using:
 ```bash
-python -m pip install --force-reinstall $(find . -name 'CarnaPy*.whl')
+python -m pip install --force-reinstall $(find . -name 'LibCarna_Python*.whl')
 ```
 
 To build against a development version of Carna, install it locally,
 ```bash
-CARNA_SRC_PREFIX="../Carna" ./install_carna_dev.bash
+LIBCARNA_SRC_PREFIX="../LibCarna" ./install_carna_dev.bash
 ```
-where you make `CARNA_SRC_PREFIX` point to the source directory.
+where you make `LIBCARNA_SRC_PREFIX` point to the source directory.
 
-This will create a local directory `.carna-dev`. The build process will give precedence to Carna from this directory over other versions. Simply remove `.carna-dev` to stop building agaisnt the development version of Carna.
+This will create a local directory `.libcarna-dev`. The build process will give precedence to Carna from this directory over other versions. Simply remove `.libcarna-dev` to stop building agaisnt the development version of Carna.

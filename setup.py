@@ -1,6 +1,6 @@
 # Build and install:
 # > python setup.py bdist_wheel
-# > python -m pip install --force-reinstall CarnaPy/dist/*.whl
+# > python -m pip install --force-reinstall LibCarna_Python/dist/*.whl
 # 
 # Distribute to PyPI:
 # > python setup.py sdist
@@ -15,8 +15,8 @@ import yaml
 with open('misc/versions.yml', 'r') as io:
     versions = yaml.safe_load(io)
 
-VERSION_CARNA_PY = versions['build']['carnapy']
-VERSION_CARNA    = versions['build']['carna'  ]
+VERSION_LIBCARNA_PYTHON = versions['build']['LibCarna-Python']
+VERSION_LIBCARNA = versions['build']['LibCarna']
 
 root_dir = Path(os.path.abspath(os.path.dirname(__file__)))
 
@@ -27,8 +27,8 @@ build_dirs = dict(
 
 if __name__ == '__main__':
 
-    (build_dirs['debug']   / 'carna').mkdir(parents=True, exist_ok=True)
-    (build_dirs['release'] / 'carna').mkdir(parents=True, exist_ok=True)
+    (build_dirs['debug']   / 'libcarna').mkdir(parents=True, exist_ok=True)
+    (build_dirs['release'] / 'libcarna').mkdir(parents=True, exist_ok=True)
 
     from setuptools import setup, Extension
     from setuptools.command.build_ext import build_ext as build_ext_orig
@@ -48,8 +48,8 @@ if __name__ == '__main__':
                 self.build_cmake(ext)
 
         def build_cmake(self, ext):
-            version_major, version_minor, version_patch = [int(val) for val in VERSION_CARNA_PY.split('.')]
-            build_test = os.environ.get('CARNAPY_BUILD_TEST', 'ON')
+            version_major, version_minor, version_patch = [int(val) for val in VERSION_LIBCARNA_PYTHON.split('.')]
+            build_test = os.environ.get('LIBCARNA_PYTHON_BUILD_TEST', 'ON')
             assert build_test in ('ON', 'OFF')
             build_type = os.environ.get('CMAKE_BUILD_TYPE', 'Release')
             cmake_args = [
@@ -59,7 +59,7 @@ if __name__ == '__main__':
                 f'-DMAJOR_VERSION={version_major}',
                 f'-DMINOR_VERSION={version_minor}',
                 f'-DPATCH_VERSION={version_patch}',
-                f'-DREQUIRED_VERSION_CARNA={VERSION_CARNA}',
+                f'-DREQUIRED_VERSION_LIBCARNA={VERSION_LIBCARNA}',
                 f'-DPYTHON_EXECUTABLE={sys.executable}',
                 f'-Dpybind11_DIR={os.environ["PYBIND11_PREFIX"]}',
                 f'-DCMAKE_MODULE_PATH={os.environ.get("CMAKE_MODULE_PATH")}',
@@ -77,31 +77,30 @@ if __name__ == '__main__':
             os.chdir(str(root_dir))
 
     setup(
-        name = 'CarnaPy',
-        version = VERSION_CARNA_PY,
+        name = 'LibCarna-Python',
+        version = VERSION_LIBCARNA_PYTHON,
         description = 'General-purpose real-time 3D visualization',
         long_description = long_description,
         long_description_content_type = 'text/markdown',
         author = 'Leonid Kostrykin',
         author_email = 'leonid.kostrykin@bioquant.uni-heidelberg.de',
-        url = 'https://github.com/kostrykin/CarnaPy',
+        url = 'https://github.com/kostrykin/LibCarna-Python',
         include_package_data = True,
-        license = 'BSD-3-Clause',
+        license = 'MIT',
         package_dir = {
-            'carna': 'build/make_release/carna',
+            'libcarna': 'build/make_release/libcarna',
         },
-        packages = ['carna'],
+        packages = ['libcarna'],
         package_data = {
-            'carna': ['*.so'],
+            'libcarna': ['*.so'],
         },
         ext_modules = [CMakeExtension()],
         cmdclass={
             'build_ext': build_ext,
         },
         classifiers = [
-            'Development Status :: 3 - Alpha',
+            'Development Status :: 4 - Beta',
             'Environment :: GPU',
-            'License :: OSI Approved :: BSD License',
             'Operating System :: POSIX :: Linux',
             'Programming Language :: C++',
             'Programming Language :: Python',

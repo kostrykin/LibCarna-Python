@@ -1,5 +1,6 @@
 cmake_minimum_required( VERSION 3.5 )
-project( CarnaPy )  # TODO: rename to `libcarna-python`
+project( LibCarna-Python )
+set( PYTHON_MODULE_NAME "libcarna" )
 include( FindPackageHandleStandardArgs )
 
 set( CMAKE_CXX_STANDARD 14 )
@@ -11,11 +12,11 @@ set( CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE )
 set( FULL_VERSION ${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION} )
 set( TARGET_NAME ${PROJECT_NAME}-${FULL_VERSION} )
 string( TOUPPER ${PROJECT_NAME} PROJECT_NAME_CAPS )
-string( TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWS )
+string( REGEX REPLACE "-" "_" PROJECT_NAME_CAPS ${PROJECT_NAME_CAPS} )
 
-set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/carna )  # TODO: replace `carna` with `${PROJECT_NAME_LOWS}`
-set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/carna )
-set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/carna )
+set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_MODULE_NAME} )
+set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_MODULE_NAME} )
+set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_MODULE_NAME} )
 
 ############################################
 # Set default options for this build
@@ -40,14 +41,14 @@ endmacro()
 ############################################
 
 list( APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/misc/CMake-Modules )
-list( PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/.carna-dev )
+list( PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/.libcarna-dev )
 
 ############################################
 # Define default paths for the installation
 ############################################
 
 # set default library and header destinations (relative to CMAKE_INSTALL_PREFIX)
-option_default_to( INSTALL_LIBRARY_DIR "${PROJECT_NAME_LOWS}" String "Installation directory for libraries" )
+option_default_to( INSTALL_LIBRARY_DIR "${PROJECT_NAME}" String "Installation directory for libraries" )
 
 ############################################
 # Normalize installation paths
@@ -71,18 +72,18 @@ find_package( pybind11 REQUIRED )
 find_package( Eigen3 REQUIRED )
 include_directories( ${EIGEN3_INCLUDE_DIR} )
 
-# Carna
-find_package( Carna ${REQUIRED_VERSION_CARNA} REQUIRED COMPONENTS release )
-include_directories( ${Carna_INCLUDE_DIR} )
-set( CARNA_VERSION ${FOUND_VERSION} )
+# LibCarna
+find_package( LibCarna ${REQUIRED_VERSION_LIBCARNA} REQUIRED COMPONENTS release )
+include_directories( ${LibCarna_INCLUDE_DIR} )
+set( LIBCARNA_VERSION ${FOUND_VERSION} )
 
 ############################################
 
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/misc/__init__.py.in
-                ${CMAKE_CURRENT_BINARY_DIR}/carna/__init__.py @ONLY )
+                ${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_MODULE_NAME}/__init__.py @ONLY )
 
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/misc/py.py
-                ${CMAKE_CURRENT_BINARY_DIR}/carna/py.py COPYONLY )
+                ${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_MODULE_NAME}/py.py COPYONLY )
 
 ############################################
 # Project
@@ -130,7 +131,7 @@ foreach( MODULE ${MODULES} )
         ${MODULE}
         PRIVATE
         ${OPENGL_LIBRARIES}
-        ${Carna_LIBRARIES}
+        ${LibCarna_LIBRARIES}
         OpenGL::EGL
     )
 endforeach( MODULE )
@@ -146,7 +147,7 @@ install( TARGETS ${MODULES}
 )
 
 install( FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/carna/__init__.py
+    ${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_MODULE_NAME}/__init__.py
     DESTINATION ${INSTALL_LIBRARY_DIR}
 )
 

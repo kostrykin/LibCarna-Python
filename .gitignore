@@ -3,7 +3,7 @@
 /build
 /docs/build
 /dist
-/CarnaPy.egg-info
-/.carna-dev
+/LibCarna_Python.egg-info
+/.libcarna-dev
 .ipynb_checkpoints
 *.swp
