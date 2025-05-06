@@ -134,7 +134,7 @@ def volume(
         geometry_type: The type of the geometry.
         array: 3D data to be rendered.
         tag: An arbitrary string, that helps identifying the created node.
-        units: The units of the data. If `'huv'`, the data is assumed to be in Hounsfield Units (HU).
+        units: The units of the data. If `'hu'`, the data is assumed to be in Hounsfield Units (HU).
         parent: Parent node to attach the volume to, or `None`.
         normals: Governs normal mapping (if `True`, the 3D normal map will be pre-computed for the volume).
         spacing: Specifies the spacing between two adjacent voxel centers. Mutually exclusive with `extent`.
@@ -146,7 +146,7 @@ def volume(
 
     # Preprocess the data based on the units
     match units:
-        case 'huv':
+        case 'hu':
             array = (array.clip(-1024, +3071) + 1024) / 4095
         case 'raw':
             pass
@@ -185,6 +185,7 @@ def volume(
         extent = np.subtract(array.shape, 1) * spacing
     elif extent is not None:
         create_node_kwargs['extent'] = volume_type.Extent(extent)
+        spacing = np.divide(extent, np.subtract(array.shape, 1))
 
     # Create a wrapper node, so that it is safe to modify the `.local_transform` property (making such modifications
     # directly to the property of the node created by the wrapper is discouraged in the docs)
@@ -193,6 +194,8 @@ def volume(
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
+            self.extent  = extent
+            self.spacing = spacing
 
         def transform_into_voxels_from(self, rhs: libcarna.base.Spatial) -> np.array:
             """

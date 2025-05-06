@@ -3,7 +3,7 @@ import libcarna
 
 class drr(libcarna.presets.DRRStage):
     """
-    DRR (digital radiograph reconstruction).
+    DRR (digitally reconstructed radiograph).
 
     Arguments:
         *args: Passed to :class:`libcarna.presets.DRRStage`.

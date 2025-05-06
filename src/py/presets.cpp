@@ -419,7 +419,7 @@ PYBIND11_MODULE( presets, m )
             VIEW_DELEGATE( DRRStageView, drrStage().isRenderingInverse() ),
             VIEW_DELEGATE( DRRStageView, drrStage().setRenderingInverse( renderInverse ), bool renderInverse )
         )
-        .doc() = R"(Performs *digital radiograph reconstruction* of the volume geometries in the scene.
+        .doc() = R"(Renders *digitally reconstructed radiographs* of the volume geometries in the scene.
 
         .. literalinclude:: ../test/test_integration.py
            :start-after: # .. DRRStage: example-setup-start

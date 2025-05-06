@@ -52,5 +52,17 @@ class volume(testsuite.LibCarnaTestCase):
     def test__transform_into_voxels_from(self):
         np.testing.assert_array_almost_equal(
             self.volume.transform_into_voxels_from(self.root).point(),
-            np.array([32., 24., 5., 1.]),
+            (32., 24., 5., 1.),
+        )
+
+    def test__extent(self):
+        np.testing.assert_array_almost_equal(
+            self.volume.extent,
+            (64., 48., 20.),
+        )
+
+    def test__spacing(self):
+        np.testing.assert_array_almost_equal(
+            self.volume.spacing,
+            (1., 1., 1.),
         )
