@@ -125,6 +125,23 @@ public:
 
 
 
+// ----------------------------------------------------------------------------------
+// DRRStage
+// ----------------------------------------------------------------------------------
+
+class DRRStageView : public VolumeRenderingStageView
+{
+
+public:
+
+    explicit DRRStageView( unsigned int geometryType );
+
+    LibCarna::presets::DRRStage& drrStage();
+
+}; // DRRStageView
+
+
+
 }  // namespace LibCarna :: py :: presets
 
 }  // namespace LibCarna :: py

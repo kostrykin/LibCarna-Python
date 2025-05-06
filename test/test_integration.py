@@ -420,3 +420,66 @@ class DVRStage(testsuite.LibCarnaRenderingTestCase):
 
         # Verify result
         self.assert_image_almost_expected(np.array(frames))
+
+
+class DRRStage(testsuite.LibCarnaRenderingTestCase):
+
+    def setUp(self):
+        # .. DRRStage: example-setup-start
+        GEOMETRY_TYPE_VOLUME = 2
+
+        # Create and configure frame renderer
+        drr = libcarna.drr(
+            GEOMETRY_TYPE_VOLUME, sr=800, inverse=True,
+            lothres=0, upthres=1000, upmulti=3,
+        )
+        r = libcarna.renderer(
+            800, 600, [drr], bgcolor=libcarna.color.WHITE_NO_ALPHA,
+        )
+
+        # Create volume
+        np.random.seed(0)
+        data = ndi.gaussian_filter(np.random.rand(64, 64, 20), 10)
+        data = data - data.min()
+        data = data / data.max()
+
+        # Create and configure scene
+        root = libcarna.node()
+        libcarna.volume(
+            GEOMETRY_TYPE_VOLUME,
+            data,
+            parent=root,
+            spacing=(1, 1, 2),
+        )
+        camera = libcarna.camera(
+            parent=root,
+            projection=r.frustum(fov=90, z_near=1, z_far=500),
+            local_transform=libcarna.translate(0, 0, 100),
+        )
+        # .. DRRStage: example-setup-end
+
+        self.r, self.camera = r, camera
+
+    def test(self):
+        r, camera = self.r, self.camera
+
+        # Render scene
+        array = r.render(camera)
+
+        # Verify result
+        self.assert_image_almost_expected(array)
+
+    def test__animated(self):
+        r, camera = self.r, self.camera
+
+        # Define animation
+        animation = libcarna.animate(
+            libcarna.animate.rotate_local(camera),
+            n_frames=50,
+        )
+
+        # Render animation
+        frames = list(animation.render(r, camera))
+
+        # Verify result
+        self.assert_image_almost_expected(np.array(frames))

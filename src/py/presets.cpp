@@ -11,13 +11,11 @@ using namespace pybind11::literals; // enables the _a literal
 #include <LibCarna/presets/MIPStage.hpp>
 #include <LibCarna/presets/CuttingPlanesStage.hpp>
 #include <LibCarna/presets/DVRStage.hpp>
+#include <LibCarna/presets/DRRStage.hpp>
 #include <LibCarna/py/presets.hpp>
 /*
 #include <LibCarna/base/GLContext.hpp>
 #include <LibCarna/base/ManagedMesh.hpp>
-#include <LibCarna/presets/DRRStage.hpp>
-#include <LibCarna/presets/MIPLayer.hpp>
-#include <LibCarna/presets/MIPStage.hpp>
 #include <LibCarna/presets/OccludedRenderingStage.hpp>
 #include <LibCarna/presets/OpaqueRenderingStage.hpp>
 */
@@ -171,6 +169,28 @@ std::shared_ptr< base::ColorMapView > DVRStageView::colorMap()
     return std::shared_ptr< base::ColorMapView >(
         new base::ColorMapView( this->shared_from_this(), dvrStage().colorMap )
     );
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// DRRStageView
+// ----------------------------------------------------------------------------------
+
+const static auto DRR_STAGE__ROLE_INTENSITIES = LibCarna::presets::DRRStage::ROLE_INTENSITIES;
+
+
+DRRStageView::DRRStageView( unsigned int geometryType )
+    : VolumeRenderingStageView::VolumeRenderingStageView(
+        new LibCarna::presets::DRRStage( geometryType )
+    )
+{
+}
+
+
+LibCarna::presets::DRRStage& DRRStageView::drrStage()
+{
+    return static_cast< LibCarna::presets::DRRStage& >( *renderStage );
 }
 
 
@@ -356,6 +376,59 @@ PYBIND11_MODULE( presets, m )
         Rendering the scene as an animation:
 
         .. image:: ../test/results/expected/test_integration.DVRStage.test__animated.png
+           :width: 400)";
+    
+    /* DRRStage
+     */
+    py::class_< DRRStageView, std::shared_ptr< DRRStageView >, VolumeRenderingStageView >( m, "DRRStage" )
+        .def_readonly_static( "ROLE_INTENSITIES", &DVR_STAGE__ROLE_INTENSITIES )
+        .def_readonly_static( "DEFAULT_WATER_ATTENUATION", &LibCarna::presets::DRRStage::DEFAULT_WATER_ATTENUATION )
+        .def_readonly_static( "DEFAULT_BASE_INTENSITY", &LibCarna::presets::DRRStage::DEFAULT_BASE_INTENSITY )
+        .def_readonly_static( "DEFAULT_LOWER_THRESHOLD", &LibCarna::presets::DRRStage::DEFAULT_LOWER_THRESHOLD.value )
+        .def_readonly_static( "DEFAULT_UPPER_THRESHOLD", &LibCarna::presets::DRRStage::DEFAULT_UPPER_THRESHOLD.value )
+        .def_readonly_static( "DEFAULT_UPPER_MULTIPLIER", &LibCarna::presets::DRRStage::DEFAULT_UPPER_MULTIPLIER )
+        .def_readonly_static( "DEFAULT_RENDER_INVERSE", &LibCarna::presets::DRRStage::DEFAULT_RENDER_INVERSE )
+        .def( py::init< unsigned int >(), "geometry_type"_a )
+        .def_property(
+            "water_attenuation",
+            VIEW_DELEGATE( DRRStageView, drrStage().waterAttenuation() ),
+            VIEW_DELEGATE( DRRStageView, drrStage().setWaterAttenuation( waterAttenuation ), float waterAttenuation )
+        )
+        .def_property(
+            "base_intensity",
+            VIEW_DELEGATE( DRRStageView, drrStage().baseIntensity() ),
+            VIEW_DELEGATE( DRRStageView, drrStage().setBaseIntensity( baseIntensity ), float baseIntensity )
+        )
+        .def_property(
+            "lower_threshold",
+            VIEW_DELEGATE( DRRStageView, drrStage().lowerThreshold().value ),
+            VIEW_DELEGATE( DRRStageView, drrStage().setLowerThreshold( LibCarna::base::HUV( lowerThreshold ) ), short lowerThreshold )
+        )
+        .def_property(
+            "upper_threshold",
+            VIEW_DELEGATE( DRRStageView, drrStage().upperThreshold().value ),
+            VIEW_DELEGATE( DRRStageView, drrStage().setUpperThreshold( LibCarna::base::HUV(upperThreshold ) ), short upperThreshold )
+        )
+        .def_property(
+            "upper_multiplier",
+            VIEW_DELEGATE( DRRStageView, drrStage().upperMultiplier() ),
+            VIEW_DELEGATE( DRRStageView, drrStage().setUpperMultiplier( upperMultiplier ), float upperMultiplier )
+        )
+        .def_property(
+            "render_inverse",
+            VIEW_DELEGATE( DRRStageView, drrStage().isRenderingInverse() ),
+            VIEW_DELEGATE( DRRStageView, drrStage().setRenderingInverse( renderInverse ), bool renderInverse )
+        )
+        .doc() = R"(Performs *digital radiograph reconstruction* of the volume geometries in the scene.
+
+        .. literalinclude:: ../test/test_integration.py
+           :start-after: # .. DRRStage: example-setup-start
+           :end-before: # .. DRRStage: example-setup-end
+           :dedent: 8
+
+        Rendering the scene as an animation:
+
+        .. image:: ../test/results/expected/test_integration.DRRStage.test__animated.png
            :width: 400)";
 
 /*

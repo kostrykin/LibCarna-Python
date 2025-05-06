@@ -1,3 +1,5 @@
+from typing import Literal
+
 import numpy as np
 
 import libcarna
@@ -117,6 +119,7 @@ def volume(
         array: np.ndarray,
         tag: str | None = None,
         *,
+        units: Literal['raw', 'huv'] = 'raw',
         parent: libcarna.base.Node | None = None,
         normals: bool = False,
         spacing: np.ndarray | None = None,
@@ -131,6 +134,7 @@ def volume(
         geometry_type: The type of the geometry.
         array: 3D data to be rendered.
         tag: An arbitrary string, that helps identifying the created node.
+        units: The units of the data. If `'huv'`, the data is assumed to be in Hounsfield Units (HU).
         parent: Parent node to attach the volume to, or `None`.
         normals: Governs normal mapping (if `True`, the 3D normal map will be pre-computed for the volume).
         spacing: Specifies the spacing between two adjacent voxel centers. Mutually exclusive with `extent`.
@@ -139,6 +143,15 @@ def volume(
     """
     assert array.ndim == 3, 'Array must be 3D data.'
     assert (spacing is None) != (extent is None), 'Either spacing or extent must be provided.'
+
+    # Preprocess the data based on the units
+    match units:
+        case 'huv':
+            data = (data.clip(-1024, +3071) + 1024) / 4095
+        case 'raw':
+            pass
+        case _:
+            raise ValueError(f'Unsupported units: "{units}"')
 
     # Choose appropriate intensity component and prepare the data for loading (data is always transferred as float)
     if array.dtype == np.uint8:
