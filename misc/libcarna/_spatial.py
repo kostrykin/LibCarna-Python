@@ -147,7 +147,7 @@ def volume(
     # Preprocess the data based on the units
     match units:
         case 'huv':
-            data = (data.clip(-1024, +3071) + 1024) / 4095
+            array = (array.clip(-1024, +3071) + 1024) / 4095
         case 'raw':
             pass
         case _:
