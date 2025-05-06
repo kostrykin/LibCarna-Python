@@ -61,13 +61,7 @@ class MaskRenderingStage(VolumeRenderingStage):
             self.assertEqual(rs.render_borders, render_borders)
 
 
-class MIPStage(VolumeRenderingStage):
-
-    def create(self):
-        return libcarna.presets.MIPStage(geometry_type=1)
-
-    def test__ROLE_INTENSITIES(self):
-        self.assertEqual(libcarna.presets.MIPStage.ROLE_INTENSITIES, 0)
+class ColorMapMixin:
 
     def test__color_map(self):
         """
@@ -106,6 +100,47 @@ class MIPStage(VolumeRenderingStage):
         cmap.write_linear_segment(0.0, 0.5, libcarna.color.RED, libcarna.color.BLUE)
         cmap.clear()
         self.assertEqual(cmap.color_list[0], libcarna.color.BLACK_NO_ALPHA)
+
+
+class MIPStage(VolumeRenderingStage, ColorMapMixin):
+
+    def create(self):
+        return libcarna.presets.MIPStage(geometry_type=1)
+
+    def test__ROLE_INTENSITIES(self):
+        self.assertEqual(libcarna.presets.MIPStage.ROLE_INTENSITIES, 0)
+
+
+class DVRStage(VolumeRenderingStage, ColorMapMixin):
+
+    def create(self):
+        return libcarna.presets.DVRStage(geometry_type=1)
+
+    def test__ROLE_INTENSITIES(self):
+        self.assertEqual(libcarna.presets.DVRStage.ROLE_INTENSITIES, 0)
+
+    def test__ROLE_NORMALS(self):
+        self.assertEqual(libcarna.presets.DVRStage.ROLE_NORMALS, 1)
+
+    def test__DEFAULT_TRANSLUCENCY(self):
+        self.assertEqual(libcarna.presets.DVRStage.DEFAULT_TRANSLUCENCY, 50)
+
+    def test__DEFAULT_DIFFUSE_LIGHT(self):
+        self.assertEqual(libcarna.presets.DVRStage.DEFAULT_DIFFUSE_LIGHT, 1)
+
+    def test__translucency(self):
+        rs = self.create()
+        self.assertEqual(rs.translucency, libcarna.presets.DVRStage.DEFAULT_TRANSLUCENCY)
+        for translucency in (0.3, 0.5, 0.7):
+            rs.translucency = translucency
+            self.assertAlmostEqual(rs.translucency, translucency, places=5)
+
+    def test__diffuse_light(self):
+        rs = self.create()
+        self.assertEqual(rs.diffuse_light, libcarna.presets.DVRStage.DEFAULT_DIFFUSE_LIGHT)
+        for diffuse_light in (0.3, 0.5, 0.7):
+            rs.diffuse_light = diffuse_light
+            self.assertAlmostEqual(rs.diffuse_light, diffuse_light, places=5)
 
 
 class CuttingPlanesStage(testsuite.LibCarnaTestCase):

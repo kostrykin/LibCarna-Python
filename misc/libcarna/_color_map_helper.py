@@ -37,7 +37,7 @@ class color_map_helper:
             def cmap_func(**kwargs):
                 n_samples = kwargs.pop('n_samples', default_n_samples)
                 colors = _sample_color_map(mpl_cmap, n_samples)
-                self.write_colors(*colors, **kwargs)
+                self.write_linear_spline(*colors, **kwargs)
             return cmap_func
         for cmap_name, mpl_cmap in _mpl_colormaps():
             cmap_func = create_cmap_func(mpl_cmap)
@@ -49,7 +49,33 @@ class color_map_helper:
             getattr(self, cmap)()
         else:
             raise ValueError(f'Unknown color map: "{cmap}" (available: {", ".join(self.cmap_choices)})')
+        
+    def clear(self):
+        """
+        Clear the color map.
+        """
+        self.color_map.clear()
+        
+    def write_linear_segment(
+            self,
+            intensity_first: float,
+            intensity_last: float,
+            color_first: libcarna.base.Color,
+            color_last: libcarna.base.Color,
+        ):
+        """
+        Write a linear segment to the color map.
+        """
+        self.color_map.write_linear_segment(
+            intensity_first,
+            intensity_last,
+            color_first,
+            color_last,
+        )
 
-    def write_colors(self, *colors):
+    def write_linear_spline(self, *colors):
+        """
+        Write a linear spline to the color map. The colors are interpolated between the given colors.
+        """
         colors = list(colors)
         self.color_map.write_linear_spline(colors)

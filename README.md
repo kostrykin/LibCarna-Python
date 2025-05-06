@@ -73,7 +73,7 @@ python -m pip install --force-reinstall $(find . -name 'LibCarna_Python*.whl')
 
 To build against a development version of LibCarna, install it locally,
 ```bash
-LIBCARNA_SRC_PREFIX="../LibCarna" ./install_carna_dev.bash
+LIBCARNA_SRC_PREFIX="../LibCarna" ./install_libcarna_dev.bash
 ```
 where you make `LIBCARNA_SRC_PREFIX` point to the source directory.
 

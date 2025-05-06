@@ -10,12 +10,12 @@ using namespace pybind11::literals; // enables the _a literal
 #include <LibCarna/presets/MaskRenderingStage.hpp>
 #include <LibCarna/presets/MIPStage.hpp>
 #include <LibCarna/presets/CuttingPlanesStage.hpp>
+#include <LibCarna/presets/DVRStage.hpp>
 #include <LibCarna/py/presets.hpp>
 /*
 #include <LibCarna/base/GLContext.hpp>
 #include <LibCarna/base/ManagedMesh.hpp>
 #include <LibCarna/presets/DRRStage.hpp>
-#include <LibCarna/presets/DVRStage.hpp>
 #include <LibCarna/presets/MIPLayer.hpp>
 #include <LibCarna/presets/MIPStage.hpp>
 #include <LibCarna/presets/OccludedRenderingStage.hpp>
@@ -140,6 +140,36 @@ LibCarna::presets::CuttingPlanesStage& CuttingPlanesStageView::cuttingPlanesStag
 
 
 // ----------------------------------------------------------------------------------
+// DVRStageView
+// ----------------------------------------------------------------------------------
+
+const static auto DVR_STAGE__ROLE_INTENSITIES = LibCarna::presets::DVRStage::ROLE_INTENSITIES;
+const static auto DVR_STAGE__ROLE_NORMALS     = LibCarna::presets::DVRStage::ROLE_NORMALS;
+
+
+DVRStageView::DVRStageView( unsigned int geometryType )
+    : VolumeRenderingStageView::VolumeRenderingStageView(
+        new LibCarna::presets::DVRStage( geometryType )
+    )
+{
+}
+
+
+LibCarna::presets::DVRStage& DVRStageView::dvrStage()
+{
+    return static_cast< LibCarna::presets::DVRStage& >( *renderStage );
+}
+
+std::shared_ptr< base::ColorMapView > DVRStageView::colorMap()
+{
+    return std::shared_ptr< base::ColorMapView >(
+        new base::ColorMapView( this->shared_from_this(), dvrStage().colorMap )
+    );
+}
+
+
+
+// ----------------------------------------------------------------------------------
 // PYBIND11_MODULE: presets
 // ----------------------------------------------------------------------------------
 
@@ -152,7 +182,7 @@ PYBIND11_MODULE( presets, m )
         m, "OpaqueRenderingStage"
     )
         .def( py::init< unsigned int >(), "geometry_type"_a )
-        .doc() = R"(Implements rendering stage that renders opaque meshes.
+        .doc() = R"(Renders *opaque meshes* in the scene.
 
         .. literalinclude:: ../test/test_integration.py
            :start-after: # .. OpaqueRenderingStage: example-setup-start
@@ -205,7 +235,7 @@ PYBIND11_MODULE( presets, m )
             VIEW_DELEGATE( MaskRenderingStageView, maskRenderingStage().renderBorders() ),
             VIEW_DELEGATE( MaskRenderingStageView, maskRenderingStage().setRenderBorders( renderBorders ), bool renderBorders )
         )
-        .doc() = R"(Renders 3D masks.
+        .doc() = R"(Renders 3D masks as either unshaded areas or borders.
 
         .. literalinclude:: ../test/test_integration.py
            :start-after: # .. MaskRenderingStage: example-setup-start
@@ -223,7 +253,7 @@ PYBIND11_MODULE( presets, m )
         .def_readonly_static( "ROLE_INTENSITIES", &MIP_STAGE__ROLE_INTENSITIES )
         .def( py::init< unsigned int >(), "geometry_type"_a )
         .def_property_readonly( "color_map", &MIPStageView::colorMap )
-        .doc() = R"(Renders maximum intensity projections of volume geometries in the scene.
+        .doc() = R"(Renders *maximum intensity projections* of volume geometries in the scene.
 
         .. literalinclude:: ../test/test_integration.py
            :start-after: # .. MIPStage: example-setup-start
@@ -252,7 +282,7 @@ PYBIND11_MODULE( presets, m )
             VIEW_DELEGATE( CuttingPlanesStageView, cuttingPlanesStage().windowingLevel() ),
             VIEW_DELEGATE( CuttingPlanesStageView, cuttingPlanesStage().setWindowingLevel( windowingLevel ), float windowingLevel )
         )
-        .doc() = R"(Renders cutting planes of volume geometries in the scene.
+        .doc() = R"(Renders *cutting planes* of volume geometries in the scene.
 
         .. literalinclude:: ../test/test_integration.py
            :start-after: # .. CuttingPlanesStage: example-setup-start
@@ -278,6 +308,37 @@ PYBIND11_MODULE( presets, m )
 
         .. image:: ../test/results/expected/test_integration.CuttingPlanesStage.test__animated.png
            :width: 400)";
+    
+    /* DVRStage
+     */
+    py::class_< DVRStageView, std::shared_ptr< DVRStageView >, VolumeRenderingStageView >( m, "DVRStage" )
+        .def_readonly_static( "ROLE_INTENSITIES", &DVR_STAGE__ROLE_INTENSITIES )
+        .def_readonly_static( "ROLE_NORMALS", &DVR_STAGE__ROLE_NORMALS )
+        .def_readonly_static( "DEFAULT_TRANSLUCENCY", &LibCarna::presets::DVRStage::DEFAULT_TRANSLUCENCY )
+        .def_readonly_static( "DEFAULT_DIFFUSE_LIGHT", &LibCarna::presets::DVRStage::DEFAULT_DIFFUSE_LIGHT )
+        .def( py::init< unsigned int >(), "geometry_type"_a )
+        .def_property_readonly( "color_map", &DVRStageView::colorMap )
+        .def_property(
+            "translucency",
+            VIEW_DELEGATE( DVRStageView, dvrStage().translucency() ),
+            VIEW_DELEGATE( DVRStageView, dvrStage().setTranslucency( translucency ), float translucency )
+        )
+        .def_property(
+            "diffuse_light",
+            VIEW_DELEGATE( DVRStageView, dvrStage().diffuseLight() ),
+            VIEW_DELEGATE( DVRStageView, dvrStage().setDiffuseLight( diffuseLight ), float diffuseLight )
+        )
+        .doc() = R"(Performs *direct volume rendering* of the volume geometries in the scene.
+
+        .. literalinclude:: ../test/test_integration.py
+           :start-after: # .. DVRStage: example-setup-start
+           :end-before: # .. DVRStage: example-setup-end
+           :dedent: 8
+
+        Rendering the scene as an animation:
+
+        .. image:: ../test/results/expected/test_integration.DVRStage.test__animated.png
+           :width: 400)";
 
 /*
     py::class_< OccludedRenderingStage, RenderStage >( m, "OccludedRenderingStage" )
@@ -292,31 +353,6 @@ PYBIND11_MODULE( presets, m )
         .def( "enable_stage", &OccludedRenderingStage::enableStage )
         .def( "disable_stage", &OccludedRenderingStage::disableStage )
         .def( "is_stage_enabled", &OccludedRenderingStage::isStageEnabled );
-
-    py::class_< VolumeRenderingStage, RenderStage >( m, "VolumeRenderingStage" )
-        .def_property( "sample_rate", &VolumeRenderingStage::sampleRate, &VolumeRenderingStage::setSampleRate );
-
-    const static auto MIPLayer__LAYER_FUNCTION_ADD     = ([](){ return MIPLayer::LAYER_FUNCTION_ADD;     })();
-    const static auto MIPLayer__LAYER_FUNCTION_REPLACE = ([](){ return MIPLayer::LAYER_FUNCTION_REPLACE; })();
-
-    py::class_< DVRStage, VolumeRenderingStage >( m, "DVRStage" )
-        .def_static( "create", []( unsigned int geometryType )
-        {
-            return new DVRStage( geometryType );
-        }
-        , py::return_value_policy::reference, "geometryType"_a )
-        .def_property_readonly_static( "DEFAULT_TRANSLUCENCY", []( py::object ) { return DVRStage::DEFAULT_TRANSLUCENCE; } )
-        .def_property_readonly_static( "DEFAULT_DIFFUSE_LIGHT", []( py::object ) { return DVRStage::DEFAULT_DIFFUSE_LIGHT; } )
-        .def_property_readonly_static( "ROLE_INTENSITIES", []( py::object ) { return DVRStage::ROLE_INTENSITIES; } )
-        .def_property_readonly_static( "ROLE_NORMALS", []( py::object ) { return DVRStage::ROLE_NORMALS; } )
-        .def_property( "translucency", &DVRStage::translucence, &DVRStage::setTranslucence )
-        .def_property( "diffuse_light", &DVRStage::diffuseLight, &DVRStage::setDiffuseLight )
-        .def( "clear_color_map", &DVRStage::clearColorMap )
-        .def( "write_color_map", []( DVRStage* self, float min, float max, const math::Vector4f& color1, const math::Vector4f& color2 )
-        {
-            self->writeColorMap( min, max, color1, color2 );
-        }
-        , "min"_a, "max"_a, "color1"_a, "color2"_a );
 */
 
 }

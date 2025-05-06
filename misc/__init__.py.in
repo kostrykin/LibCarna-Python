@@ -6,6 +6,7 @@ from ._py import *
 
 from ._animation import animation
 from ._color import color
+from ._dvr import dvr
 from ._imshow import imshow
 from ._material import material
 from ._mip import mip

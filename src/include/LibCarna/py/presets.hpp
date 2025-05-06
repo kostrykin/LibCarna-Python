@@ -104,6 +104,25 @@ public:
 
 
 
+// ----------------------------------------------------------------------------------
+// DVRStageView
+// ----------------------------------------------------------------------------------
+
+class DVRStageView : public VolumeRenderingStageView
+{
+
+public:
+
+    explicit DVRStageView( unsigned int geometryType );
+
+    LibCarna::presets::DVRStage& dvrStage();
+
+    std::shared_ptr< base::ColorMapView > colorMap();
+
+}; // DVRStageView
+
+
+
 }  // namespace LibCarna :: py :: presets
 
 }  // namespace LibCarna :: py
