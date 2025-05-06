@@ -377,7 +377,7 @@ class DVRStage(testsuite.LibCarnaRenderingTestCase):
         dvr.cmap.write_linear_segment(
             0.7, 1.0,
             libcarna.color(0, 150, 255, 150),
-            libcarna.color(255, 0, 255, 255)
+            libcarna.color(255, 0, 255, 255),
         )
         r = libcarna.renderer(800, 600, [dvr])
 
