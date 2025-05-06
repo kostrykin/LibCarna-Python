@@ -485,7 +485,7 @@ PYBIND11_MODULE( base, m )
             {
                 return new GeometryFeatureView( LibCarna::base::MeshFactory< LibCarna::base::PNVertex >::createBall( radius, degree ) );
             },
-            "radius"_a, "degree"_a=3
+            "radius"_a, "degree"_a=4
         )
         .def( "create_point",
             []()

@@ -65,11 +65,11 @@ class FrameRenderer(testsuite.LibCarnaTestCase):
         self.frame_renderer.render(camera, root)
 
     def test__append_stage(self):
-        opaque = libcarna.opaque_renderer(0)
+        opaque = libcarna.opaque(0)
         self.frame_renderer.append_stage(opaque)
 
     def test__render(self):
-        opaque = libcarna.opaque_renderer(0)
+        opaque = libcarna.opaque(0)
         self.frame_renderer.append_stage(opaque)
         root = libcarna.node()
         camera = libcarna.camera()
@@ -84,7 +84,7 @@ class OpaqueRenderingStage(testsuite.LibCarnaRenderingTestCase):
         GEOMETRY_TYPE_OPAQUE = 1
 
         # Create and configure frame renderer
-        opaque = libcarna.opaque_renderer(GEOMETRY_TYPE_OPAQUE)
+        opaque = libcarna.opaque(GEOMETRY_TYPE_OPAQUE)
         r = libcarna.renderer(800, 600, [opaque])
 
         # Create mesh
