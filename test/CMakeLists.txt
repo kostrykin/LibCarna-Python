@@ -10,7 +10,9 @@ set( TEST_FILES
     test_presets
     test_helpers
     test_integration
-    test_py
+    test_material
+    test_dvr
+    test_mip
 )
 
 configure_file(

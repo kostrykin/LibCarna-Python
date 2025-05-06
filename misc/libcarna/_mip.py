@@ -25,3 +25,13 @@ class mip(libcarna.presets.MIPStage):
         super().__init__(*args, **kwargs)
         self.cmap = color_map_helper(self.color_map, cmap)
         self.sample_rate = sr
+
+    def replicate(self):
+        """
+        Replicate the MIP stage.
+        """
+        return mip(
+            self.geometry_type,
+            cmap=self.cmap.color_map,
+            sr=self.sample_rate,
+        )
