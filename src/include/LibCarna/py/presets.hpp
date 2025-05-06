@@ -28,6 +28,8 @@ public:
 
     explicit OpaqueRenderingStageView( unsigned int geometryType );
 
+    LibCarna::presets::OpaqueRenderingStage& opaqueRenderingStage();
+
 }; // OpaqueRenderingStageView
 
 

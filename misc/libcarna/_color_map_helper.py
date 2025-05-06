@@ -27,7 +27,7 @@ def _mpl_colormaps() -> Iterable[str]:
 
 class color_map_helper:
 
-    def __init__(self, color_map: libcarna.base.ColorMap, cmap: str | None = None, default_n_samples: int = 50):
+    def __init__(self, color_map: libcarna.base.ColorMap, cmap: str | libcarna.base.ColorMap | None = None, default_n_samples: int = 50):
         self.color_map = color_map
         self.cmap_choices = list()
         cmap = cmap or 'viridis'
@@ -45,7 +45,9 @@ class color_map_helper:
             self.cmap_choices.append(cmap_name)
 
         # Set the requested colormap
-        if cmap in self.cmap_choices:
+        if isinstance(cmap, libcarna.base.ColorMap):
+            self.color_map.set(cmap)
+        elif cmap in self.cmap_choices:
             getattr(self, cmap)()
         else:
             raise ValueError(f'Unknown color map: "{cmap}" (available: {", ".join(self.cmap_choices)})')

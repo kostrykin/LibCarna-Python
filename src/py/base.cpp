@@ -589,6 +589,13 @@ PYBIND11_MODULE( base, m )
         .def_property_readonly(
             "color_list",
             VIEW_DELEGATE( ColorMapView, colorMap.getColorList() )
+        )
+        .def( "set",
+            VIEW_DELEGATE_RETURN_SELF
+                ( const std::shared_ptr< ColorMapView >
+                , get()->colorMap = other->colorMap
+                , const std::shared_ptr< ColorMapView >& other ),
+            "other"_a
         );
 
 /*

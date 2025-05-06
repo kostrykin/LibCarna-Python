@@ -22,7 +22,7 @@ class dvr(libcarna.presets.DVRStage):
     def __init__(
             self,
             *args,
-            cmap: str | None = None,
+            cmap: str | libcarna.base.ColorMap | None = None,
             sr: int = libcarna.presets.VolumeRenderingStage.DEFAULT_SAMPLE_RATE,
             transl: float = libcarna.presets.DVRStage.DEFAULT_TRANSLUCENCY,
             diffuse: float = libcarna.presets.DVRStage.DEFAULT_DIFFUSE_LIGHT,
@@ -33,3 +33,15 @@ class dvr(libcarna.presets.DVRStage):
         self.sample_rate = sr
         self.translucency = transl
         self.diffuse_light = diffuse
+
+    def replicate(self):
+        """
+        Replicate the DVR stage.
+        """
+        return dvr(
+            self.geometry_type,
+            cmap=self.cmap.color_map,
+            sr=self.sample_rate,
+            transl=self.translucency,
+            diffuse=self.diffuse_light,
+        )

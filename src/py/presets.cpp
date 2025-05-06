@@ -48,6 +48,12 @@ OpaqueRenderingStageView::OpaqueRenderingStageView( unsigned int geometryType )
 }
 
 
+LibCarna::presets::OpaqueRenderingStage& OpaqueRenderingStageView::opaqueRenderingStage()
+{
+    return static_cast< LibCarna::presets::OpaqueRenderingStage& >( *renderStage );
+}
+
+
 
 // ----------------------------------------------------------------------------------
 // VolumeRenderingStageView
@@ -182,6 +188,9 @@ PYBIND11_MODULE( presets, m )
         m, "OpaqueRenderingStage"
     )
         .def( py::init< unsigned int >(), "geometry_type"_a )
+        .def_property_readonly( "geometry_type",
+            VIEW_DELEGATE( OpaqueRenderingStageView, opaqueRenderingStage().LibCarna::base::MeshRenderingMixin::geometryType )
+        )
         .doc() = R"(Renders *opaque meshes* in the scene.
 
         .. literalinclude:: ../test/test_integration.py
@@ -200,6 +209,9 @@ PYBIND11_MODULE( presets, m )
         m, "VolumeRenderingStage"
     )
         .def_readonly_static( "DEFAULT_SAMPLE_RATE", &VolumeRenderingStageView::DEFAULT_SAMPLE_RATE )
+        .def_property_readonly( "geometry_type",
+            VIEW_DELEGATE( VolumeRenderingStageView, volumeRenderingStage().geometryType )
+        )
         .def_property( "sample_rate",
             VIEW_DELEGATE( VolumeRenderingStageView, volumeRenderingStage().sampleRate() ),
             VIEW_DELEGATE( VolumeRenderingStageView, volumeRenderingStage().setSampleRate( sampleRate ), unsigned int sampleRate )
@@ -272,6 +284,12 @@ PYBIND11_MODULE( presets, m )
         .def_readonly_static( "DEFAULT_WINDOWING_WIDTH", &LibCarna::presets::CuttingPlanesStage::DEFAULT_WINDOWING_WIDTH )
         .def_readonly_static( "DEFAULT_WINDOWING_LEVEL", &LibCarna::presets::CuttingPlanesStage::DEFAULT_WINDOWING_LEVEL )
         .def( py::init< unsigned int, unsigned int >(), "volume_geometry_type"_a, "plane_geometry_type"_a )
+        .def_property_readonly( "volume_geometry_type",
+            VIEW_DELEGATE( CuttingPlanesStageView, cuttingPlanesStage().volumeGeometryType )
+        )
+        .def_property_readonly( "plane_geometry_type",
+            VIEW_DELEGATE( CuttingPlanesStageView, cuttingPlanesStage().planeGeometryType )
+        )
         .def_property(
             "windowing_width",
             VIEW_DELEGATE( CuttingPlanesStageView, cuttingPlanesStage().windowingWidth() ),
