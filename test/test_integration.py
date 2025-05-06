@@ -139,9 +139,7 @@ class OpaqueRenderingStage(testsuite.LibCarnaRenderingTestCase):
         # .. OpaqueRenderingStage: example-animation-start
         # Define animation
         animation = libcarna.animate(
-            [
-                libcarna.animate.rotate_local(camera)
-            ],
+            libcarna.animate.rotate_local(camera),
             n_frames=50,
         )
 
@@ -201,9 +199,7 @@ class MaskRenderingStage(testsuite.LibCarnaRenderingTestCase):
 
         # Define animation
         animation = libcarna.animate(
-            [
-                libcarna.animate.rotate_local(camera)
-            ],
+            libcarna.animate.rotate_local(camera),
             n_frames=50,
         )
 
@@ -261,9 +257,7 @@ class MIPStage(testsuite.LibCarnaRenderingTestCase):
 
         # Define animation
         animation = libcarna.animate(
-            [
-                libcarna.animate.rotate_local(camera)
-            ],
+            libcarna.animate.rotate_local(camera),
             n_frames=50,
         )
 
@@ -345,13 +339,11 @@ class CuttingPlanesStage(testsuite.LibCarnaRenderingTestCase):
         # .. CuttingPlanesStage: example-animation-start
         # Define animation
         animation = libcarna.animate(
-            [
-                libcarna.animate.bounce_local(
-                    zplane,
-                    axis='z',
-                    amplitude=38 / 2,
-                )
-            ],
+            libcarna.animate.bounce_local(
+                zplane,
+                axis='z',
+                amplitude=38 / 2,
+            ),
             n_frames=50,
         )
 
@@ -419,9 +411,7 @@ class DVRStage(testsuite.LibCarnaRenderingTestCase):
 
         # Define animation
         animation = libcarna.animate(
-            [
-                libcarna.animate.rotate_local(camera)
-            ],
+            libcarna.animate.rotate_local(camera),
             n_frames=50,
         )
 
