@@ -21,6 +21,15 @@ class transform:
     
     def plane(self, *args, **kwargs):
         return transform(plane(*args, **kwargs).mat @ self.mat)
+    
+    def point(self, xyz: np.ndarray = np.zeros(3)) -> np.ndarray:
+        return self.mat @ np.array([*xyz, 1.0])
+    
+    def intpoint(self, *args, **kwargs) -> tuple[int, int, int]:
+        return tuple(self.point(*args, **kwargs).rint())[:3]
+    
+    def direction(self, xyz: np.ndarray = np.zeros(3)) -> np.ndarray:
+        return self.mat @ np.array([*xyz, 0.0])
 
 
 def rotate(axis: AxisHint, deg: float) -> transform:
@@ -33,7 +42,7 @@ def scale(*factors: float) -> transform:
         factors = (factors[0], factors[0], factors[0])
     elif len(factors) != 3:
         raise ValueError('Scale factor must be a single value, or a tuple of three values.')
-    return transform(libcarna.base.math.scale(*factors))
+    return transform(libcarna.base.math.scaling(*factors))
 
 
 def translate(x: float, y: float, z: float) -> transform:

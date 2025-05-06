@@ -6,13 +6,14 @@ cmake_minimum_required( VERSION 3.5 )
 
 set( TEST_FILES
     test_base
+    test_dvr
     test_egl
-    test_presets
     test_helpers
     test_integration
     test_material
-    test_dvr
     test_mip
+    test_presets
+    test_spatial
 )
 
 configure_file(

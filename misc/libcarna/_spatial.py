@@ -1,6 +1,28 @@
 import numpy as np
 
 import libcarna
+from libcarna._transform import transform as _transform
+
+
+def _transform_into_local(target: libcarna.base.Spatial, rhs: libcarna.base.Spatial) -> np.array:
+    """
+    Compute the transformation from the local coordinate system of a spatial object `rhs` into the local coordinate
+    system of another spatial object `target`.
+    """
+    if target is rhs:
+        return _transform(np.eye(4))
+    else:
+        return _transform(np.linalg.inv(target.world_transform) @ rhs.world_transform)
+    
+
+class _spatial_mixin:
+    
+    def transform_from(self, rhs: libcarna.base.Spatial) -> np.array:
+        """
+        Compute the transformation from the local coordinate system of a spatial object `rhs` into the local coordinate
+        system of this spatial object.
+        """
+        return _transform_into_local(self, rhs)
 
 
 def _setup_spatial(spatial, parent: libcarna.base.Node | None = None, **kwargs):
@@ -20,25 +42,42 @@ def _setup_spatial(spatial, parent: libcarna.base.Node | None = None, **kwargs):
         setattr(spatial, key, value)
 
 
-def _create_spatial_factory(spatial_type_name):
-    spatial_type = getattr(libcarna.base, spatial_type_name)
-    def spatial_factory(tag: str | None = None, *, parent: libcarna.base.Node | None = None, **kwargs):
-        """
-        Create a spatial object of the given type.
+def node(tag: str | None = None, *, parent: libcarna.base.Node | None = None, **kwargs) -> libcarna.base.Node:
+    """
+    Create a :class:`carna.base.Node` object, that other spatial objects can be added to.
 
-        Arguments:
-            tag: An arbitrary string, that helps identifying the object.
-            parent: Parent node to attach the spatial to, or `None`.
-            **kwargs: Attributes to be set on the newly created object.
-        """
-        spatial = spatial_type() if tag is None else spatial_type(tag)
-        _setup_spatial(spatial, parent, **kwargs)
-        return spatial
-    return spatial_factory
+    Arguments:
+        tag: An arbitrary string, that helps identifying the object.
+        parent: Parent node to attach the spatial to, or `None`.
+        **kwargs: Attributes to be set on the newly created object.
+    """
+    class Node(libcarna.base.Node, _spatial_mixin):
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+
+    node = Node() if tag is None else Node(tag)
+    _setup_spatial(node, parent, **kwargs)
+    return node
 
 
-node = _create_spatial_factory('Node')
-camera = _create_spatial_factory('Camera')
+def camera(tag: str | None = None, *, parent: libcarna.base.Node | None = None, **kwargs) -> libcarna.base.Camera:
+    """
+    Create a :class:`carna.base.Camera` object.
+
+    Arguments:
+        tag: An arbitrary string, that helps identifying the object.
+        parent: Parent node to attach the spatial to, or `None`.
+        **kwargs: Attributes to be set on the newly created object.
+    """
+    class Camera(libcarna.base.Camera, _spatial_mixin):
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+
+    camera = Camera() if tag is None else Camera(tag)
+    _setup_spatial(camera, parent, **kwargs)
+    return camera
 
 
 def geometry(
@@ -58,7 +97,7 @@ def geometry(
         parent: Parent node to attach the spatial to, or `None`.
         **kwargs: Attributes to be set on the newly created object.
     """
-    class Geometry(libcarna.base.Geometry):
+    class Geometry(libcarna.base.Geometry, _spatial_mixin):
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
@@ -130,16 +169,33 @@ def volume(
     create_node_kwargs = dict()
     if spacing is not None:
         create_node_kwargs['spacing'] = volume_type.Spacing(spacing)
-    if extent is not None:
+        extent = np.subtract(array.shape, 1) * spacing
+    elif extent is not None:
         create_node_kwargs['extent'] = volume_type.Extent(extent)
 
     # Create a wrapper node, so that it is safe to modify the `.local_transform` property (making such modifications
     # directly to the property of the node created by the wrapper is discouraged in the docs)
     # https://kostrykin.github.io/LibCarna/html/classLibCarna_1_1helpers_1_1VolumeGridHelper.html#ab03947088a1de662b7a468516e4b5e24
-    wrapper_node = libcarna.base.Node(tag) if tag is not None else libcarna.base.Node()
+    class WrapperNode(libcarna.base.Node, _spatial_mixin):
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+
+        def transform_into_voxels_from(self, rhs: libcarna.base.Spatial) -> np.array:
+            """
+            Compute the transformation from the local coordinate system of a spatial object `rhs` into the voxel
+            coordinate system of this volume.
+            """
+            return _transform(
+                libcarna.base.math.scaling(np.subtract(array.shape, 1) / extent) @
+                libcarna.base.math.translation(extent / 2) @
+                self.transform_from(rhs).mat
+            )
+
+    wrapper_node = WrapperNode(tag) if tag is not None else WrapperNode()
     _setup_spatial(wrapper_node, parent, **kwargs)
 
     # Create volume node
     volume_node = helper.create_node(geometry_type=geometry_type, **create_node_kwargs)
     wrapper_node.attach_child(volume_node)
-    return volume_node
+    return wrapper_node
