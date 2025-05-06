@@ -2,6 +2,10 @@
     "python.analysis.extraPaths": [
         "./build/make_release"
     ],
+    "search.exclude": {
+        "docs/examples": true,
+        "docs/build": true
+    },
     "files.readonlyInclude": {
         "build/**": true,
     },

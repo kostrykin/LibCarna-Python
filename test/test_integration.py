@@ -138,9 +138,9 @@ class OpaqueRenderingStage(testsuite.LibCarnaRenderingTestCase):
 
         # .. OpaqueRenderingStage: example-animation-start
         # Define animation
-        animation = libcarna.animation(
+        animation = libcarna.animate(
             [
-                libcarna.animation.rotate_local(camera)
+                libcarna.animate.rotate_local(camera)
             ],
             n_frames=50,
         )
@@ -200,9 +200,9 @@ class MaskRenderingStage(testsuite.LibCarnaRenderingTestCase):
         r, camera = self.r, self.camera
 
         # Define animation
-        animation = libcarna.animation(
+        animation = libcarna.animate(
             [
-                libcarna.animation.rotate_local(camera)
+                libcarna.animate.rotate_local(camera)
             ],
             n_frames=50,
         )
@@ -260,9 +260,9 @@ class MIPStage(testsuite.LibCarnaRenderingTestCase):
         r, camera = self.r, self.camera
 
         # Define animation
-        animation = libcarna.animation(
+        animation = libcarna.animate(
             [
-                libcarna.animation.rotate_local(camera)
+                libcarna.animate.rotate_local(camera)
             ],
             n_frames=50,
         )
@@ -344,9 +344,9 @@ class CuttingPlanesStage(testsuite.LibCarnaRenderingTestCase):
 
         # .. CuttingPlanesStage: example-animation-start
         # Define animation
-        animation = libcarna.animation(
+        animation = libcarna.animate(
             [
-                libcarna.animation.bounce_local(
+                libcarna.animate.bounce_local(
                     zplane,
                     axis='z',
                     amplitude=38 / 2,
@@ -418,9 +418,9 @@ class DVRStage(testsuite.LibCarnaRenderingTestCase):
         r, camera = self.r, self.camera
 
         # Define animation
-        animation = libcarna.animation(
+        animation = libcarna.animate(
             [
-                libcarna.animation.rotate_local(camera)
+                libcarna.animate.rotate_local(camera)
             ],
             n_frames=50,
         )
