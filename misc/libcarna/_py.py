@@ -26,7 +26,10 @@ def _expand_module(module):
 
         # Resolve target name
         target_name = _camel_to_snake(member_name)
-        target_name = _strip_suffix(target_name, '_rendering_stage')
+        if target_name == 'mask_rendering_stage':
+            target_name = 'mask_renderer'
+        else:
+            target_name = _strip_suffix(target_name, '_rendering_stage')
         target_name = _strip_suffix(target_name, '_stage')
 
         # Skip if the target already exists
