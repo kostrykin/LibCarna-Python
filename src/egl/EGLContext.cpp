@@ -102,16 +102,19 @@ LibCarna::egl::EGLContext* LibCarna::egl::EGLContext::create()
 
     Details* const pimpl = new Details();
     pimpl->eglDpy = eglGetDisplay( EGL_DEFAULT_DISPLAY );
+    LIBCARNA_ASSERT( pimpl->eglDpy != EGL_NO_DISPLAY );
+
     EGLint major, minor;
-    eglInitialize( pimpl->eglDpy, &major, &minor );
+    const EGLBoolean initialize = eglInitialize( pimpl->eglDpy, &major, &minor );
+    LIBCARNA_ASSERT( initialize == EGL_TRUE );
     
     eglBindAPI( EGL_OPENGL_API );
     REPORT_EGL_ERROR;
 
     EGLint numConfigs;
     EGLConfig eglCfg;
-
-    eglChooseConfig( pimpl->eglDpy, CONFIG_ATTRIBS, &eglCfg, 1, &numConfigs );
+    const EGLBoolean chooseConfig = eglChooseConfig( pimpl->eglDpy, CONFIG_ATTRIBS, &eglCfg, 1, &numConfigs );
+    LIBCARNA_ASSERT( chooseConfig == EGL_TRUE );
 
     pimpl->eglSurf = eglCreatePbufferSurface( pimpl->eglDpy, eglCfg, PBUFFER_ATTRIBS );
     LIBCARNA_ASSERT( pimpl->eglSurf != EGL_NO_SURFACE );

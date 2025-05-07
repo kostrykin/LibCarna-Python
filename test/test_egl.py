@@ -8,6 +8,9 @@ import testsuite
 class EGLContext(testsuite.LibCarnaTestCase):
 
     def test__init__(self):
+        """
+        Test simple creation and destruction of an EGL context.
+        """
         ctx = libcarna.egl.EGLContext()
         del ctx
 
