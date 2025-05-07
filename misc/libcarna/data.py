@@ -4,6 +4,7 @@ import tempfile
 
 import numpy as np
 import pooch
+import scipy.ndimage as ndi
 import skimage.data
 import tifffile
 
@@ -51,3 +52,18 @@ def cthead(normalize: bool = False) -> np.ndarray:
         if normalize:
             data = libcarna.normalize_hounsfield_units(data)
         return data
+    
+def toy(seed: int = 0):
+    """
+    Returns a toy image of a 3D Gaussian.
+
+    The data is 64 × 64 × 20 pixels (float64). The image intensities are normalized to the range [0, 1].
+
+    Arguments:
+        seed: Random seed for reproducibility.
+    """
+    np.random.seed(seed)
+    data = ndi.gaussian_filter(np.random.rand(64, 64, 20), 10)
+    data = data - data.min()
+    data = data / data.max()
+    return data

@@ -8,8 +8,7 @@ import testsuite
 class VolumeGridHelper_IntensityVolumeUInt16(testsuite.LibCarnaTestCase):
 
     def test(self):
-        np.random.seed(0)
-        data = np.random.rand(64, 64, 20)
+        data = libcarna.data.toy()
         helper = libcarna.helpers.VolumeGridHelper_IntensityVolumeUInt16(
             native_resolution=data.shape,
         )
@@ -159,10 +158,7 @@ class MaskRenderingStage(testsuite.LibCarnaRenderingTestCase):
         r = libcarna.renderer(800, 600, [mask_rendering])
 
         # Create volume
-        np.random.seed(0)
-        data = (
-            ndi.gaussian_filter(np.random.rand(64, 64, 20), 10) > 0.5
-        )
+        data = (libcarna.data.toy() > 0.68)
 
         # Create and configure scene
         root = libcarna.node()
@@ -214,11 +210,8 @@ class MIPStage(testsuite.LibCarnaRenderingTestCase):
         mip = libcarna.mip(GEOMETRY_TYPE_VOLUME, cmap='jet')
         r = libcarna.renderer(800, 600, [mip])
 
-        # Create volume
-        np.random.seed(0)
-        data = ndi.gaussian_filter(np.random.rand(64, 64, 20), 10)
-        data = data - data.min()
-        data = data / data.max()
+        # Create data
+        data = libcarna.data.toy()
 
         # Create and configure scene
         root = libcarna.node()
@@ -277,10 +270,7 @@ class CuttingPlanesStage(testsuite.LibCarnaRenderingTestCase):
         r = libcarna.renderer(800, 600, [cp])
 
         # Create volume
-        np.random.seed(0)
-        data = ndi.gaussian_filter(np.random.rand(64, 64, 20), 10)
-        data = data - data.min()
-        data = data / data.max()
+        data = libcarna.data.toy()
 
         # Create and configure scene
         root = libcarna.node()
@@ -356,10 +346,7 @@ class DVRStage(testsuite.LibCarnaRenderingTestCase):
         r = libcarna.renderer(800, 600, [dvr])
 
         # Create volume
-        np.random.seed(0)
-        data = ndi.gaussian_filter(np.random.rand(64, 64, 20), 10)
-        data = data - data.min()
-        data = data / data.max()
+        data = libcarna.data.toy()
 
         # Create and configure scene
         root = libcarna.node()
@@ -418,10 +405,7 @@ class DRRStage(testsuite.LibCarnaRenderingTestCase):
         )
 
         # Create volume
-        np.random.seed(0)
-        data = ndi.gaussian_filter(np.random.rand(64, 64, 20), 10)
-        data = data - data.min()
-        data = data / data.max()
+        data = libcarna.data.toy()
 
         # Create and configure scene
         root = libcarna.node()
