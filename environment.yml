@@ -26,11 +26,11 @@ dependencies:
   - libcarna ==3.3.3
   - scikit-video ==1.1.11  # API for ffmpeg
   - ffmpeg  # writes h264
+  - scipy
 
   # ---------------------------------------------------------------------------
   # Runtime dependencies (tests)
   - matplotlib-base
-  - scipy
 
   # ---------------------------------------------------------------------------
   # Runtime dependencies (examples/docs)
