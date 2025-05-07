@@ -7,6 +7,7 @@ from ._py import *
 from . import data
 from ._animation import animate
 from ._color import color
+from ._cutting_planes import cutting_planes
 from ._drr import drr
 from ._dvr import dvr
 from ._huv import normalize_hounsfield_units

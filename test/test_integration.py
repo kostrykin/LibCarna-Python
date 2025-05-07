@@ -264,9 +264,9 @@ class CuttingPlanesStage(testsuite.LibCarnaRenderingTestCase):
         cp = libcarna.cutting_planes(
             volume_geometry_type=GEOMETRY_TYPE_VOLUME,
             plane_geometry_type=GEOMETRY_TYPE_PLANE,
+            windowing_level=0.75,
+            windowing_width=0.5,
         )
-        cp.windowing_level = 0.75
-        cp.windowing_width = 0.5
         r = libcarna.renderer(800, 600, [cp])
 
         # Create volume
