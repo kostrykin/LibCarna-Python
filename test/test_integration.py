@@ -116,9 +116,8 @@ class OpaqueRenderingStage(testsuite.LibCarnaRenderingTestCase):
         )
         camera = libcarna.camera(
             parent=root,
-            projection=r.frustum(fov=90, z_near=1, z_far=1e3),
             local_transform=libcarna.translate(0, 0, 250),
-        )
+        ).frustum(fov=90, z_near=1, z_far=1e3)
         # .. OpaqueRenderingStage: example-setup-end
 
         self.r, self.camera = r, camera
@@ -178,9 +177,8 @@ class MaskRenderingStage(testsuite.LibCarnaRenderingTestCase):
         )
         camera = libcarna.camera(
             parent=root,
-            projection=r.frustum(fov=90, z_near=1, z_far=500),
             local_transform=libcarna.translate(0, 0, 100),
-        )
+        ).frustum(fov=90, z_near=1, z_far=500)
         # .. MaskRenderingStage: example-setup-end
 
         self.r, self.camera = r, camera
@@ -236,9 +234,8 @@ class MIPStage(testsuite.LibCarnaRenderingTestCase):
         )
         camera = libcarna.camera(
             parent=root,
-            projection=r.frustum(fov=90, z_near=1, z_far=500),
             local_transform=libcarna.translate(0, 0, 100),
-        )
+        ).frustum(fov=90, z_near=1, z_far=500)
         # .. MIPStage: example-setup-end
 
         self.r, self.camera = r, camera
@@ -317,9 +314,8 @@ class CuttingPlanesStage(testsuite.LibCarnaRenderingTestCase):
             )
         camera = libcarna.camera(
             parent=root,
-            projection=r.frustum(fov=90, z_near=1, z_far=500),
             local_transform=libcarna.translate(0, 0, 100),
-        )
+        ).frustum(fov=90, z_near=1, z_far=500)
         # .. CuttingPlanesStage: example-setup-end
 
         self.r, self.zplane, self.camera = r, zplane, camera
@@ -390,9 +386,8 @@ class DVRStage(testsuite.LibCarnaRenderingTestCase):
         )
         camera = libcarna.camera(
             parent=root,
-            projection=r.frustum(fov=90, z_near=1, z_far=500),
             local_transform=libcarna.translate(0, 0, 100),
-        )
+        ).frustum(fov=90, z_near=1, z_far=500)
         # .. DVRStage: example-setup-end
 
         self.r, self.camera = r, camera
@@ -453,9 +448,8 @@ class DRRStage(testsuite.LibCarnaRenderingTestCase):
         )
         camera = libcarna.camera(
             parent=root,
-            projection=r.frustum(fov=90, z_near=1, z_far=500),
             local_transform=libcarna.translate(0, 0, 100),
-        )
+        ).frustum(fov=90, z_near=1, z_far=500)
         # .. DRRStage: example-setup-end
 
         self.r, self.camera = r, camera

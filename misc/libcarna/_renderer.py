@@ -53,35 +53,22 @@ class renderer:
         # Build method for rendering, that hides the frame renderer (so that it cannot be reshaped, because this would
         # require a new surface)
         def render(camera: libcarna.base.Camera, root: libcarna.base.Node | None = None) -> np.ndarray:
+
+            # Update camera projection matrix to fit the aspect ratio of the surface
+            if isinstance(camera, libcarna.camera):
+                camera.update_projection(surface.width, surface.height)
+
+            # Perform the rendering
             surface.begin()
             frame_renderer.render(camera, root)
             return surface.end()
 
-        # Build auxiliariy methods for projection matrices that fit the aspect ratio of the surface
-        def frustum(fov: float, z_near: float, z_far: float):
-            return libcarna.base.math.frustum(libcarna.base.math.deg2rad(fov), height / width, z_near, z_far)
-
         self.render = render
-        self.frustum = frustum
         self.width = width
         self.height = height
 
     def render(self, camera: libcarna.base.Camera, root: libcarna.base.Node | None = None) -> np.ndarray:
         """
         Render scene `root` from `camera` point of view to a NumPy array.
-        """
-        ...
-
-    def frustum(self, fov: float, z_near: float, z_far: float) -> np.ndarray:
-        """
-        Create a projection matrix that is described by the frustum.
-        
-        Wrapper for :func:`libcarna.base.math.frustum` that ensures that the geometry of the frustum fits the aspect
-        ratio of the surface of the renderer.
-
-        Arguments:
-            fov: Field of view in degrees.
-            z_near: Near clipping plane.
-            z_far: Far clipping plane.
         """
         ...

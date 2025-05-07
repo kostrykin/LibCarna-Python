@@ -63,7 +63,7 @@ def node(tag: str | None = None, *, parent: libcarna.base.Node | None = None, **
     return node
 
 
-def camera(tag: str | None = None, *, parent: libcarna.base.Node | None = None, **kwargs) -> libcarna.base.Camera:
+class camera(libcarna.base.Camera, _spatial_mixin):
     """
     Create a :class:`carna.base.Camera` object.
 
@@ -72,14 +72,52 @@ def camera(tag: str | None = None, *, parent: libcarna.base.Node | None = None, 
         parent: Parent node to attach the spatial to, or `None`.
         **kwargs: Attributes to be set on the newly created object.
     """
-    class Camera(libcarna.base.Camera, _spatial_mixin):
 
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
+    def __init__(self, tag: str | None = None, *, parent: libcarna.base.Node | None = None, **kwargs):
+        if tag is None:
+            super().__init__()
+        else:
+            super().__init__(tag)
+        _setup_spatial(self, parent, **kwargs)
 
-    camera = Camera() if tag is None else Camera(tag)
-    _setup_spatial(camera, parent, **kwargs)
-    return camera
+    def __setitem__(self, key, value):
+        super().put_feature(key, value)
+
+    def proj(self, projection: np.ndarray | Literal['frustum'], **kwargs) -> 'camera':
+        """
+        Set the projection matrix of the camera.
+        """
+        if isinstance(projection, np.ndarray):
+            self.projection = projection
+            self.update_projection = lambda *args, **kwargs: None
+
+        elif isinstance(projection, str) and projection == 'frustum':
+            fov_rad = libcarna.base.math.deg2rad(kwargs['fov'])
+            z_near = kwargs['z_near']
+            z_far = kwargs['z_far']
+
+            def update_projection(width: int, height: int):
+                self.projection = libcarna.base.math.frustum(fov_rad, height / width, z_near, z_far)
+
+            self.update_projection = update_projection
+
+        else:
+            raise ValueError(f'Unsupported projection type: {projection}')
+        return self
+
+    def frustum(self, fov: float, z_near: float, z_far: float) -> 'camera':
+        """
+        Set a projection matrix that is described by the frustum.
+        
+        Wrapper for :func:`libcarna.base.math.frustum` that ensures that the geometry of the frustum fits the aspect
+        ratio of the renderer.
+
+        Arguments:
+            fov: Field of view in degrees.
+            z_near: Near clipping plane.
+            z_far: Far clipping plane.
+        """
+        return self.proj('frustum', fov=fov, z_near=z_near, z_far=z_far)
 
 
 def geometry(
