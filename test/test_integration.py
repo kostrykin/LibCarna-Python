@@ -88,7 +88,7 @@ class OpaqueRenderingStage(testsuite.LibCarnaRenderingTestCase):
         r = libcarna.renderer(800, 600, [opaque])
 
         # Create mesh
-        box_mesh = libcarna.mesh_factory.create_box(40, 40, 40)
+        box_mesh = libcarna.meshes.create_box(40, 40, 40)
 
         # Create and configure materials
         material1 = libcarna.material('solid', color=[1, 0, 0, 1])

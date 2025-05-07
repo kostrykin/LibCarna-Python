@@ -9,6 +9,7 @@ Examples
 
 .. toctree::
    
+   examples/introduction
    examples/cells
    examples/cthead
 

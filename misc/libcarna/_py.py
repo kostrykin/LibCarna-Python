@@ -28,6 +28,8 @@ def _expand_module(module):
         target_name = _camel_to_snake(member_name)
         if target_name == 'mask_rendering_stage':
             target_name = 'mask_renderer'
+        elif target_name == 'mesh_factory':
+            target_name = 'meshes'
         else:
             target_name = _strip_suffix(target_name, '_rendering_stage')
         target_name = _strip_suffix(target_name, '_stage')
