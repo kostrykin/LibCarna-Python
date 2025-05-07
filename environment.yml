@@ -27,18 +27,16 @@ dependencies:
   - scikit-video ==1.1.11  # API for ffmpeg
   - ffmpeg  # writes h264
   - scipy
+  - scikit-image  # for libcarna.data
+  - tifffile  # for libcarna.data
 
   # ---------------------------------------------------------------------------
-  # Runtime dependencies (tests)
+  # Runtime dependencies (tests/docs)
   - matplotlib-base
-
-  # ---------------------------------------------------------------------------
-  # Runtime dependencies (examples/docs)
-  - scikit-image
 
   # ---------------------------------------------------------------------------
   # pip dependencies
   - pip
   - pip:
     - apng ==0.3.4  # for tests (reads APNG)
-    - pooch  # for examples/docs
+    - pooch  # for libcarna.data

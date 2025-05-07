@@ -22,6 +22,7 @@ API
    libcarna
    libcarna.base
    libcarna.base.math
+   libcarna.data
    libcarna.egl
    libcarna.helpers
    libcarna.presets

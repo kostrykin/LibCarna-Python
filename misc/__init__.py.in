@@ -4,6 +4,7 @@ version    = '@LIBCARNA_VERSION@'
 
 from ._py import *
 
+from . import data
 from ._animation import animate
 from ._color import color
 from ._drr import drr
