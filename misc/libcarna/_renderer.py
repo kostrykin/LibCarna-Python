@@ -55,7 +55,7 @@ class renderer:
         def render(camera: libcarna.base.Camera, root: libcarna.base.Node | None = None) -> np.ndarray:
 
             # Update camera projection matrix to fit the aspect ratio of the surface
-            if isinstance(camera, libcarna.camera):
+            if hasattr(camera, 'update_projection'):
                 camera.update_projection(surface.width, surface.height)
 
             # Perform the rendering

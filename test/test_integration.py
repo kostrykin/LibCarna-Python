@@ -99,25 +99,22 @@ class OpaqueRenderingStage(testsuite.LibCarnaRenderingTestCase):
         libcarna.geometry(
             GEOMETRY_TYPE_OPAQUE,
             parent=root,
-            local_transform=libcarna.translate(-10, -10, -40),
             features={
                 opaque.ROLE_DEFAULT_MESH: box_mesh,
                 opaque.ROLE_DEFAULT_MATERIAL: material1,
             },
-        )
+        ).translate(-10, -10, -40)
         libcarna.geometry(
             GEOMETRY_TYPE_OPAQUE,
             parent=root,
-            local_transform=libcarna.translate(+10, +10, +40),
             features={
                 opaque.ROLE_DEFAULT_MESH: box_mesh,
                 opaque.ROLE_DEFAULT_MATERIAL: material2,
             },
-        )
+        ).translate(+10, +10, +40)
         camera = libcarna.camera(
             parent=root,
-            local_transform=libcarna.translate(0, 0, 250),
-        ).frustum(fov=90, z_near=1, z_far=1e3)
+        ).frustum(fov=90, z_near=1, z_far=1e3).translate(0, 0, 250)
         # .. OpaqueRenderingStage: example-setup-end
 
         self.r, self.camera = r, camera
@@ -177,8 +174,7 @@ class MaskRenderingStage(testsuite.LibCarnaRenderingTestCase):
         )
         camera = libcarna.camera(
             parent=root,
-            local_transform=libcarna.translate(0, 0, 100),
-        ).frustum(fov=90, z_near=1, z_far=500)
+        ).frustum(fov=90, z_near=1, z_far=500).translate(0, 0, 100)
         # .. MaskRenderingStage: example-setup-end
 
         self.r, self.camera = r, camera
@@ -234,8 +230,7 @@ class MIPStage(testsuite.LibCarnaRenderingTestCase):
         )
         camera = libcarna.camera(
             parent=root,
-            local_transform=libcarna.translate(0, 0, 100),
-        ).frustum(fov=90, z_near=1, z_far=500)
+        ).frustum(fov=90, z_near=1, z_far=500).translate(0, 0, 100)
         # .. MIPStage: example-setup-end
 
         self.r, self.camera = r, camera
@@ -298,27 +293,18 @@ class CuttingPlanesStage(testsuite.LibCarnaRenderingTestCase):
         zplane = libcarna.geometry(
             GEOMETRY_TYPE_PLANE,
             parent=volume,
-            local_transform=libcarna.plane(
-                normal=(0, 0, 1),
-                distance=0,
-            ),
-        )
-        for sign in (-1, +1):  # create left and right planes
+        ).plane(normal='z', distance=0)
+        for axis in ('-x', '+x'):  # create left and right planes
             libcarna.geometry(
                 GEOMETRY_TYPE_PLANE,
                 parent=volume,
-                local_transform=libcarna.plane(
-                    normal=(1 * sign, 0, 0),
-                    distance=63 / 2,
-                ),
-            )
+            ).plane(normal=axis, distance=volume.extent[0] / 2)
         camera = libcarna.camera(
             parent=root,
-            local_transform=libcarna.translate(0, 0, 100),
-        ).frustum(fov=90, z_near=1, z_far=500)
+        ).frustum(fov=90, z_near=1, z_far=500).translate(0, 0, 100)
         # .. CuttingPlanesStage: example-setup-end
 
-        self.r, self.zplane, self.camera = r, zplane, camera
+        self.r, self.volume, self.zplane, self.camera = r, volume, zplane, camera
 
     def test(self):
         r, camera = self.r, self.camera
@@ -330,7 +316,7 @@ class CuttingPlanesStage(testsuite.LibCarnaRenderingTestCase):
         self.assert_image_almost_expected(array)
 
     def test__animated(self):
-        r, zplane, camera = self.r, self.zplane, self.camera
+        r, volume, zplane, camera = self.r, self.volume, self.zplane, self.camera
 
         # .. CuttingPlanesStage: example-animation-start
         # Define animation
@@ -338,7 +324,7 @@ class CuttingPlanesStage(testsuite.LibCarnaRenderingTestCase):
             libcarna.animate.bounce_local(
                 zplane,
                 axis='z',
-                amplitude=38 / 2,
+                amplitude=volume.extent[2] / 2,
             ),
             n_frames=50,
         )
@@ -386,8 +372,7 @@ class DVRStage(testsuite.LibCarnaRenderingTestCase):
         )
         camera = libcarna.camera(
             parent=root,
-            local_transform=libcarna.translate(0, 0, 100),
-        ).frustum(fov=90, z_near=1, z_far=500)
+        ).frustum(fov=90, z_near=1, z_far=500).translate(0, 0, 100)
         # .. DVRStage: example-setup-end
 
         self.r, self.camera = r, camera
@@ -448,8 +433,7 @@ class DRRStage(testsuite.LibCarnaRenderingTestCase):
         )
         camera = libcarna.camera(
             parent=root,
-            local_transform=libcarna.translate(0, 0, 100),
-        ).frustum(fov=90, z_near=1, z_far=500)
+        ).frustum(fov=90, z_near=1, z_far=500).translate(0, 0, 100)
         # .. DRRStage: example-setup-end
 
         self.r, self.camera = r, camera

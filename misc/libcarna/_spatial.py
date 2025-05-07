@@ -1,9 +1,13 @@
-from typing import Literal
+from typing import (
+    Literal,
+    Self,
+)
 
 import numpy as np
 
 import libcarna
-from libcarna._transform import transform as _transform
+from ._axes import AxisHint, resolve_axis_hint
+from ._transform import transform
 
 
 def _transform_into_local(target: libcarna.base.Spatial, rhs: libcarna.base.Spatial) -> np.array:
@@ -12,12 +16,36 @@ def _transform_into_local(target: libcarna.base.Spatial, rhs: libcarna.base.Spat
     system of another spatial object `target`.
     """
     if target is rhs:
-        return _transform(np.eye(4))
+        return transform(np.eye(4))
     else:
-        return _transform(np.linalg.inv(target.world_transform) @ rhs.world_transform)
+        return transform(np.linalg.inv(target.world_transform) @ rhs.world_transform)
     
 
 class _spatial_mixin:
+    
+    def rotate(self, axis: AxisHint, deg: float) -> Self:
+        axis = resolve_axis_hint(axis)
+        self.local_transform = (
+            libcarna.base.math.rotation(axis, radians=libcarna.base.math.deg2rad(deg)) @ self.local_transform
+        )
+        return self
+    
+    def scale(self, *factors: float) -> Self:
+        if len(factors) == 1:
+            factors = (factors[0], factors[0], factors[0])
+        elif len(factors) != 3:
+            raise ValueError('Scale factor must be a single value, or a tuple of three values.')
+        self.local_transform = libcarna.base.math.scaling(*factors) @ self.local_transform
+        return self
+    
+    def translate(self, x: float, y: float, z: float) -> Self:
+        self.local_transform = libcarna.base.math.translation(x, y, z) @ self.local_transform
+        return self
+    
+    def plane(self, normal: AxisHint, distance: float) -> Self:
+        normal = resolve_axis_hint(normal)
+        self.local_transform = libcarna.base.math.plane(normal=normal, distance=distance) @ self.local_transform
+        return self
     
     def transform_from(self, rhs: libcarna.base.Spatial) -> np.array:
         """
@@ -63,7 +91,7 @@ def node(tag: str | None = None, *, parent: libcarna.base.Node | None = None, **
     return node
 
 
-class camera(libcarna.base.Camera, _spatial_mixin):
+def camera(tag: str | None = None, *, parent: libcarna.base.Node | None = None, **kwargs) -> libcarna.base.Camera:
     """
     Create a :class:`carna.base.Camera` object.
 
@@ -72,52 +100,49 @@ class camera(libcarna.base.Camera, _spatial_mixin):
         parent: Parent node to attach the spatial to, or `None`.
         **kwargs: Attributes to be set on the newly created object.
     """
+    class Camera(libcarna.base.Camera, _spatial_mixin):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
 
-    def __init__(self, tag: str | None = None, *, parent: libcarna.base.Node | None = None, **kwargs):
-        if tag is None:
-            super().__init__()
-        else:
-            super().__init__(tag)
-        _setup_spatial(self, parent, **kwargs)
+        def proj(self, projection: np.ndarray | Literal['frustum'], **kwargs) -> Self:
+            """
+            Set the projection matrix of the camera.
+            """
+            if isinstance(projection, np.ndarray):
+                self.projection = projection
+                self.update_projection = lambda *args, **kwargs: None
 
-    def __setitem__(self, key, value):
-        super().put_feature(key, value)
+            elif isinstance(projection, str) and projection == 'frustum':
+                fov_rad = libcarna.base.math.deg2rad(kwargs['fov'])
+                z_near = kwargs['z_near']
+                z_far = kwargs['z_far']
 
-    def proj(self, projection: np.ndarray | Literal['frustum'], **kwargs) -> 'camera':
-        """
-        Set the projection matrix of the camera.
-        """
-        if isinstance(projection, np.ndarray):
-            self.projection = projection
-            self.update_projection = lambda *args, **kwargs: None
+                def update_projection(width: int, height: int):
+                    self.projection = libcarna.base.math.frustum(fov_rad, height / width, z_near, z_far)
 
-        elif isinstance(projection, str) and projection == 'frustum':
-            fov_rad = libcarna.base.math.deg2rad(kwargs['fov'])
-            z_near = kwargs['z_near']
-            z_far = kwargs['z_far']
+                self.update_projection = update_projection
 
-            def update_projection(width: int, height: int):
-                self.projection = libcarna.base.math.frustum(fov_rad, height / width, z_near, z_far)
+            else:
+                raise ValueError(f'Unsupported projection type: {projection}')
+            return self
 
-            self.update_projection = update_projection
+        def frustum(self, fov: float, z_near: float, z_far: float) -> Self:
+            """
+            Set a projection matrix that is described by the frustum.
+            
+            Wrapper for :func:`libcarna.base.math.frustum` that ensures that the geometry of the frustum fits the
+            aspect ratio of the renderer.
 
-        else:
-            raise ValueError(f'Unsupported projection type: {projection}')
-        return self
+            Arguments:
+                fov: Field of view in degrees.
+                z_near: Near clipping plane.
+                z_far: Far clipping plane.
+            """
+            return self.proj('frustum', fov=fov, z_near=z_near, z_far=z_far)
 
-    def frustum(self, fov: float, z_near: float, z_far: float) -> 'camera':
-        """
-        Set a projection matrix that is described by the frustum.
-        
-        Wrapper for :func:`libcarna.base.math.frustum` that ensures that the geometry of the frustum fits the aspect
-        ratio of the renderer.
-
-        Arguments:
-            fov: Field of view in degrees.
-            z_near: Near clipping plane.
-            z_far: Far clipping plane.
-        """
-        return self.proj('frustum', fov=fov, z_near=z_near, z_far=z_far)
+    camera = Camera() if tag is None else Camera(tag)
+    _setup_spatial(camera, parent, **kwargs)
+    return camera
 
 
 def geometry(
@@ -240,7 +265,7 @@ def volume(
             Compute the transformation from the local coordinate system of a spatial object `rhs` into the voxel
             coordinate system of this volume.
             """
-            return _transform(
+            return transform(
                 libcarna.base.math.scaling(np.subtract(array.shape, 1) / extent) @
                 libcarna.base.math.translation(extent / 2) @
                 self.transform_from(rhs).mat

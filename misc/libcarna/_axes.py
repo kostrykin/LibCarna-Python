@@ -11,13 +11,17 @@ AxisHint = AxisLiteral | tuple[float, float, float] | list[float, float, float]
 
 def resolve_axis_hint(axis: AxisHint) -> tuple[float, float, float]:
     if isinstance(axis, str):
+        if axis.startswith('-') or axis.startswith('+'):
+            f, axis = int(axis[0] + '1'), axis[1:]
+        else:
+            f = 1
         match axis:
             case 'x':
-                return (1, 0, 0)
+                return (f, 0, 0)
             case 'y':
-                return (0, 1, 0)
+                return (0, f, 0)
             case 'z':
-                return (0, 0, 1)
+                return (0, 0, f)
             case _:
                 raise ValueError(f'Invalid axis hint: {axis}')
     elif len(axis) == 3:

@@ -10,9 +10,9 @@ class node(testsuite.LibCarnaTestCase):
     def setUp(self):
         super().setUp()
         self.root  = libcarna.node()
-        self.node1 = libcarna.node(parent=self.root, local_transform=libcarna.translate(0, 0, 1))
+        self.node1 = libcarna.node(parent=self.root).translate(0, 0, 1)
         pivot = libcarna.node(parent=self.root)
-        self.node2 = libcarna.node(parent=pivot, local_transform=libcarna.scale(0.5))
+        self.node2 = libcarna.node(parent=pivot).scale(0.5)
         self.root.update_world_transform()
 
     def test__transform_from__identity(self):
@@ -44,9 +44,8 @@ class volume(testsuite.LibCarnaTestCase):
             volume.GEOMETRY_TYPE_VOLUME,
             self.array,
             parent=self.root,
-            local_transform=libcarna.translate(0, 0, 5),
             spacing=(1, 1, 1),
-        )
+        ).translate(0, 0, 5)
         self.root.update_world_transform()
 
     def test__transform_into_voxels_from(self):
