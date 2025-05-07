@@ -33,7 +33,8 @@ def _expand_module(module):
             target_name = 'meshes'
         else:
             target_name = _strip_suffix(target_name, '_rendering_stage')
-        target_name = _strip_suffix(target_name, '_stage')
+        if target_name != 'render_stage':
+            target_name = _strip_suffix(target_name, '_stage')
 
         # Skip if the target already exists
         if target_name in globals():
