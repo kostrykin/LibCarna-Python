@@ -210,18 +210,7 @@ PYBIND11_MODULE( presets, m )
         .def( py::init< unsigned int >(), "geometry_type"_a )
         .def_property_readonly( "geometry_type",
             VIEW_DELEGATE( OpaqueRenderingStageView, opaqueRenderingStage().LibCarna::base::MeshRenderingMixin::geometryType )
-        )
-        .doc() = R"(Renders *opaque meshes* in the scene.
-
-        .. literalinclude:: ../test/test_integration.py
-           :start-after: # .. OpaqueRenderingStage: example-setup-start
-           :end-before: # .. OpaqueRenderingStage: example-setup-end
-           :dedent: 8
-
-        Rendering the scene as an animation:
-
-        .. image:: ../test/results/expected/test_integration.OpaqueRenderingStage.test__animated.png
-           :width: 400)";
+        );
 
     /* VolumeRenderingStage
      */
@@ -246,6 +235,7 @@ PYBIND11_MODULE( presets, m )
     )
         .def_readonly_static( "DEFAULT_ROLE_MASK", &LibCarna::presets::MaskRenderingStage::DEFAULT_ROLE_MASK )
         .def_readonly_static( "DEFAULT_COLOR", &LibCarna::presets::MaskRenderingStage::DEFAULT_COLOR )
+        .def_readonly_static( "DEFAULT_FILLING", &LibCarna::presets::MaskRenderingStage::DEFAULT_FILLING )
         .def(
             py::init< unsigned int, unsigned int >(),
             "geometry_type"_a, "mask_role"_a = LibCarna::presets::MaskRenderingStage::DEFAULT_ROLE_MASK
@@ -254,48 +244,23 @@ PYBIND11_MODULE( presets, m )
             "mask_role",
             VIEW_DELEGATE( MaskRenderingStageView, maskRenderingStage().maskRole )
         )
-        .def(
+        .def_property(
             "color",
-            VIEW_DELEGATE( MaskRenderingStageView,  maskRenderingStage().color() )
-        )
-        .def(
-            "set_color",
+            VIEW_DELEGATE( MaskRenderingStageView, maskRenderingStage().color() ),
             VIEW_DELEGATE( MaskRenderingStageView, maskRenderingStage().setColor( color ), const LibCarna::base::Color& color )
         )
         .def_property(
-            "render_borders",
-            VIEW_DELEGATE( MaskRenderingStageView, maskRenderingStage().renderBorders() ),
-            VIEW_DELEGATE( MaskRenderingStageView, maskRenderingStage().setRenderBorders( renderBorders ), bool renderBorders )
-        )
-        .doc() = R"(Renders 3D masks as either unshaded areas or borders.
-
-        .. literalinclude:: ../test/test_integration.py
-           :start-after: # .. MaskRenderingStage: example-setup-start
-           :end-before: # .. MaskRenderingStage: example-setup-end
-           :dedent: 8
-
-        Rendering the scene as an animation:
-
-        .. image:: ../test/results/expected/test_integration.MaskRenderingStage.test__animated.png
-           :width: 400)";
+            "filling",
+            VIEW_DELEGATE( MaskRenderingStageView, maskRenderingStage().isFilling() ),
+            VIEW_DELEGATE( MaskRenderingStageView, maskRenderingStage().setFilling( filling ), bool filling )
+        );
     
     /* MIPStage
      */
     py::class_< MIPStageView, std::shared_ptr< MIPStageView >, VolumeRenderingStageView >( m, "MIPStage" )
         .def_readonly_static( "ROLE_INTENSITIES", &MIP_STAGE__ROLE_INTENSITIES )
         .def( py::init< unsigned int >(), "geometry_type"_a )
-        .def_property_readonly( "color_map", &MIPStageView::colorMap )
-        .doc() = R"(Renders *maximum intensity projections* of volume geometries in the scene.
-
-        .. literalinclude:: ../test/test_integration.py
-           :start-after: # .. MIPStage: example-setup-start
-           :end-before: # .. MIPStage: example-setup-end
-           :dedent: 8
-
-        Rendering the scene as an animation:
-
-        .. image:: ../test/results/expected/test_integration.MIPStage.test__animated.png
-           :width: 400)";
+        .def_property_readonly( "color_map", &MIPStageView::colorMap );
     
     /* CuttingPlanesStage
      */
@@ -319,33 +284,7 @@ PYBIND11_MODULE( presets, m )
             "windowing_level",
             VIEW_DELEGATE( CuttingPlanesStageView, cuttingPlanesStage().windowingLevel() ),
             VIEW_DELEGATE( CuttingPlanesStageView, cuttingPlanesStage().setWindowingLevel( windowingLevel ), float windowingLevel )
-        )
-        .doc() = R"(Renders *cutting planes* of volume geometries in the scene.
-
-        .. literalinclude:: ../test/test_integration.py
-           :start-after: # .. CuttingPlanesStage: example-setup-start
-           :end-before: # .. CuttingPlanesStage: example-setup-end
-           :dedent: 8
-
-        The normal vector of the planes does not have to necessarily align with the axes.
-
-        In this example, we have a z-plane and a pair of x-planes. The x-planes are positioned on the left and right
-        faces of the volume. Their distances to the center of the volume calculates as the width of the volume divided
-        by 2, and the width of the volume is 63 units (64 voxels, with voxels on the x-axis spaced by 1 unit).
-
-        For a more information-rich visualization of the volume, we will make the z-plane bounce between the front and
-        back faces of the volume. The amplitude is calculated as the depth of the volume divided by 2, and the depth of
-        the volume is 38 units (19 voxels, and voxels on the z-axis are spaced by 2 unit).
-
-        .. literalinclude:: ../test/test_integration.py
-           :start-after: # .. CuttingPlanesStage: example-animation-start
-           :end-before: # .. CuttingPlanesStage: example-animation-end
-           :dedent: 8
-
-        The example yields this animation:
-
-        .. image:: ../test/results/expected/test_integration.CuttingPlanesStage.test__animated.png
-           :width: 400)";
+        );
     
     /* DVRStage
      */
@@ -365,18 +304,7 @@ PYBIND11_MODULE( presets, m )
             "diffuse_light",
             VIEW_DELEGATE( DVRStageView, dvrStage().diffuseLight() ),
             VIEW_DELEGATE( DVRStageView, dvrStage().setDiffuseLight( diffuseLight ), float diffuseLight )
-        )
-        .doc() = R"(Performs *direct volume rendering* of the volume geometries in the scene.
-
-        .. literalinclude:: ../test/test_integration.py
-           :start-after: # .. DVRStage: example-setup-start
-           :end-before: # .. DVRStage: example-setup-end
-           :dedent: 8
-
-        Rendering the scene as an animation:
-
-        .. image:: ../test/results/expected/test_integration.DVRStage.test__animated.png
-           :width: 400)";
+        );
     
     /* DRRStage
      */
@@ -418,18 +346,7 @@ PYBIND11_MODULE( presets, m )
             "render_inverse",
             VIEW_DELEGATE( DRRStageView, drrStage().isRenderingInverse() ),
             VIEW_DELEGATE( DRRStageView, drrStage().setRenderingInverse( renderInverse ), bool renderInverse )
-        )
-        .doc() = R"(Renders *digitally reconstructed radiographs* of the volume geometries in the scene.
-
-        .. literalinclude:: ../test/test_integration.py
-           :start-after: # .. DRRStage: example-setup-start
-           :end-before: # .. DRRStage: example-setup-end
-           :dedent: 8
-
-        Rendering the scene as an animation:
-
-        .. image:: ../test/results/expected/test_integration.DRRStage.test__animated.png
-           :width: 400)";
+        );
 
 /*
     py::class_< OccludedRenderingStage, RenderStage >( m, "OccludedRenderingStage" )

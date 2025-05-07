@@ -13,8 +13,10 @@ set( TEST_FILES
     test_egl
     test_helpers
     test_integration
+    test_mask_renderer
     test_material
     test_mip
+    test_opaque
     test_presets
     test_spatial
 )

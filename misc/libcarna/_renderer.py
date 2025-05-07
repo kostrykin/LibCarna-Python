@@ -33,7 +33,7 @@ class renderer:
             height: int,
             stages: Iterable[libcarna.base.RenderStage],
             bgcolor: libcarna.color = libcarna.color.BLACK_NO_ALPHA,
-            ctx: libcarna.base.GLContext | None = None,
+            ctx: libcarna.gl_context | None = None,
         ):
         if ctx is None:
             ctx = libcarna.egl_context()

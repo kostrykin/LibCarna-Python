@@ -38,6 +38,9 @@ class MaskRenderingStage(VolumeRenderingStage):
         self.assertEqual(libcarna.presets.MaskRenderingStage.DEFAULT_COLOR.b, 0)
         self.assertEqual(libcarna.presets.MaskRenderingStage.DEFAULT_COLOR.a, 255)
 
+    def test__DEFAULT_FILLING(self):
+        self.assertEqual(libcarna.presets.MaskRenderingStage.DEFAULT_FILLING, True)
+
     def test__mask_role(self):
         rs = self.create()
         self.assertEqual(rs.mask_role, libcarna.presets.MaskRenderingStage.DEFAULT_ROLE_MASK)
@@ -47,18 +50,18 @@ class MaskRenderingStage(VolumeRenderingStage):
 
     def test__color(self):
         rs = self.create()
-        self.assertEqual(rs.color(), libcarna.presets.MaskRenderingStage.DEFAULT_COLOR)
+        self.assertEqual(rs.color, libcarna.presets.MaskRenderingStage.DEFAULT_COLOR)
         for color_r in (50, 100, 150):
             color = libcarna.base.Color(color_r, 255, 0, 255)
-            rs.set_color(color)
-            self.assertEqual(rs.color(), color)
+            rs.color = color
+            self.assertEqual(rs.color, color)
 
-    def test__render_borders(self):
+    def test__filling(self):
         rs = self.create()
-        self.assertEqual(rs.render_borders, False)
-        for render_borders in (True, False):
-            rs.render_borders = render_borders
-            self.assertEqual(rs.render_borders, render_borders)
+        self.assertEqual(rs.filling, True)
+        for filling in (False, True):
+            rs.filling = filling
+            self.assertEqual(rs.filling, filling)
 
 
 class ColorMapMixin:

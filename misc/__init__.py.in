@@ -13,7 +13,9 @@ from ._dvr import dvr
 from ._huv import normalize_hounsfield_units
 from ._imshow import imshow
 from ._material import material
+from ._mask_renderer import mask_renderer
 from ._mip import mip
+from ._opaque import opaque
 from ._renderer import renderer
 from ._spatial import (
     camera,
