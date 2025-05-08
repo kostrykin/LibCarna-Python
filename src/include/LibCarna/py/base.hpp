@@ -321,6 +321,16 @@ public:
 
 
 
+// ----------------------------------------------------------------------------------
+// MeshFactoryView
+// ----------------------------------------------------------------------------------
+
+class MeshFactoryView
+{
+}; // MeshFactoryView
+
+
+
 }  // namespace LibCarna :: py :: base
 
 }  // namespace LibCarna :: py

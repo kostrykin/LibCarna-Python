@@ -472,22 +472,22 @@ PYBIND11_MODULE( base, m )
             "camera"_a, "root"_a = nullptr
         );
 
-    m.def_submodule( "MeshFactory" )
-        .def( "create_box",
+    py::class_< MeshFactoryView >( m, "MeshFactory" )
+        .def_static( "create_box",
             []( float width, float height, float depth )
             {
                 return new GeometryFeatureView( LibCarna::base::MeshFactory< LibCarna::base::PNVertex >::createBox( width, height, depth ) );
             },
             "width"_a, "height"_a, "depth"_a
         )
-        .def( "create_ball",
+        .def_static( "create_ball",
             []( float radius, unsigned int degree )
             {
                 return new GeometryFeatureView( LibCarna::base::MeshFactory< LibCarna::base::PNVertex >::createBall( radius, degree ) );
             },
             "radius"_a, "degree"_a=4
         )
-        .def( "create_point",
+        .def_static( "create_point",
             []()
             {
                 return new GeometryFeatureView( LibCarna::base::MeshFactory< LibCarna::base::PVertex >::createPoint() );
