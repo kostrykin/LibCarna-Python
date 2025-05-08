@@ -4,6 +4,8 @@ import libcarna
 def scheme_color(value):
     if isinstance(value, libcarna.base.Color):
         return value.toarray()
+    elif isinstance(value, str):
+        return libcarna.color(value).toarray()
     elif hasattr(value, '__len__') and len(value) == 4:
         return value
     else:

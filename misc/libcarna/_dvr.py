@@ -19,15 +19,15 @@ class dvr(libcarna.presets.DVRStage):
 
     Example:
 
-    .. literalinclude:: ../test/test_integration.py
-        :start-after: # .. DVRStage: example-setup-start
-        :end-before: # .. DVRStage: example-setup-end
-        :dedent: 8
+        .. literalinclude:: ../test/test_integration.py
+            :start-after: # .. DVRStage: example-setup-start
+            :end-before: # .. DVRStage: example-setup-end
+            :dedent: 8
 
-    Rendering the scene as an animation:
+        Rendering the scene as an animation:
 
-    .. image:: ../test/results/expected/test_integration.DVRStage.test__animated.png
-        :width: 400
+        .. image:: ../test/results/expected/test_integration.DVRStage.test__animated.png
+            :width: 400
     """
 
     def __init__(

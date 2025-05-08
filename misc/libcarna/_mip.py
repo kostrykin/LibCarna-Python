@@ -15,15 +15,15 @@ class mip(libcarna.presets.MIPStage):
 
     Example:
 
-    .. literalinclude:: ../test/test_integration.py
-        :start-after: # .. MIPStage: example-setup-start
-        :end-before: # .. MIPStage: example-setup-end
-        :dedent: 8
+        .. literalinclude:: ../test/test_integration.py
+            :start-after: # .. MIPStage: example-setup-start
+            :end-before: # .. MIPStage: example-setup-end
+            :dedent: 8
 
-    Rendering the scene as an animation:
+        Rendering the scene as an animation:
 
-    .. image:: ../test/results/expected/test_integration.MIPStage.test__animated.png
-        :width: 400
+        .. image:: ../test/results/expected/test_integration.MIPStage.test__animated.png
+            :width: 400
     """
 
     def __init__(

@@ -11,9 +11,9 @@ def _camel_to_snake(name):
     return re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', s).lower()
 
 
-def _strip_suffix(s, suffix):
-    if s.endswith(suffix):
-        return s[:-len(suffix)]
+def _replace_suffix(s, old, new):
+    if s.endswith(old):
+        return s[:-len(old)] + new
     return s
 
 
@@ -32,9 +32,9 @@ def _expand_module(module):
         elif target_name == 'mesh_factory':
             target_name = 'meshes'
         else:
-            target_name = _strip_suffix(target_name, '_rendering_stage')
-        if target_name != 'render_stage':
-            target_name = _strip_suffix(target_name, '_stage')
+            target_name = _replace_suffix(target_name, '_rendering_stage', '_renderer')
+            if target_name != 'render_stage':
+                target_name = _replace_suffix(target_name, '_stage', '')
 
         # Skip if the target already exists
         if target_name in globals():

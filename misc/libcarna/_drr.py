@@ -18,15 +18,15 @@ class drr(libcarna.presets.DRRStage):
 
     Example:
 
-    .. literalinclude:: ../test/test_integration.py
-        :start-after: # .. DRRStage: example-setup-start
-        :end-before: # .. DRRStage: example-setup-end
-        :dedent: 8
+        .. literalinclude:: ../test/test_integration.py
+            :start-after: # .. DRRStage: example-setup-start
+            :end-before: # .. DRRStage: example-setup-end
+            :dedent: 8
 
-    Rendering the scene as an animation:
+        Rendering the scene as an animation:
 
-    .. image:: ../test/results/expected/test_integration.DRRStage.test__animated.png
-        :width: 400
+        .. image:: ../test/results/expected/test_integration.DRRStage.test__animated.png
+            :width: 400
     """
 
     def __init__(

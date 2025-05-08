@@ -167,7 +167,7 @@ def geometry(
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
 
-        def __setitem__(self, key, value):
+        def __setitem__(self, key: int, value: libcarna.geometry_feature):
             super().put_feature(key, value)
 
     geometry = Geometry(geometry_type) if tag is None else Geometry(geometry_type, tag)

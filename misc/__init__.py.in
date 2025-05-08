@@ -3,6 +3,7 @@ version    = '@LIBCARNA_VERSION@'
 
 
 from ._py import *
+from ._render_stage_tools import add_role_shortcuts as _add_role_shortcuts
 
 from . import data
 from ._animation import animate
@@ -15,7 +16,7 @@ from ._imshow import imshow
 from ._material import material
 from ._mask_renderer import mask_renderer
 from ._mip import mip
-from ._opaque import opaque
+from ._opaque_renderer import opaque_renderer
 from ._renderer import renderer
 from ._spatial import (
     camera,
@@ -24,5 +25,10 @@ from ._spatial import (
     volume,
 )
 
-
 logging(False)
+
+
+for value in list(globals().values()):
+    if isinstance(value, type) and issubclass(value, render_stage):
+        _add_role_shortcuts(value)
+    del value

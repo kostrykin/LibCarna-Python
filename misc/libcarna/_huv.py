@@ -4,7 +4,7 @@ import scipy.ndimage as ndi
 
 def normalize_hounsfield_units(data, rel_mode_width=.33):
     """
-    Normalize the input data to Hounsfield Units (HU) using a heuristic histogram method.
+    Normalize `data` to Hounsfield Units (HU) using a heuristic histogram method.
     """
     assert 0 < rel_mode_width <= 1, f'Unsupported rel_mode_width: {rel_mode_width}'
     data = data - data.min()

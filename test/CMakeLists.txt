@@ -16,7 +16,7 @@ set( TEST_FILES
     test_mask_renderer
     test_material
     test_mip
-    test_opaque
+    test_opaque_renderer
     test_presets
     test_spatial
 )

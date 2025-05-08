@@ -13,15 +13,15 @@ class mask_renderer(libcarna.presets.MaskRenderingStage):
 
     Example:
 
-    .. literalinclude:: ../test/test_integration.py
-        :start-after: # .. MaskRenderingStage: example-setup-start
-        :end-before: # .. MaskRenderingStage: example-setup-end
-        :dedent: 8
+        .. literalinclude:: ../test/test_integration.py
+            :start-after: # .. MaskRenderingStage: example-setup-start
+            :end-before: # .. MaskRenderingStage: example-setup-end
+            :dedent: 8
 
-    Rendering the scene as an animation:
+        Rendering the scene as an animation:
 
-    .. image:: ../test/results/expected/test_integration.MaskRenderingStage.test__animated.png
-        :width: 400
+        .. image:: ../test/results/expected/test_integration.MaskRenderingStage.test__animated.png
+            :width: 400
     """
 
     def __init__(
