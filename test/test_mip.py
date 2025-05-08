@@ -13,5 +13,5 @@ class mip(testsuite.LibCarnaTestCase):
         )
         mip2 = mip1.replicate()
         self.assertEqual(mip2.geometry_type, GEOMETRY_TYPE_VOLUME)
-        self.assertEqual(mip2.cmap.color_map.color_list, mip1.cmap.color_map.color_list)
+        self.assertEqual(mip2.cmap.colormap.color_list, mip1.cmap.colormap.color_list)
         self.assertEqual(mip2.sample_rate, 400)

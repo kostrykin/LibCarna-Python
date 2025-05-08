@@ -15,7 +15,7 @@ class dvr(testsuite.LibCarnaTestCase):
         )
         dvr2 = dvr1.replicate()
         self.assertEqual(dvr2.geometry_type, GEOMETRY_TYPE_VOLUME)
-        self.assertEqual(dvr2.cmap.color_map.color_list, dvr1.cmap.color_map.color_list)
+        self.assertEqual(dvr2.cmap.colormap.color_list, dvr1.cmap.colormap.color_list)
         self.assertEqual(dvr2.sample_rate, 400)
         self.assertEqual(dvr2.translucency, 1)
         self.assertEqual(dvr2.diffuse_light, 0.5)

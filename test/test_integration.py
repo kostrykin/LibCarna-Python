@@ -370,7 +370,7 @@ class DVRStage(testsuite.LibCarnaRenderingTestCase):
             GEOMETRY_TYPE_VOLUME, sr=800, transl=0.1, diffuse=0.8,
         )
         dvr.cmap.clear()
-        dvr.cmap.write_linear_segment(
+        dvr.cmap.linear_segment(
             0.7, 1.0,
             libcarna.color(0, 150, 255, 150),
             libcarna.color(255, 0, 255, 255),

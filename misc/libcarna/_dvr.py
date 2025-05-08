@@ -1,6 +1,6 @@
 import libcarna
 
-from ._color_map_helper import color_map_helper
+from ._colormap_helper import colormap_helper
 
 
 class dvr(libcarna.presets.DVRStage):
@@ -10,6 +10,8 @@ class dvr(libcarna.presets.DVRStage):
     Arguments:
         geometry_type: Geometry type to be rendered.
         cmap: Color map to use for the DVR. If `None`, the default color map is used.
+        clim: Color limits for the color map. If `None`, the full range of intensities [0, 1] is used (if `cmap` is
+            `str` or `None`) or the limits of `cmap` are used (if `cmap` is a :class:`libcarna.base.ColorMap` ).
         sr: Sample rate for volume rendering. Larger values result in higher quality and less artifacts, but slower
             rendering.
         transl: Translucency value for the DVR, that is used on top of the translucency from the color map. A value of
@@ -35,12 +37,13 @@ class dvr(libcarna.presets.DVRStage):
             geometry_type: int,
             *,
             cmap: str | libcarna.base.ColorMap | None = None,
+            clim: tuple[float | None, float | None] | None = None,
             sr: int = libcarna.presets.VolumeRenderingStage.DEFAULT_SAMPLE_RATE,
             transl: float = libcarna.presets.DVRStage.DEFAULT_TRANSLUCENCY,
             diffuse: float = libcarna.presets.DVRStage.DEFAULT_DIFFUSE_LIGHT,
         ):
         super().__init__(geometry_type)
-        self.cmap = color_map_helper(self.color_map, cmap)
+        self.cmap = colormap_helper(self.color_map, cmap, clim)
         self.sample_rate = sr
         self.translucency = transl
         self.diffuse_light = diffuse
@@ -51,7 +54,8 @@ class dvr(libcarna.presets.DVRStage):
         """
         return dvr(
             self.geometry_type,
-            cmap=self.cmap.color_map,
+            cmap=self.cmap.colormap,
+            clim=None,  # uses the color limits from `cmap`
             sr=self.sample_rate,
             transl=self.translucency,
             diffuse=self.diffuse_light,

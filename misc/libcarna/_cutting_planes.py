@@ -1,6 +1,6 @@
 import libcarna
 
-from ._color_map_helper import color_map_helper
+from ._colormap_helper import colormap_helper
 
 
 class cutting_planes(libcarna.presets.CuttingPlanesStage):
@@ -50,7 +50,7 @@ class cutting_planes(libcarna.presets.CuttingPlanesStage):
             clim: tuple[float | None, float | None] | None = None,
         ):
         super().__init__(volume_geometry_type, plane_geometry_type)
-        self.cmap = color_map_helper(self.color_map, cmap, clim)
+        self.cmap = colormap_helper(self.color_map, cmap, clim)
 
     def replicate(self):
         """
@@ -59,6 +59,6 @@ class cutting_planes(libcarna.presets.CuttingPlanesStage):
         return cutting_planes(
             self.volume_geometry_type,
             self.plane_geometry_type,
-            cmap=self.cmap.color_map,
+            cmap=self.cmap.colormap,
             clim=None,  # uses the color limits from `cmap`
         )

@@ -4,11 +4,12 @@ import matplotlib as mpl
 import numpy as np
 
 import libcarna
+from ._colorbar import colorbar
 
 
-def _sample_color_map(mpl_cmap: mpl.colors.Colormap, n_samples: int) -> list[libcarna.color]:
+def _sample_colormap(mpl_cmap: mpl.colors.Colormap, n_samples: int) -> list[libcarna.color]:
     """
-    Sample a color map from matplotlib and return the list of colors.
+    Sample a colormap from matplotlib and return the list of colors.
     """
     return [libcarna.color(mpl_cmap(i)) for i in np.linspace(0, 1, n_samples)]
 
@@ -25,16 +26,16 @@ def _mpl_colormaps() -> Iterable[str]:
             yield cmap_name, mpl_cmap
 
 
-class color_map_helper:
+class colormap_helper:
 
     def __init__(
             self,
-            color_map: libcarna.base.ColorMap,
+            colormap: libcarna.base.ColorMap,
             cmap: str | libcarna.base.ColorMap | None = None,
             clim: tuple[float | None, float | None] | None = None,
             default_n_samples: int = 50,
         ):
-        self.color_map = color_map
+        self.colormap = colormap
         self.cmap_choices = list()
         cmap = cmap or 'viridis'
 
@@ -42,8 +43,8 @@ class color_map_helper:
         def create_cmap_func(mpl_cmap: mpl.colors.Colormap):
             def cmap_func(**kwargs):
                 n_samples = kwargs.pop('n_samples', default_n_samples)
-                colors = _sample_color_map(mpl_cmap, n_samples)
-                self.write_linear_spline(*colors, **kwargs)
+                colors = _sample_colormap(mpl_cmap, n_samples)
+                self.linear_spline(*colors, **kwargs)
             return cmap_func
         for cmap_name, mpl_cmap in _mpl_colormaps():
             cmap_func = create_cmap_func(mpl_cmap)
@@ -52,7 +53,7 @@ class color_map_helper:
 
         # Set the requested colormap
         if isinstance(cmap, libcarna.base.ColorMap):
-            self.color_map.set(cmap)
+            self.colormap.set(cmap)
         elif cmap in self.cmap_choices:
             getattr(self, cmap)()
         else:
@@ -66,9 +67,9 @@ class color_map_helper:
         """
         Clear the color map.
         """
-        self.color_map.clear()
+        self.colormap.clear()
         
-    def write_linear_segment(
+    def linear_segment(
             self,
             intensity_first: float,
             intensity_last: float,
@@ -78,14 +79,14 @@ class color_map_helper:
         """
         Write a linear segment to the color map.
         """
-        self.color_map.write_linear_segment(
+        self.colormap.write_linear_segment(
             intensity_first,
             intensity_last,
             color_first,
             color_last,
         )
 
-    def write_linear_spline(self, *colors, ramp: float = 0.0, rampdegree: int = 1):
+    def linear_spline(self, *colors, ramp: float = 0.0, rampdegree: int = 1):
         """
         Write a linear spline to the color map. The colors are interpolated between the given colors.
 
@@ -103,19 +104,28 @@ class color_map_helper:
                 libcarna.color(color.r, color.g, color.b, round(color.a * ramp_func(t)))
                 for color, t in zip(colors, np.linspace(0, 1, len(colors)))
             ]
-        self.color_map.write_linear_spline(colors)
+        self.colormap.write_linear_spline(colors)
 
     def limits(self, *args) -> tuple[float | None, float | None] | None:
         """
         Get or set the limits of the color map.
         """
         if len(args) == 0:
-            return (self.color_map.minimum_intensity, self.color_map.maximum_intensity)
+            return (self.colormap.minimum_intensity, self.colormap.maximum_intensity)
         elif len(args) == 2:
             cmin, cmax = args
             if cmin is not None:
-                self.color_map.minimum_intensity = cmin
+                self.colormap.minimum_intensity = cmin
             if cmax is not None:
-                self.color_map.maximum_intensity = cmax
+                self.colormap.maximum_intensity = cmax
         else:
             raise ValueError('limits() takes 0 or 2 arguments, but {} were given'.format(len(args)))
+        
+    def bar(self, volume: libcarna.base.Node, **kwargs) -> colorbar:
+        """
+        Return a colorbar object for the colormap.
+        """
+        normalized_intensity_limits = self.limits()
+        raw_intensity_limits = volume.raw(normalized_intensity_limits)
+        colorlist = self.colormap.color_list
+        return colorbar(colorlist, *raw_intensity_limits, **kwargs)

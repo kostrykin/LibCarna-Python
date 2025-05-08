@@ -27,7 +27,9 @@ def _expand_module(module):
         # Resolve target name
         target_name = _camel_to_snake(member_name)
         target_name = target_name.replace('lib_carna', 'libcarna')
-        if target_name == 'mask_rendering_stage':
+        if target_name == 'color_map':
+            target_name = 'colormap'
+        elif target_name == 'mask_rendering_stage':
             target_name = 'mask_renderer'
         elif target_name == 'mesh_factory':
             target_name = 'meshes'
