@@ -182,7 +182,7 @@ def volume(
         array: np.ndarray,
         tag: str | None = None,
         *,
-        units: Literal['raw', 'huv'] = 'raw',
+        units: Literal['raw', 'hu'] = 'raw',
         parent: libcarna.base.Node | None = None,
         normals: bool = False,
         spacing: np.ndarray | None = None,
@@ -206,25 +206,36 @@ def volume(
     """
     assert array.ndim == 3, 'Array must be 3D data.'
     assert (spacing is None) != (extent is None), 'Either spacing or extent must be provided.'
+    assert np.isnan(array).sum() == 0, 'Array must not contain NaN values.'
+    assert np.isinf(array).sum() == 0, 'Array must not contain inf values.'
 
     # Preprocess the data based on the units
+    array_dtype = array.dtype
     match units:
         case 'hu':
-            array = (array.clip(-1024, +3071) + 1024) / 4095
+            raw2norm = lambda array: (array + 1024) / 4095
+            norm2raw = lambda array: (array * 4095) - 1024
+            array = array.clip(-1024, +3071)
         case 'raw':
-            pass
+            array_offset = float(array.min())
+            array_factor = float(array.max() - array_offset)
+            if array_factor > 0:
+                raw2norm = lambda array: (array - array_offset) / array_factor
+                norm2raw = lambda array: (array * array_factor) + array_offset
+            else:
+                raw2norm = lambda array: np.full(fill_value=0, shape=array.shape, dtype=np.uint8)
+                norm2raw = lambda array: np.full(fill_value=array_offset, shape=array.shape, dtype=array_dtype)
         case _:
             raise ValueError(f'Unsupported units: "{units}"')
+    array = raw2norm(array)
 
-    # Choose appropriate intensity component and prepare the data for loading (data is always transferred as float)
+    # Choose appropriate intensity component
     if array.dtype == np.uint8:
         intensity_component = 'IntensityVolumeUInt8'
-        array = array / 0xff
     elif array.dtype == bool:
         intensity_component = 'IntensityVolumeUInt8'
     elif array.dtype == np.uint16:
         intensity_component = 'IntensityVolumeUInt16'
-        array = array / 0xffff
     elif np.issubdtype(array.dtype, np.floating):
         intensity_component = 'IntensityVolumeUInt16'
     else:
@@ -270,6 +281,18 @@ def volume(
                 libcarna.base.math.translation(extent / 2) @
                 self.transform_from(rhs).mat
             )
+        
+        def normalized(self, array: np.ndarray) -> np.ndarray:
+            """
+            Convert raw array intensities to the normalized intensities in [0, 1] used for rendering.
+            """
+            return raw2norm(np.asarray(array))
+
+        def raw(self, array: np.ndarray) -> np.ndarray:
+            """
+            Convert normalized intensities in [0, 1] used for rendering to the raw array intensities.
+            """
+            return norm2raw(np.asarray(array)).astype(array_dtype)
 
     wrapper_node = WrapperNode(tag) if tag is not None else WrapperNode()
     _setup_spatial(wrapper_node, parent, **kwargs)
