@@ -36,8 +36,8 @@ class drr(libcarna.presets.DRRStage):
             sr: int = libcarna.presets.VolumeRenderingStage.DEFAULT_SAMPLE_RATE,
             waterat: float = libcarna.presets.DRRStage.DEFAULT_WATER_ATTENUATION,
             baseint: float = libcarna.presets.DRRStage.DEFAULT_BASE_INTENSITY,
-            lothres: float = libcarna.presets.DRRStage.DEFAULT_LOWER_THRESHOLD,
-            upthres: float = libcarna.presets.DRRStage.DEFAULT_UPPER_THRESHOLD,
+            lothres: int   = libcarna.presets.DRRStage.DEFAULT_LOWER_THRESHOLD,
+            upthres: int   = libcarna.presets.DRRStage.DEFAULT_UPPER_THRESHOLD,
             upmulti: float = libcarna.presets.DRRStage.DEFAULT_UPPER_MULTIPLIER,
             inverse: bool  = libcarna.presets.DRRStage.DEFAULT_RENDER_INVERSE,
         ):
@@ -52,7 +52,7 @@ class drr(libcarna.presets.DRRStage):
 
     def replicate(self):
         """
-        Replicate the DRR stage.
+        Replicate the DRR renderer.
         """
         return drr(
             self.geometry_type,

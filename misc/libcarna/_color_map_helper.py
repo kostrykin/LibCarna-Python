@@ -27,7 +27,13 @@ def _mpl_colormaps() -> Iterable[str]:
 
 class color_map_helper:
 
-    def __init__(self, color_map: libcarna.base.ColorMap, cmap: str | libcarna.base.ColorMap | None = None, default_n_samples: int = 50):
+    def __init__(
+            self,
+            color_map: libcarna.base.ColorMap,
+            cmap: str | libcarna.base.ColorMap | None = None,
+            clim: tuple[float | None, float | None] | None = None,
+            default_n_samples: int = 50,
+        ):
         self.color_map = color_map
         self.cmap_choices = list()
         cmap = cmap or 'viridis'
@@ -51,6 +57,10 @@ class color_map_helper:
             getattr(self, cmap)()
         else:
             raise ValueError(f'Unknown color map: "{cmap}" (available: {", ".join(self.cmap_choices)})')
+        
+        # Set the color limits
+        if clim is not None:
+            self.limits(*clim)
         
     def clear(self):
         """
@@ -94,3 +104,18 @@ class color_map_helper:
                 for color, t in zip(colors, np.linspace(0, 1, len(colors)))
             ]
         self.color_map.write_linear_spline(colors)
+
+    def limits(self, *args) -> tuple[float | None, float | None] | None:
+        """
+        Get or set the limits of the color map.
+        """
+        if len(args) == 0:
+            return (self.color_map.minimum_intensity, self.color_map.maximum_intensity)
+        elif len(args) == 2:
+            cmin, cmax = args
+            if cmin is not None:
+                self.color_map.minimum_intensity = cmin
+            if cmax is not None:
+                self.color_map.maximum_intensity = cmax
+        else:
+            raise ValueError('limits() takes 0 or 2 arguments, but {} were given'.format(len(args)))

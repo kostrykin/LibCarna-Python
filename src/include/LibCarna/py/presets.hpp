@@ -79,7 +79,7 @@ class MIPStageView : public VolumeRenderingStageView
 
 public:
 
-    explicit MIPStageView( unsigned int geometryType );
+    explicit MIPStageView( unsigned int geometryType, unsigned int colorMapResolution );
 
     LibCarna::presets::MIPStage& mipStage();
 
@@ -98,9 +98,14 @@ class CuttingPlanesStageView : public LibCarna::py::base::RenderStageView
 
 public:
 
-    explicit CuttingPlanesStageView( unsigned int volumeGeometryType, unsigned int planeGeometryType );
+    explicit CuttingPlanesStageView
+        ( unsigned int volumeGeometryType
+        , unsigned int planeGeometryType
+        , unsigned int colorMapResolution );
 
     LibCarna::presets::CuttingPlanesStage& cuttingPlanesStage();
+
+    std::shared_ptr< base::ColorMapView > colorMap();
 
 }; // CuttingPlanesStageView
 
@@ -115,7 +120,7 @@ class DVRStageView : public VolumeRenderingStageView
 
 public:
 
-    explicit DVRStageView( unsigned int geometryType );
+    explicit DVRStageView( unsigned int geometryType, unsigned int colorMapResolution );
 
     LibCarna::presets::DVRStage& dvrStage();
 

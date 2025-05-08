@@ -255,6 +255,9 @@ FrameRendererView::~FrameRendererView()
 // ColorMapView
 // ----------------------------------------------------------------------------------
 
+const unsigned int ColorMapView::DEFAULT_RESOLUTION = LibCarna::base::ColorMap::DEFAULT_RESOLUTION;
+
+
 ColorMapView::ColorMapView
     ( const std::shared_ptr< RenderStageView >& ownedBy
     , LibCarna::base::ColorMap& colorMap )
@@ -566,6 +569,9 @@ PYBIND11_MODULE( base, m )
         );
 
     py::class_< ColorMapView, std::shared_ptr< ColorMapView > >( m, "ColorMap" )
+        .def_readonly_static( "DEFAULT_RESOLUTION", &ColorMapView::DEFAULT_RESOLUTION )
+        .def_readonly_static( "DEFAULT_MINIMUM_INTENSITY", &LibCarna::base::ColorMap::DEFAULT_MINIMUM_INTENSITY )
+        .def_readonly_static( "DEFAULT_MAXIMUM_INTENSITY", &LibCarna::base::ColorMap::DEFAULT_MAXIMUM_INTENSITY )
         .def( "clear",
             VIEW_DELEGATE( ColorMapView, colorMap.clear() )
         )
@@ -589,6 +595,26 @@ PYBIND11_MODULE( base, m )
         .def_property_readonly(
             "color_list",
             VIEW_DELEGATE( ColorMapView, colorMap.getColorList() )
+        )
+        .def_property(
+            "minimum_intensity",
+            VIEW_DELEGATE
+                ( const std::shared_ptr< ColorMapView >
+                , get()->colorMap.minimumIntensity() ),
+            VIEW_DELEGATE
+                ( const std::shared_ptr< ColorMapView >
+                , get()->colorMap.setMinimumIntensity( minimumIntensity )
+                , float minimumIntensity )
+        )
+        .def_property(
+            "maximum_intensity",
+            VIEW_DELEGATE
+                ( const std::shared_ptr< ColorMapView >
+                , get()->colorMap.maximumIntensity() ),
+            VIEW_DELEGATE
+                ( const std::shared_ptr< ColorMapView >
+                , get()->colorMap.setMaximumIntensity( maximumIntensity )
+                , float maximumIntensity )
         )
         .def( "set",
             VIEW_DELEGATE_RETURN_SELF

@@ -47,7 +47,7 @@ class dvr(libcarna.presets.DVRStage):
 
     def replicate(self):
         """
-        Replicate the DVR stage.
+        Replicate the DVR.
         """
         return dvr(
             self.geometry_type,

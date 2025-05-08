@@ -1,5 +1,7 @@
 import libcarna
 
+from ._color_map_helper import color_map_helper
+
 
 class cutting_planes(libcarna.presets.CuttingPlanesStage):
     """
@@ -8,9 +10,9 @@ class cutting_planes(libcarna.presets.CuttingPlanesStage):
     Arguments:
         volume_geometry_type: Geometry type of volumes to be rendered.
         plane_geometry_type: Geometry type of planes to be rendered.
-        windowing_level: The windowing level of the cutting planes. This is the center of the range of values that
-            are displayed.
-        windowing_width: The windowing width of the cutting planes. This is the range of values that are displayed.
+        cmap: Color map to use for the rendering. If `None`, the default color map is used.
+        clim: Color limits for the color map. If `None`, the full range of intensities [0, 1] is used (if `cmap` is
+            `str` or `None`) or the limits of `cmap` are used (if `cmap` is a :class:`libcarna.base.ColorMap` ).
 
     Example:
 
@@ -44,20 +46,19 @@ class cutting_planes(libcarna.presets.CuttingPlanesStage):
             volume_geometry_type: int,
             plane_geometry_type: int,
             *,
-            windowing_level=libcarna.presets.CuttingPlanesStage.DEFAULT_WINDOWING_LEVEL,
-            windowing_width=libcarna.presets.CuttingPlanesStage.DEFAULT_WINDOWING_WIDTH,
+            cmap: str | libcarna.base.ColorMap | None = None,
+            clim: tuple[float | None, float | None] | None = None,
         ):
         super().__init__(volume_geometry_type, plane_geometry_type)
-        self.windowing_level = windowing_level
-        self.windowing_width = windowing_width
+        self.cmap = color_map_helper(self.color_map, cmap, clim)
 
     def replicate(self):
         """
-        Replicate the cutting planes stage.
+        Replicate the cutting planes renderer.
         """
         return cutting_planes(
             self.volume_geometry_type,
             self.plane_geometry_type,
-            windowing_level=self.windowing_level,
-            windowing_width=self.windowing_width,
+            cmap=self.cmap.color_map,
+            clim=None,  # uses the color limits from `cmap`
         )

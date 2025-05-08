@@ -302,8 +302,7 @@ class CuttingPlanesStage(testsuite.LibCarnaRenderingTestCase):
                 libcarna.cutting_planes(
                     volume_geometry_type=GEOMETRY_TYPE_VOLUME,
                     plane_geometry_type=GEOMETRY_TYPE_PLANE,
-                    windowing_level=0.75,
-                    windowing_width=0.5,
+                    clim=(0.5, 1),
                 ),
             ]
         )

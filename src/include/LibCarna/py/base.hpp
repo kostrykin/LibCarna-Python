@@ -311,6 +311,8 @@ class ColorMapView : public std::enable_shared_from_this< ColorMapView >
 
 public:
 
+    const static unsigned int DEFAULT_RESOLUTION;
+
     const std::shared_ptr< RenderStageView > ownedBy;
 
     LibCarna::base::ColorMap& colorMap;

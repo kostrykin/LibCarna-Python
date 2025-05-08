@@ -24,16 +24,6 @@ using namespace LibCarna::py;
 using namespace LibCarna::py::base;
 using namespace LibCarna::py::presets;
 
-/*
-void CuttingPlanesStage__set_windowing( CuttingPlanesStage* self, float min, float max )
-{
-    const auto level = (min + max) / 2;
-    const auto width =  max - min;
-    self->setWindowingLevel( level );
-    self->setWindowingWidth( width );
-}
-*/
-
 
 
 // ----------------------------------------------------------------------------------
@@ -99,9 +89,9 @@ LibCarna::presets::MaskRenderingStage& MaskRenderingStageView::maskRenderingStag
 const static auto MIP_STAGE__ROLE_INTENSITIES = LibCarna::presets::MIPStage::ROLE_INTENSITIES;
 
 
-MIPStageView::MIPStageView( unsigned int geometryType )
+MIPStageView::MIPStageView( unsigned int geometryType, unsigned int colorMapResolution )
     : VolumeRenderingStageView::VolumeRenderingStageView(
-        new LibCarna::presets::MIPStage( geometryType )
+        new LibCarna::presets::MIPStage( geometryType, colorMapResolution )
     )
 {
 }
@@ -128,9 +118,13 @@ std::shared_ptr< base::ColorMapView > MIPStageView::colorMap()
 const static auto CUTTING_PLANES_STAGE__ROLE_INTENSITIES = LibCarna::presets::CuttingPlanesStage::ROLE_INTENSITIES;
 
 
-CuttingPlanesStageView::CuttingPlanesStageView( unsigned int volumeGeometryType, unsigned int planeGeometryType )
+CuttingPlanesStageView::CuttingPlanesStageView
+    ( unsigned int volumeGeometryType
+    , unsigned int planeGeometryType
+    , unsigned int colorMapResolution )
+
     : RenderStageView::RenderStageView(
-        new LibCarna::presets::CuttingPlanesStage( volumeGeometryType, planeGeometryType )
+        new LibCarna::presets::CuttingPlanesStage( volumeGeometryType, planeGeometryType, colorMapResolution )
     )
 {
 }
@@ -139,6 +133,13 @@ CuttingPlanesStageView::CuttingPlanesStageView( unsigned int volumeGeometryType,
 LibCarna::presets::CuttingPlanesStage& CuttingPlanesStageView::cuttingPlanesStage()
 {
     return static_cast< LibCarna::presets::CuttingPlanesStage& >( *renderStage );
+}
+
+std::shared_ptr< base::ColorMapView > CuttingPlanesStageView::colorMap()
+{
+    return std::shared_ptr< base::ColorMapView >(
+        new base::ColorMapView( this->shared_from_this(), cuttingPlanesStage().colorMap )
+    );
 }
 
 
@@ -151,9 +152,9 @@ const static auto DVR_STAGE__ROLE_INTENSITIES = LibCarna::presets::DVRStage::ROL
 const static auto DVR_STAGE__ROLE_NORMALS     = LibCarna::presets::DVRStage::ROLE_NORMALS;
 
 
-DVRStageView::DVRStageView( unsigned int geometryType )
+DVRStageView::DVRStageView( unsigned int geometryType, unsigned int colorMapResolution )
     : VolumeRenderingStageView::VolumeRenderingStageView(
-        new LibCarna::presets::DVRStage( geometryType )
+        new LibCarna::presets::DVRStage( geometryType, colorMapResolution )
     )
 {
 }
@@ -259,7 +260,10 @@ PYBIND11_MODULE( presets, m )
      */
     py::class_< MIPStageView, std::shared_ptr< MIPStageView >, VolumeRenderingStageView >( m, "MIPStage" )
         .def_readonly_static( "ROLE_INTENSITIES", &MIP_STAGE__ROLE_INTENSITIES )
-        .def( py::init< unsigned int >(), "geometry_type"_a )
+        .def(
+            py::init< unsigned int, unsigned int >(),
+            "geometry_type"_a, "color_map_resolution"_a = ColorMapView::DEFAULT_RESOLUTION
+        )
         .def_property_readonly( "color_map", &MIPStageView::colorMap );
     
     /* CuttingPlanesStage
@@ -268,7 +272,12 @@ PYBIND11_MODULE( presets, m )
         .def_readonly_static( "ROLE_INTENSITIES", &CUTTING_PLANES_STAGE__ROLE_INTENSITIES )
         .def_readonly_static( "DEFAULT_WINDOWING_WIDTH", &LibCarna::presets::CuttingPlanesStage::DEFAULT_WINDOWING_WIDTH )
         .def_readonly_static( "DEFAULT_WINDOWING_LEVEL", &LibCarna::presets::CuttingPlanesStage::DEFAULT_WINDOWING_LEVEL )
-        .def( py::init< unsigned int, unsigned int >(), "volume_geometry_type"_a, "plane_geometry_type"_a )
+        .def(
+            py::init< unsigned int, unsigned int, unsigned int >(),
+            "volume_geometry_type"_a,
+            "plane_geometry_type"_a,
+            "color_map_resolution"_a = ColorMapView::DEFAULT_RESOLUTION
+        )
         .def_property_readonly( "volume_geometry_type",
             VIEW_DELEGATE( CuttingPlanesStageView, cuttingPlanesStage().volumeGeometryType )
         )
@@ -284,7 +293,8 @@ PYBIND11_MODULE( presets, m )
             "windowing_level",
             VIEW_DELEGATE( CuttingPlanesStageView, cuttingPlanesStage().windowingLevel() ),
             VIEW_DELEGATE( CuttingPlanesStageView, cuttingPlanesStage().setWindowingLevel( windowingLevel ), float windowingLevel )
-        );
+        )
+        .def_property_readonly( "color_map", &CuttingPlanesStageView::colorMap );
     
     /* DVRStage
      */
@@ -293,7 +303,10 @@ PYBIND11_MODULE( presets, m )
         .def_readonly_static( "ROLE_NORMALS", &DVR_STAGE__ROLE_NORMALS )
         .def_readonly_static( "DEFAULT_TRANSLUCENCY", &LibCarna::presets::DVRStage::DEFAULT_TRANSLUCENCY )
         .def_readonly_static( "DEFAULT_DIFFUSE_LIGHT", &LibCarna::presets::DVRStage::DEFAULT_DIFFUSE_LIGHT )
-        .def( py::init< unsigned int >(), "geometry_type"_a )
+        .def(
+            py::init< unsigned int, unsigned int >(),
+            "geometry_type"_a, "color_map_resolution"_a = ColorMapView::DEFAULT_RESOLUTION
+        )
         .def_property_readonly( "color_map", &DVRStageView::colorMap )
         .def_property(
             "translucency",
