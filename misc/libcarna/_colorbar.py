@@ -74,9 +74,11 @@ class colorbar:
                     intensity_str = f'{round(intensity):d}'
                 elif step_size < 10_000:
                     intensity_str = f'{intensity / 1000:.1f}k'
+                    if intensity_str in ('0.0k', '-0.0k'):
+                        intensity_str = '0'
                 else:
                     intensity_str = f'{round(intensity / 1000):d}k'
-                    if intensity_str == '0k':
+                    if intensity_str in ('0k', '-0k'):
                         intensity_str = '0'
             else:
                 intensity_str = ''
