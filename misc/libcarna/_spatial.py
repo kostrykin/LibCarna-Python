@@ -282,6 +282,13 @@ def volume(
                 self.transform_from(rhs).mat
             )
         
+        def transform_from_voxels_into(self, lhs: libcarna.base.Spatial) -> np.array:
+            """
+            Compute the transformation from the voxel coordinate system of this volume into the local coordinate system
+            of a spatial object `lhs`.
+            """
+            return transform(np.linalg.inv(self.transform_into_voxels_from(lhs).mat))
+        
         def normalized(self, array: np.ndarray) -> np.ndarray:
             """
             Convert raw array intensities to the normalized intensities in [0, 1] used for rendering.
