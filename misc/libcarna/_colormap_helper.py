@@ -33,35 +33,35 @@ class colormap_helper:
             colormap: libcarna.base.ColorMap,
             cmap: str | libcarna.base.ColorMap | None = None,
             clim: tuple[float | None, float | None] | None = None,
-            default_n_samples: int = 50,
         ):
         self.colormap = colormap
         self.cmap_choices = list()
         cmap = cmap or 'viridis'
 
         # Import colormaps
-        def create_cmap_func(mpl_cmap: mpl.colors.Colormap):
-            def cmap_func(**kwargs):
-                n_samples = kwargs.pop('n_samples', default_n_samples)
-                colors = _sample_colormap(mpl_cmap, n_samples)
-                self.linear_spline(*colors, **kwargs)
-            return cmap_func
-        for cmap_name, mpl_cmap in _mpl_colormaps():
-            cmap_func = create_cmap_func(mpl_cmap)
-            setattr(self, cmap_name, cmap_func)
+        for cmap_name, _ in _mpl_colormaps():
             self.cmap_choices.append(cmap_name)
 
         # Set the requested colormap
         if isinstance(cmap, libcarna.base.ColorMap):
             self.colormap.set(cmap)
-        elif cmap in self.cmap_choices:
-            getattr(self, cmap)()
+        elif isinstance(cmap, str) and cmap in self.cmap_choices:
+            self(cmap)
         else:
             raise ValueError(f'Unknown color map: "{cmap}" (available: {", ".join(self.cmap_choices)})')
         
         # Set the color limits
         if clim is not None:
             self.limits(*clim)
+
+    def __call__(self, cmap_name: str, n_samples: int = 50, **kwargs):
+        if cmap_name in self.cmap_choices:
+            mpl_cmap = mpl.colormaps[cmap_name]
+            n_samples = n_samples or self.default_n_samples
+            colors = _sample_colormap(mpl_cmap, n_samples)
+            self.linear_spline(*colors, **kwargs)
+        else:
+            raise ValueError(f'Unknown color map: "{cmap_name}" (available: {", ".join(self.cmap_choices)})')
         
     def clear(self):
         """
@@ -86,20 +86,20 @@ class colormap_helper:
             color_last,
         )
 
-    def linear_spline(self, *colors, ramp: float = 0.0, rampdegree: int = 1):
+    def linear_spline(self, *colors, ramp: tuple[float, float] | None = None, rampdegree: int = 1):
         """
         Write a linear spline to the color map. The colors are interpolated between the given colors.
 
         Arguments:
             colors: The colors to interpolate between.
-            ramp: If `ramp > 0`, the alpha values of the colors are weighted by a ramp function, that starts with 0 and
-                ends with 1. The `ramp` value is between 0 and 1, governing where the ramp function reaches 1.0.
+            ramp: If `ramp` is not `None`, the alpha values of the colors are weighted by a ramp function, that starts
+                with 0 at `ramp[0]` and ends with 1 at `ramp[1]`.
             rampdegree: The degree of the ramp function. 1 is linear, 2 is quadratic, etc.
         """
         colors = list(colors)
-        if ramp > 0:
-            ramp_slope = 1 / ramp
-            ramp_func = lambda t: min((1, pow(t * ramp_slope, rampdegree)))
+        if ramp is not None:
+            ramp_width = max(ramp) - min(ramp)
+            ramp_func = lambda t: np.clip((t - min(ramp)) / ramp_width, 0, 1) ** rampdegree
             colors = [
                 libcarna.color(color.r, color.g, color.b, round(color.a * ramp_func(t)))
                 for color, t in zip(colors, np.linspace(0, 1, len(colors)))
