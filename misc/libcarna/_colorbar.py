@@ -26,6 +26,7 @@ class colorbar:
             colorlist: list[libcarna.base.Color],
             min_intensity: float,
             max_intensity: float,
+            label: str = '',
             ticks: int = 5,
             tick_labels: bool = True,
             max_resolution: int = 1024,
@@ -33,6 +34,7 @@ class colorbar:
         self.colorlist = _sample_down(colorlist, max_resolution)
         self.min_intensity = min_intensity
         self.max_intensity = max_intensity
+        self.label = label
         self.ticks = max((ticks, 2))
         self.tick_labels = tick_labels
 
@@ -90,7 +92,8 @@ class colorbar:
 
         # Render the HTML
         return fr'''
-            <div style="display: inline-flex; margin-left: 0.5em;">
+            <div style="display: inline-flex; flex-direction: column; margin-left: 0.5em;">
+            <div style="display: inline-flex; flex: 1;">
                 <div style="background-image: url('data:image/svg+xml,%3Csvg viewBox=\'0 0 40 40\' width=\'20\' \
                     height=\'20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23aaa\' fill-opacity=\'1\' \
                     fill-rule=\'evenodd\'%3E%3Cpath d=\'M0 40L40 0H20L0 20M40 40V20L20 40\'/%3E%3C/g%3E%3C/svg%3E');
@@ -102,4 +105,6 @@ class colorbar:
                 <div style="display: inline-block;">
                     {ticks_html}
                 </div>
+            </div>
+            <span style="flex: 0; margin-bottom: -0.5em; margin-top: 0.5em; font-size: 70%;">{self.label}</span>
             </div>'''
