@@ -39,7 +39,7 @@ class dvr(libcarna.presets.DVRStage):
             cmap: str | libcarna.base.ColorMap | None = None,
             clim: tuple[float | None, float | None] | None = None,
             sr: int = libcarna.presets.VolumeRenderingStage.DEFAULT_SAMPLE_RATE,
-            transl: float = libcarna.presets.DVRStage.DEFAULT_TRANSLUCENCY,
+            transl: float = 0,
             diffuse: float = libcarna.presets.DVRStage.DEFAULT_DIFFUSE_LIGHT,
         ):
         super().__init__(geometry_type)

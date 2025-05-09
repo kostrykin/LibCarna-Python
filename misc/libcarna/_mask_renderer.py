@@ -7,7 +7,8 @@ class mask_renderer(libcarna.presets.MaskRenderingStage):
 
     Arguments:
         geometry_type: Geometry type to be rendered.
-        mask_role: Mask role to be used.
+        sr: Sample rate for volume rendering. Larger values result in higher quality and less artifacts, but slower
+            rendering.
         color: Color to use for the mask.
         fill: If `True`, the mask is filled. If `False`, only the borders are rendered.
 
@@ -27,12 +28,13 @@ class mask_renderer(libcarna.presets.MaskRenderingStage):
     def __init__(
             self,
             geometry_type: int,
-            mask_role: int = libcarna.presets.MaskRenderingStage.DEFAULT_ROLE_MASK,
             *,
+            sr: int = libcarna.presets.VolumeRenderingStage.DEFAULT_SAMPLE_RATE,
             color: libcarna.color = libcarna.presets.MaskRenderingStage.DEFAULT_COLOR,
             fill: bool = False,
         ):
-        super().__init__(geometry_type, mask_role)
+        super().__init__(geometry_type, mask_role=0)
+        self.sample_rate = sr
         self.color = color
         self.filling = fill
 
@@ -42,7 +44,7 @@ class mask_renderer(libcarna.presets.MaskRenderingStage):
         """
         return mask_renderer(
             self.geometry_type,
-            self.mask_role,
+            sr=self.sample_rate,
             color=self.color,
             fill=self.filling,
         )

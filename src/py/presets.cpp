@@ -245,7 +245,7 @@ PYBIND11_MODULE( presets, m )
             "mask_role",
             VIEW_DELEGATE( MaskRenderingStageView, maskRenderingStage().maskRole )
         )
-        .def_property(
+        .def_property( // TODO: This shouldn't be a property, see comment above.
             "color",
             VIEW_DELEGATE( MaskRenderingStageView, maskRenderingStage().color() ),
             VIEW_DELEGATE( MaskRenderingStageView, maskRenderingStage().setColor( color ), const LibCarna::base::Color& color )
