@@ -206,8 +206,8 @@ RenderStageView::~RenderStageView()
 // MeshRenderingStageView
 // ----------------------------------------------------------------------------------
 
-const unsigned int MeshRenderingStageView::ROLE_DEFAULT_MESH = LibCarna::base::MeshRenderingMixin::ROLE_DEFAULT_MESH;
-const unsigned int MeshRenderingStageView::ROLE_DEFAULT_MATERIAL = LibCarna::base::MeshRenderingMixin::ROLE_DEFAULT_MATERIAL;
+const unsigned int MeshRenderingStageView::DEFAULT_ROLE_MESH = LibCarna::base::MeshRenderingMixin::ROLE_DEFAULT_MESH;
+const unsigned int MeshRenderingStageView::DEFAULT_ROLE_MATERIAL = LibCarna::base::MeshRenderingMixin::ROLE_DEFAULT_MATERIAL;
 
 
 MeshRenderingStageView::MeshRenderingStageView( LibCarna::base::RenderStage* renderStage )
@@ -427,8 +427,8 @@ PYBIND11_MODULE( base, m )
         );
 
     py::class_< MeshRenderingStageView, std::shared_ptr< MeshRenderingStageView >, RenderStageView >( m, "MeshRenderingStage" )
-        .def_readonly_static( "ROLE_DEFAULT_MESH", &MeshRenderingStageView::ROLE_DEFAULT_MESH )
-        .def_readonly_static( "ROLE_DEFAULT_MATERIAL", &MeshRenderingStageView::ROLE_DEFAULT_MATERIAL );
+        .def_readonly_static( "DEFAULT_ROLE_MESH", &MeshRenderingStageView::DEFAULT_ROLE_MESH )
+        .def_readonly_static( "DEFAULT_ROLE_MATERIAL", &MeshRenderingStageView::DEFAULT_ROLE_MATERIAL );
 
     py::class_< FrameRendererView, std::shared_ptr< FrameRendererView > >( m, "FrameRenderer" )
         .def( py::init< GLContextView&, unsigned int, unsigned int, bool >(),

@@ -150,7 +150,8 @@ def geometry(
         tag: str | None = None,
         *,
         parent: libcarna.base.Node | None = None,
-        features: dict | None = None,
+        mesh: libcarna.base.GeometryFeature | None = None,
+        material: libcarna.base.Material | None = None,
         **kwargs,
     ) -> libcarna.base.Geometry:
     """
@@ -160,6 +161,8 @@ def geometry(
         geometry_type: The type of the geometry.
         tag: An arbitrary string, that helps identifying the object.
         parent: Parent node to attach the spatial to, or `None`.
+        mesh: A mesh to be attached to this geometry object.
+        material: A material to be attached to this geometry object.
         **kwargs: Attributes to be set on the newly created object.
     """
     class Geometry(libcarna.base.Geometry, _spatial_mixin):
@@ -167,13 +170,12 @@ def geometry(
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
 
-        def __setitem__(self, key: int, value: libcarna.geometry_feature):
-            super().put_feature(key, value)
-
     geometry = Geometry(geometry_type) if tag is None else Geometry(geometry_type, tag)
     _setup_spatial(geometry, parent, **kwargs)
-    for key, value in (features or dict()).items():
-        geometry[key] = value
+    if mesh is not None:
+        geometry.put_feature(libcarna.mesh_renderer.DEFAULT_ROLE_MESH, mesh)
+    if material is not None:
+        geometry.put_feature(libcarna.mesh_renderer.DEFAULT_ROLE_MATERIAL, material)
     return geometry
 
 

@@ -3,7 +3,6 @@ version    = '@LIBCARNA_VERSION@'
 
 
 from ._py import *
-from ._render_stage_tools import add_role_shortcuts as _add_role_shortcuts
 
 from . import data
 from ._animation import animate
@@ -26,9 +25,3 @@ from ._spatial import (
 )
 
 logging(False)
-
-
-for value in list(globals().values()):
-    if isinstance(value, type) and issubclass(value, render_stage):
-        _add_role_shortcuts(value)
-    del value

@@ -266,8 +266,8 @@ class MeshRenderingStageView : public LibCarna::py::base::RenderStageView
 
 public:
 
-    const static unsigned int ROLE_DEFAULT_MESH;
-    const static unsigned int ROLE_DEFAULT_MATERIAL;
+    const static unsigned int DEFAULT_ROLE_MESH;
+    const static unsigned int DEFAULT_ROLE_MATERIAL;
 
     explicit MeshRenderingStageView( LibCarna::base::RenderStage* renderStage );
 

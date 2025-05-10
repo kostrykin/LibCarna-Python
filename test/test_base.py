@@ -212,8 +212,8 @@ class MeshRenderingStage(testsuite.LibCarnaTestCase):
 
     def test(self):
         self.assertNotEqual(
-            libcarna.base.MeshRenderingStage.ROLE_DEFAULT_MESH,
-            libcarna.base.MeshRenderingStage.ROLE_DEFAULT_MATERIAL,
+            libcarna.base.MeshRenderingStage.DEFAULT_ROLE_MESH,
+            libcarna.base.MeshRenderingStage.DEFAULT_ROLE_MATERIAL,
         )
 
 

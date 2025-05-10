@@ -90,21 +90,15 @@ class OpaqueRenderingStage(testsuite.LibCarnaRenderingTestCase):
         libcarna.geometry(
             GEOMETRY_TYPE_OPAQUE,
             parent=root,
-            features={
-                libcarna.opaque_renderer.mesh: box,
-                libcarna.opaque_renderer.material:
-                    libcarna.material('solid', color='#ff0000'),
-            },
+            mesh=box,
+            material=libcarna.material('solid', color='#ff0000'),
         ).translate(-10, -10, -40)
 
         libcarna.geometry(
             GEOMETRY_TYPE_OPAQUE,
             parent=root,
-            features={
-                libcarna.opaque_renderer.mesh: box,
-                libcarna.opaque_renderer.material:
-                    libcarna.material('solid', color='#00ff00'),
-            },
+            mesh=box,
+            material=libcarna.material('solid', color='#00ff00'),
         ).translate(+10, +10, +40)
 
         camera = libcarna.camera(
