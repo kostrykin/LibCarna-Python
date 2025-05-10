@@ -206,8 +206,8 @@ RenderStageView::~RenderStageView()
 // MeshRenderingStageView
 // ----------------------------------------------------------------------------------
 
-const unsigned int MeshRenderingStageView::DEFAULT_ROLE_MESH = LibCarna::base::MeshRenderingMixin::ROLE_DEFAULT_MESH;
-const unsigned int MeshRenderingStageView::DEFAULT_ROLE_MATERIAL = LibCarna::base::MeshRenderingMixin::ROLE_DEFAULT_MATERIAL;
+const unsigned int MeshRenderingStageView::DEFAULT_ROLE_MESH = LibCarna::base::MeshRenderingMixin::DEFAULT_ROLE_MESH;
+const unsigned int MeshRenderingStageView::DEFAULT_ROLE_MATERIAL = LibCarna::base::MeshRenderingMixin::DEFAULT_ROLE_MATERIAL;
 
 
 MeshRenderingStageView::MeshRenderingStageView( LibCarna::base::RenderStage* renderStage )
