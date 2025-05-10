@@ -404,6 +404,10 @@ PYBIND11_MODULE( base, m )
         )
         .def( "has_parameter",
             VIEW_DELEGATE( MaterialView, material().hasParameter( name ), const std::string& name )
+        )
+        .def_property( "line_width",
+            VIEW_DELEGATE( MaterialView, material().lineWidth() ),
+            VIEW_DELEGATE( MaterialView, material().setLineWidth( lineWidth ), float lineWidth )
         );
 
     py::class_< Surface >( m, "Surface" )
