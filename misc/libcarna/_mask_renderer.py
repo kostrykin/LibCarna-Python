@@ -1,4 +1,5 @@
 import libcarna
+from ._alias import kwalias
 
 
 class mask_renderer(libcarna.presets.MaskRenderingStage):
@@ -7,10 +8,10 @@ class mask_renderer(libcarna.presets.MaskRenderingStage):
 
     Arguments:
         geometry_type: Geometry type to be rendered.
-        sr: Sample rate for volume rendering. Larger values result in higher quality and less artifacts, but slower
-            rendering.
-        color: Color to use for the mask.
-        fill: If `True`, the mask is filled. If `False`, only the borders are rendered.
+        sample_rate: Sample rate for volume rendering (alias: `sr`). Larger values result in higher quality and less
+            artifacts, but slower rendering.
+        color: Color to use for the mask (alias: `c`).
+        filling: If `True`, the mask is filled (alias: `fill`). If `False`, only the borders are rendered.
 
     Example:
 
@@ -25,18 +26,21 @@ class mask_renderer(libcarna.presets.MaskRenderingStage):
             :width: 400
     """
 
+    @kwalias('sample_rate', 'sr')
+    @kwalias('color', 'c')
+    @kwalias('filling', 'fill')
     def __init__(
             self,
             geometry_type: int,
             *,
-            sr: int = libcarna.presets.VolumeRenderingStage.DEFAULT_SAMPLE_RATE,
+            sample_rate: int = libcarna.presets.VolumeRenderingStage.DEFAULT_SAMPLE_RATE,
             color: libcarna.color = libcarna.presets.MaskRenderingStage.DEFAULT_COLOR,
-            fill: bool = False,
+            filling: bool = False,
         ):
         super().__init__(geometry_type, mask_role=0)
-        self.sample_rate = sr
+        self.sample_rate = sample_rate
         self.color = color
-        self.filling = fill
+        self.filling = filling
 
     def replicate(self):
         """
@@ -44,7 +48,7 @@ class mask_renderer(libcarna.presets.MaskRenderingStage):
         """
         return mask_renderer(
             self.geometry_type,
-            sr=self.sample_rate,
+            sample_rate=self.sample_rate,
             color=self.color,
-            fill=self.filling,
+            filling=self.filling,
         )
