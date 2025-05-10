@@ -6,6 +6,7 @@ from typing import (
 import numpy as np
 
 import libcarna
+from ._alias import kwalias
 from ._axes import AxisHint, resolve_axis_hint
 
 
@@ -46,6 +47,7 @@ class animate:
             spatial.local_transform = libcarna.math.rotation(axis, radians=2 * np.pi * t) @ base_transform
         return step
     
+    @kwalias('amplitude', 'amp')
     @staticmethod
     def swing_local(spatial: libcarna.base.Spatial, axis: AxisHint = 'y', amplitude: float = 45) -> Callable[[float], None]:
         """
@@ -54,7 +56,7 @@ class animate:
         Arguments:
             spatial: The spatial object to be animated.
             axis: The axis of rotation. Can be 'x', 'y', 'z', or an arbitrary axis (vector with 3 components).
-            amplitude: The amplitude of the swing in degrees.
+            amplitude: The amplitude of the swing in degrees (alias: `amp`).
         """
         axis = resolve_axis_hint(axis)
         base_transform = spatial.local_transform
@@ -63,6 +65,7 @@ class animate:
             spatial.local_transform = libcarna.math.rotation(axis, radians=radians) @ base_transform
         return step
     
+    @kwalias('amplitude', 'amp')
     @staticmethod
     def bounce_local(spatial: libcarna.base.Spatial, axis: AxisHint, amplitude: float = 1.0) -> Callable[[float], None]:
         """
@@ -71,7 +74,7 @@ class animate:
         Arguments:
             spatial: The spatial object to be animated.
             axis: The axis of the bounce. Can be 'x', 'y', 'z', or an arbitrary axis (vector with 3 components).
-            amplitude: The amplitude of the bounce.
+            amplitude: The amplitude of the bounce (alias: `amp`).
         """
         axis = resolve_axis_hint(axis)
         base_transform = spatial.local_transform
