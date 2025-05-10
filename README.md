@@ -6,7 +6,6 @@ The aim of this package is to provide real-time 3D visualization in Python for s
 See [examples/kalinin2018.ipynb](examples/kalinin2018.ipynb) for an example.
 
 [![Build LibCarnaPy and Docker image](https://github.com/kostrykin/LibCarnaPy/actions/workflows/build.yml/badge.svg)](https://github.com/kostrykin/LibCarnaPy/actions/workflows/build.yml)
-![Docker Image Version (latest semver)](https://img.shields.io/docker/v/kostrykin/carnapy?label=DockerHub%3A)
 [![Anaconda-Server Badge](https://img.shields.io/badge/Install%20with-conda-%2387c305)](https://anaconda.org/kostrykin/carnapy)
 [![Anaconda-Server Badge](https://img.shields.io/conda/v/kostrykin/carnapy.svg?label=Version)](https://anaconda.org/kostrykin/carnapy)
 [![Anaconda-Server Badge](https://img.shields.io/conda/pn/kostrykin/carnapy.svg?label=Platforms)](https://anaconda.org/kostrykin/carnapy)
@@ -23,7 +22,7 @@ See [examples/kalinin2018.ipynb](examples/kalinin2018.ipynb) for an example.
 ## 1. Limitations
 
 * Only 8bit and 16bit volume data are supported at the moment.
-* DRR renderings are not exposed to Python yet.
+* Only a subset of rendering stages is exposed to Python yet.
 * Build process is currently limited to Linux-based systems.
 
 ---
@@ -33,7 +32,7 @@ Using the library requires the following dependencies:
 * [numpy](https://numpy.org/) ≥ 1.16
 * EGL driver support
 * OpenGL 3.3
-* Python ≥ 3.7
+* Python ≥ 3.9
 
 The following dependencies must be satisfied for the build process:
 * [LibCarna](https://github.com/kostrykin/LibCarna) ≥ 3.4
@@ -42,9 +41,7 @@ The following dependencies must be satisfied for the build process:
 * [pybind11](https://github.com/pybind/pybind11)
 * EGL development files
 
-In addition, the following dependencies are required to run the test suite:
-* [matplotlib](https://matplotlib.org/)
-* [scipy](https://www.scipy.org/)
+See environment.yml for further dependencies for testing and running.
 
 ---
 ## 3. Installation
