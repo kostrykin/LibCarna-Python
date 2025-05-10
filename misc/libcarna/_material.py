@@ -22,13 +22,13 @@ shader_schemes = {
 }
 
 
-def material(shader_name: str = 'solid', line_width: float = 1, **kwargs) -> libcarna.base.Material:
+def material(shader_name: str = 'solid', lw: float = 1, **kwargs) -> libcarna.base.Material:
     """
     Create a :class:`libcarna.base.Material` object.
 
     Arguments:
         shader_name: The shader to be used for rendering.
-        line_width: The width of the lines in pixels, if the material is used for drawing lines.
+        lw: The width of the lines in pixels, if the material is used for drawing lines.
         **kwargs: Uniform shader parameters.
     """
     assert shader_name in shader_schemes, (
@@ -49,7 +49,7 @@ def material(shader_name: str = 'solid', line_width: float = 1, **kwargs) -> lib
             super().__setitem__(key, value)
 
     material = Material(shader_name)
-    material.line_width = line_width
+    material.line_width = lw
     for key, value in kwargs.items():
         material[key] = value
     return material

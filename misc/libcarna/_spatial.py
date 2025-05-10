@@ -38,7 +38,7 @@ class _spatial_mixin:
         self.local_transform = libcarna.base.math.scaling(*factors) @ self.local_transform
         return self
     
-    def translate(self, x: float, y: float, z: float) -> Self:
+    def translate(self, x: float = 0, y: float = 0, z: float = 0) -> Self:
         self.local_transform = libcarna.base.math.translation(x, y, z) @ self.local_transform
         return self
     

@@ -499,6 +499,13 @@ PYBIND11_MODULE( base, m )
             {
                 return new GeometryFeatureView( LibCarna::base::MeshFactory< LibCarna::base::PVertex >::createPoint() );
             }
+        )
+        .def_static( "create_line_strip",
+            []( const std::vector< LibCarna::base::math::Vector3f >& points )
+            {
+                return new GeometryFeatureView( LibCarna::base::MeshFactory< LibCarna::base::PVertex >::createLineStrip( points ) );
+            },
+            "points"_a
         );
 
     m.def_submodule( "math" )
