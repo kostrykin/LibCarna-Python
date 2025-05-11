@@ -13,11 +13,10 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Git checkout
+      - name: Git checkout
         uses: actions/checkout@v2
-      -
-        name: Setup Miniconda
+
+      - name: Setup Miniconda
         uses: conda-incubator/setup-miniconda@v2
         with:
           miniconda-version: 'latest'
@@ -26,16 +25,41 @@ jobs:
           use-only-tar-bz2: true  # IMPORTANT: This needs to be set for caching to work properly!
           auto-update-conda: true
           auto-activate-base: true
-      -
-        name: Set environment variables
+
+      - name: Set environment variables
         run: echo "CONDA_PREFIX=$CONDA" >> $GITHUB_ENV
-      -
-        name: Build dist
+
+      - name: Build dist
         run: ./linux_build.bash
-      -
-        name: Build and upload artifact
+
+      - name: Build and upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: dist
           path: |
              dist
+
+  test:
+    needs: build
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v2
+
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+
+      - name: Install wheel
+        run: pip install dist/*.whl
+
+      - name: Test installation
+        run: python -c "import libcarna; print(libcarna.version)"
+
+      - name: Install dependencies
+        run: pip install matplotlib-base
+
+      - name: Run tests
+        run: python -m unittest test
