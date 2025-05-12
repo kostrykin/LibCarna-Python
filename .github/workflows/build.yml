@@ -35,15 +35,16 @@ jobs:
           python -V
           python -c "import sys; v = sys.version_info; assert f'{v.major}.{v.minor}' == '${{ inputs.python-version }}'"
 
-      - name: Build dist
-        shell: bash
-        run: ./linux_build.bash
-
       - name: Extract libcarna version
         id: meta
         shell: bash
         run: |
           echo "libcarna_version=$(conda list |grep ^libcarna |sed -E 's/^[^\s]+ ([0-9][^[:space:]]*).*/\1/')" >> "$GITHUB_OUTPUT"
+          echo "libcarna_version: $(conda list |grep ^libcarna |sed -E 's/^[^\s]+ ([0-9][^[:space:]]*).*/\1/')"
+
+      - name: Build dist
+        shell: bash
+        run: ./linux_build.bash
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
