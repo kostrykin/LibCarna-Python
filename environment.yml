@@ -1,4 +1,4 @@
-name: carnapy-dev
+name: libcarna-python-dev
 channels:
   - conda-forge
   - bioconda
