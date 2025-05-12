@@ -35,6 +35,9 @@ jobs:
           python -V
           python -c "import sys; v = sys.version_info; assert f'{v.major}.{v.minor}' == '${{ inputs.python-version }}'"
 
+      - name: Debug
+        run: conda list
+
       - name: Extract libcarna version
         id: meta
         shell: bash
