@@ -17,6 +17,6 @@ jobs:
       matrix:
         python-version: [3.9, 3.10, 3.11, 3.12]
     steps:
-      - uses: ${{ github.event.repository.name }}/.github/workflows/reusable.yml@${{ github.sha }}
+      - uses: ./.github/workflows/build.yml
         with:
           python-version: ${{ matrix.python-version }}
