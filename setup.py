@@ -31,7 +31,8 @@ if __name__ == '__main__':
     (build_dirs['release'] / 'libcarna').mkdir(parents=True, exist_ok=True)
 
     from setuptools import setup, Extension
-    from setuptools.command.build_ext import build_ext as build_ext_orig
+    from setuptools.command.build_ext import build_ext as _build_ext
+    from setuptools.command.build_py import build_py as _build_py
 
     with open(root_dir / 'README.md', encoding='utf-8') as io:
         long_description = io.read()
@@ -41,13 +42,7 @@ if __name__ == '__main__':
         def __init__(self):
             super().__init__('CMake', sources=[])
 
-    class build_ext(build_ext_orig):
-
-        def run(self):
-            for ext in self.extensions:
-                self.build_cmake(ext)
-
-        def build_cmake(self, ext):
+        def build(self, build_ext):
             version_major, version_minor, version_patch = [int(val) for val in VERSION_LIBCARNA_PYTHON.split('.')]
             build_test = os.environ.get('LIBCARNA_PYTHON_BUILD_TEST', 'ON')
             assert build_test in ('ON', 'OFF')
@@ -65,15 +60,26 @@ if __name__ == '__main__':
                 f'../..',
             ]
 
-            if not self.dry_run:
-
+            if not build_ext.dry_run:
                 os.chdir(str(build_dirs[build_type.lower()]))
-                self.spawn(['cmake'] + cmake_args)
-                self.spawn(['make', 'VERBOSE=1'])
+                build_ext.spawn(['cmake'] + cmake_args)
+                build_ext.spawn(['make', 'VERBOSE=1'])
                 if build_test == 'ON':
-                    self.spawn(['make', 'RUN_TESTSUITE'])
+                    build_ext.spawn(['make', 'RUN_TESTSUITE'])
 
             os.chdir(str(root_dir))
+
+    class build_ext(_build_ext):
+
+        def run(self):
+            for ext in self.extensions:
+                ext.build(self)
+        
+    class build_py(_build_py):
+
+        def run(self):
+            self.run_command('build_ext')  # ensure `build_ext` runs before `build_py`
+            super().run()
 
     setup(
         name = 'LibCarna-Python',
@@ -103,6 +109,7 @@ if __name__ == '__main__':
         ext_modules = [CMakeExtension()],
         cmdclass={
             'build_ext': build_ext,
+            'build_py': build_py,
         },
         classifiers = [
             'Development Status :: 4 - Beta',
