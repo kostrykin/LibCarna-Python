@@ -37,7 +37,6 @@ Using the library requires the following dependencies:
 The following dependencies must be satisfied for the build process:
 * [LibCarna](https://github.com/kostrykin/LibCarna) ≥ 3.4
 * [Eigen](http://eigen.tuxfamily.org/) ≥ 3.0.5
-* [libboost-iostreams](https://www.boost.org/doc/libs/1_76_0/libs/iostreams/doc/index.html)
 * [pybind11](https://github.com/pybind/pybind11)
 * EGL development files
 
@@ -46,13 +45,11 @@ See environment.yml for further dependencies for testing and running.
 ---
 ## 3. Installation
 
-The easiest way to install and use the library is to use one of the binary [Conda](https://docs.anaconda.com/anaconda/install/) packages:
+The easiest way to install and use the library is to use one of the binary [Conda](https://www.anaconda.com/docs/getting-started/miniconda) packages:
 
 ```bash
-conda install -c kostrykin carnapy
+conda install bioconda::libcarna-python
 ```
-
-Conda packages are available for Python 3.7–3.9.
 
 ---
 ## 4. Build instructions
