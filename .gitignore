@@ -7,3 +7,4 @@
 /.libcarna-dev
 .ipynb_checkpoints
 *.swp
+*.pyc
