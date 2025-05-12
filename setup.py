@@ -118,6 +118,7 @@ if __name__ == '__main__':
             'tifffile',
             'pooch',
             'matplotlib',
+            'typing_extensions',
         ],
     )
 
