@@ -112,8 +112,7 @@ jobs:
         run: |
           eval "$(conda shell.bash hook)"
           conda activate ./.env
-          python -m unittest
-        working-directory: test
+          cd test && python -m unittest
 
       - name: Run example notebooks
         run: |
