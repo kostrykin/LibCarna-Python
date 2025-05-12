@@ -1,0 +1,22 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - 'master'
+      - 'dev**'
+    tags:
+      - '**'
+
+jobs:
+  build_and_test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.9, 3.10, 3.11, 3.12]
+    steps:
+      - uses: ${{ github.event.repository.name }}/.github/workflows/reusable.yml@${{ github.sha }}
+        with:
+          python-version: ${{ matrix.python-version }}

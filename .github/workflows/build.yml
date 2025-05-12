@@ -1,16 +1,15 @@
 name: Build and Test
 
 on:
-  push:
-    branches:
-      - 'master'
-      - 'dev**'
-    tags:
-      - '**'
+  workflow_call:
+    inputs:
+      python-version:
+        required: true
+        type: string
 
 jobs:
   build:
-    name: Build
+    name: Build ${{ inputs.python-version }}
     runs-on: ubuntu-latest
     steps:
       - name: Git checkout
@@ -20,7 +19,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           miniconda-version: 'latest'
-          python-version: '3.9'
+          python-version: ${{ inputs.python-version }}
           channels: conda-forge, defaults
           use-only-tar-bz2: true  # IMPORTANT: This needs to be set for caching to work properly!
           auto-update-conda: true
@@ -41,7 +40,7 @@ jobs:
 
   test:
     needs: build
-    name: Test
+    name: Test ${{ inputs.python-version }}
     runs-on: ubuntu-latest
     steps:
       - name: Git checkout
@@ -51,6 +50,12 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: dist
+
+      - name: Setup Python ${{ inputs.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ inputs.python-version }}
+          cache: pip
 
       - name: Install wheel
         run: pip install dist/*.whl
