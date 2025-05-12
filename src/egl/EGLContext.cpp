@@ -72,14 +72,23 @@ struct LibCarna::egl::EGLContext::Details
     ::EGLContext eglCtx;
 
     void selectDisplay();
+    bool initializeDisplay();
     void activate() const;
 };
+
+
+bool LibCarna::egl::EGLContext::Details::initializeDisplay()
+{
+    EGLint major, minor;
+    const EGLBoolean initialize = eglInitialize( eglDpy, &major, &minor );
+    return initialize == EGL_TRUE;
+}
 
 
 void LibCarna::egl::EGLContext::Details::selectDisplay()
 {
     eglDpy = eglGetDisplay( EGL_DEFAULT_DISPLAY );
-    if( eglDpy == EGL_NO_DISPLAY )
+    if( eglDpy == EGL_NO_DISPLAY || !initializeDisplay() )
     {
         LibCarna::base::Log::instance().record( LibCarna::base::Log::warning, "EGL_DEFAULT_DISPLAY initialization failed" );
 
@@ -104,10 +113,10 @@ void LibCarna::egl::EGLContext::Details::selectDisplay()
         for( unsigned int deviceIndex = 0; deviceIndex < numDevices; ++deviceIndex )
         {
             eglDpy = eglGetPlatformDisplayEXT( EGL_PLATFORM_DEVICE_EXT,  eglDevices[ deviceIndex ], 0 );
-            if( eglDpy != EGL_NO_DISPLAY )
+            if( eglDpy != EGL_NO_DISPLAY && initializeDisplay() )
             {
                 std::stringstream msg;
-                msg << "Successfully obtained EGL display from device " << deviceIndex;
+                msg << "Successfully initialized EGL display from device " << deviceIndex;
                 LibCarna::base::Log::instance().record( LibCarna::base::Log::debug, msg.str() );
                 break;
             }
@@ -148,10 +157,6 @@ LibCarna::egl::EGLContext* LibCarna::egl::EGLContext::create()
     pimpl->selectDisplay();
     LIBCARNA_ASSERT( pimpl->eglDpy != EGL_NO_DISPLAY );
 
-    EGLint major, minor;
-    const EGLBoolean initialize = eglInitialize( pimpl->eglDpy, &major, &minor );
-    LIBCARNA_ASSERT( initialize == EGL_TRUE );
-    
     eglBindAPI( EGL_OPENGL_API );
     REPORT_EGL_ERROR;
 
