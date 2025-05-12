@@ -33,7 +33,7 @@ jobs:
 
       - name: Build dist
         run: python setup.py bdist_wheel
-        with:
+        env:
           PYBIND11_PREFIX: '${{ CONDA_PREFIX }}/share/cmake/pybind11'
           CMAKE_MODULE_PATH: '${{ CONDA_PREFIX }}/share/cmake/Modules'
 
