@@ -1,6 +1,0 @@
-build:
-  LibCarna-Python: 0.2.0
-  LibCarna: 3.4.0
-
-package:
-  LibCarna: 3.4.0

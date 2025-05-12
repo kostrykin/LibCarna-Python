@@ -1,22 +1,9 @@
-# Build and install:
-# > python setup.py bdist_wheel
-# > python -m pip install --force-reinstall LibCarna_Python/dist/*.whl
-# 
-# Distribute to PyPI:
-# > python setup.py sdist
-# > python -m twine upload dist/*.tar.gz
-
 import os
 import sys
 from pathlib import Path
 
-import yaml
-
-with open('misc/versions.yml', 'r') as io:
-    versions = yaml.safe_load(io)
-
-VERSION_LIBCARNA_PYTHON = versions['build']['LibCarna-Python']
-VERSION_LIBCARNA = versions['build']['LibCarna']
+VERSION_LIBCARNA_PYTHON = '0.2.0'
+VERSION_LIBCARNA = '3.4.0'
 
 root_dir = Path(os.path.abspath(os.path.dirname(__file__)))
 
@@ -124,6 +111,13 @@ if __name__ == '__main__':
         ],
         install_requires = [
             'numpy',
+            'libcarna ==%s' % VERSION_LIBCARNA,
+            'numpngw >=0.1.4, <0.2',
+            'scikit-video >=1.1.11, <1.2',
+            'scipy',
+            'scikit-image',
+            'tifffile',
+            'pooch',
         ],
     )
 

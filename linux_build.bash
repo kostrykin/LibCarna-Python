@@ -20,6 +20,8 @@ export CMAKE_MODULE_PATH="$CONDA_PREFIX/share/cmake/Modules"
 # Default to not building the test suite
 if [ -z "$LIBCARNA_PYTHON_BUILD_TEST" ]; then
     export LIBCARNA_PYTHON_BUILD_TEST="OFF"
+else
+    pip install -r test/requirements.txt
 fi
 
 # Build wheel and test
