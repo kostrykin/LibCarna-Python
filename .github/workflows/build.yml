@@ -59,11 +59,29 @@ jobs:
         with:
           name: dist-${{ inputs.python-version }}
 
-      - name: Setup Python ${{ inputs.python-version }}
-        uses: actions/setup-python@v4
+      - name: Prepare conda environment
+        uses: DamianReeves/write-file-action@v1.3
         with:
-          python-version: ${{ inputs.python-version }}
-          cache: pip
+          path: test.yml
+          contents: |
+            name: test
+            channels:
+              - conda-forge
+              - bioconda
+            dependencies:
+              - python ==${{ inputs.python-version }}
+              - libcarna ==3.4.0
+              - pip
+
+      - name: Setup Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniconda-version: latest
+          auto-update-conda: true
+          channels: conda-forge, bioconda
+          auto-activate-base: false
+          activate-environment: test
+          environment-file: test.yml
 
       - name: Validate Python version
         shell: bash
