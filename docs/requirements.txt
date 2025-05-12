@@ -3,3 +3,4 @@ nbsphinx==0.9.7
 ipykernel~=6.29
 pandoc==2.4
 snowballstemmer<3
+matplotlib

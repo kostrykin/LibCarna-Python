@@ -1,0 +1,2 @@
+matplotlib
+apng==0.3.4

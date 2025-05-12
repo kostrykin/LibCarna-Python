@@ -22,21 +22,12 @@ dependencies:
 
   # ---------------------------------------------------------------------------
   # Runtime dependencies (general)
+
+  - libcarna ==3.4.0
   - numpngw ==0.1.4  # writes APNG
-  - libcarna ==3.3.3
   - scikit-video ==1.1.11  # API for ffmpeg
   - ffmpeg  # writes h264
-  - scipy
-  - scikit-image  # for libcarna.data
-  - tifffile  # for libcarna.data
-
-  # ---------------------------------------------------------------------------
-  # Runtime dependencies (tests/docs)
-  - matplotlib-base
-
-  # ---------------------------------------------------------------------------
-  # pip dependencies
-  - pip
-  - pip:
-    - apng ==0.3.4  # for tests (reads APNG)
-    - pooch  # for libcarna.data
+  - scipy  # for `libcarna.data` and `libcarna.normalize_hounsfield_units`
+  - scikit-image  # for `libcarna.data`
+  - tifffile  # for `libcarna.data`
+  - pooch  # for `libcarna.data`
