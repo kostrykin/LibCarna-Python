@@ -40,7 +40,7 @@ jobs:
         run: ./linux_build.bash
 
       - name: Extract libcarna version
-        id: results
+        id: meta
         shell: bash
         run: |
           echo "libcarna_version=$(conda list |grep ^libcarna |sed -E 's/^[^\s]+ ([0-9][^[:space:]]*).*/\1/')" >> "$GITHUB_OUTPUT"
@@ -53,7 +53,7 @@ jobs:
              dist
 
     outputs:
-      libcarna-version: ${{ steps.results.outputs.libcarna-version }}
+      libcarna_version: ${{ steps.meta.outputs.libcarna_version }}
 
   test:
     needs: build
@@ -79,7 +79,7 @@ jobs:
         run: |
           conda create --prefix ./.env -c conda-forge -c bioconda \
             python==${{ inputs.python-version }} \
-            libcarna ==${{ needs.build.outputs.libcarna-version }} \
+            libcarna==${{ needs.build.outputs.libcarna_version }} \
             pip
           eval "$(conda shell.bash hook)"
           conda activate ./.env
