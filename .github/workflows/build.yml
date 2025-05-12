@@ -131,7 +131,7 @@ jobs:
         with:
           name: test-output-${{ inputs.python-version }}
           path: |
-             test/results/actual
+             test/test/results/actual
 
       - name: Run example notebooks
         run: |
