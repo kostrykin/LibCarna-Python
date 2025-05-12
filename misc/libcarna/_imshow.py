@@ -100,12 +100,13 @@ def imshow(array: np.ndarray | Iterable[np.ndarray], *colorbars, fps: float = 25
         raise ValueError(f'Format "{format}" not supported.')
     
     # Delegate to the selected plugin
+    nl = '\n'  # Python <3.12 does not allow backslashes in f-strings expressions
     return IPythonHTML(
         f"""
         <div style="display: inline-flex; padding: 0.5em;">
             <div style="display: inline-block; font-size: 0;">
                 {_render_html(array, fps=fps)}
             </div>
-            {'\n'.join(cb.tohtml() for cb in colorbars)}
+            {nl.join(cb.tohtml() for cb in colorbars)}
         </div>
         """)
