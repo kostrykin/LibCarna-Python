@@ -39,7 +39,7 @@ jobs:
         shell: bash
         run: ./linux_build.bash
 
-      - name: Build and upload artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: dist-${{ inputs.python-version }}
@@ -77,11 +77,13 @@ jobs:
       - name: Test installation
         run: python -c "import libcarna; print(libcarna.version)"
 
-      - name: Install dependencies
-        run: pip install matplotlib-base
+      - name: Install dependencies for tests and examples
+        run: |
+          pip install -r test/requirements.txt
+          pip install nbconvert
 
       - name: Run tests
         run: python -m unittest test
 
       - name: Run example notebooks
-        run: jupyter nbconvert --execute --to notebook --inplace examples/*.ipynb
+        run: nbconvert --execute --to notebook --inplace examples/*.ipynb
