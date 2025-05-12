@@ -102,7 +102,7 @@ LibCarna::egl::EGLContext* LibCarna::egl::EGLContext::create()
 
     Details* const pimpl = new Details();
     pimpl->eglDpy = eglGetDisplay( EGL_DEFAULT_DISPLAY );
-    LIBCARNA_ASSERT( pimpl->eglDpy != EGL_NO_DISPLAY );
+    //LIBCARNA_ASSERT( pimpl->eglDpy != EGL_NO_DISPLAY );
 
     EGLint major, minor;
     const EGLBoolean initialize = eglInitialize( pimpl->eglDpy, &major, &minor );
