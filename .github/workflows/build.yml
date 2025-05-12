@@ -19,23 +19,10 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
           miniconda-version: latest
-#          environment-file: environment.yml
-#          auto-activate-base: false
-#          #python-version: ${{ inputs.python-version }}
-#          channels: conda-forge, bioconda
           auto-update-conda: true
 
-#      - name: Set environment variables
-#        run: echo "CONDA_PREFIX=$CONDA" >> $GITHUB_ENV
-
-#      - name: Build dist
-#        run: python setup.py bdist_wheel
-#        env:
-#          PYBIND11_PREFIX: '${{ env.CONDA_PREFIX }}/share/cmake/pybind11'
-#          CMAKE_MODULE_PATH: '${{ env.CONDA_PREFIX }}/share/cmake/Modules'
-
       - name: Patch required Python version
-        run: sed "s|python .\+|python ~=${{ inputs.python-version }}|g" environment.yml
+        run: sed -i "s|python .\+|python ~=${{ inputs.python-version }}|g" environment.yml
 
       - name: Build dist
         shell: bash
@@ -44,7 +31,7 @@ jobs:
       - name: Build and upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dist
+          name: dist-${{ inputs.python-version }}
           path: |
              dist
 
