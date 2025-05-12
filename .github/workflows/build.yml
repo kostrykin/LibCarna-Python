@@ -39,12 +39,21 @@ jobs:
         shell: bash
         run: ./linux_build.bash
 
+      - name: Extract libcarna version
+        id: results
+        shell: bash
+        run: |
+          echo "libcarna_version=$(conda list |grep ^libcarna |sed -E 's/^[^\s]+ ([0-9][^[:space:]]*).*/\1/')" >> "$GITHUB_OUTPUT"
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: dist-${{ inputs.python-version }}
           path: |
              dist
+
+    outputs:
+      libcarna-version: ${{ steps.results.outputs.libcarna-version }}
 
   test:
     needs: build
@@ -59,33 +68,21 @@ jobs:
         with:
           name: dist-${{ inputs.python-version }}
 
-      - name: Prepare conda environment
-        uses: DamianReeves/write-file-action@v1.3
-        with:
-          path: test.yml
-          contents: |
-            name: test
-            channels:
-              - conda-forge
-              - bioconda
-            dependencies:
-              - python ==${{ inputs.python-version }}
-              - libcarna ==3.4.0
-              - pip
-
       - name: Setup Miniconda
         uses: conda-incubator/setup-miniconda@v3
         with:
           miniconda-version: latest
           auto-update-conda: true
-          channels: conda-forge, bioconda
-          auto-activate-base: false
-          activate-environment: test
-          environment-file: test.yml
 
-      - name: Validate Python version
+      - name: Create and validate conda environment
         shell: bash
         run: |
+          conda create --prefix ./.env -c conda-forge -c bioconda \
+            python==${{ inputs.python-version }} \
+            libcarna ==${{ needs.build.outputs.libcarna-version }} \
+            pip
+          eval "$(conda shell.bash hook)"
+          conda activate ./.env
           python -V
           python -c "import sys; v = sys.version_info; assert f'{v.major}.{v.minor}' == '${{ inputs.python-version }}'"
 
