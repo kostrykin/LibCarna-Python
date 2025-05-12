@@ -285,7 +285,7 @@ class CuttingPlanesStage(testsuite.LibCarnaRenderingTestCase):
             libcarna.geometry(
                 GEOMETRY_TYPE_PLANE,
                 parent=volume,
-            ).plane(normal=axis, distance=volume.extent[0] / 2)
+            ).plane(normal=axis, distance=0.99 * volume.extent[0] / 2)
 
         camera = libcarna.camera(
             parent=root,
