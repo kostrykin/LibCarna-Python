@@ -25,6 +25,7 @@ dependencies:
   # Runtime dependencies (general)
 
   - libcarna ==3.4.0
+  - matplotlib-base  # for `_colormap_helper`
   - numpngw ==0.1.4  # writes APNG
   - scikit-video ==1.1.11  # API for ffmpeg
   - ffmpeg  # writes h264

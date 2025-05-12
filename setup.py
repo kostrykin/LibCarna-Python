@@ -117,6 +117,7 @@ if __name__ == '__main__':
             'scikit-image',
             'tifffile',
             'pooch',
+            'matplotlib',
         ],
     )
 
