@@ -22,7 +22,18 @@ jobs:
           auto-update-conda: true
 
       - name: Patch required Python version
-        run: sed -i "s|python .\+|python ~=${{ inputs.python-version }}|g" environment.yml
+        run: |
+          sed -i "s|python .\+|python ~=${{ inputs.python-version }}|g" environment.yml
+          cat environment.yml
+
+      - name: Create and validate conda environment
+        shell: bash
+        run: |
+          conda env create -f environment.yml --prefix ./.env
+          eval "$(conda shell.bash hook)"
+          conda activate ./.env
+          python -V
+          python -c "import sys; v = sys.version_info; assert f'{v.major}.{v.minor}' == '${ inputs.python-version }'"
 
       - name: Build dist
         shell: bash
@@ -46,7 +57,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: dist
+          name: dist-${{ inputs.python-version }}
 
       - name: Setup Python ${{ inputs.python-version }}
         uses: actions/setup-python@v4
