@@ -36,12 +36,17 @@ jobs:
           python -c "import sys; v = sys.version_info; assert f'{v.major}.{v.minor}' == '${{ inputs.python-version }}'"
 
       - name: Debug
-        run: conda list
+        run: |
+          eval "$(conda shell.bash hook)"
+          conda activate ./.env
+          conda list
 
       - name: Extract libcarna version
         id: meta
         shell: bash
         run: |
+          eval "$(conda shell.bash hook)"
+          conda activate ./.env
           export libcarna_version=$(conda list --json |jq -rj '[ .[] | select( .name == "libcarna" ) ][0].version')
           echo "libcarna_version=$libcarna_version" >> "$GITHUB_OUTPUT"
           echo "libcarna_version: $libcarna_version"
@@ -92,18 +97,32 @@ jobs:
           python -c "import sys; v = sys.version_info; assert f'{v.major}.{v.minor}' == '${{ inputs.python-version }}'"
 
       - name: Install wheel
-        run: pip install libcarna_python-*.whl
+        run: |
+          eval "$(conda shell.bash hook)"
+          conda activate ./.env
+          pip install libcarna_python-*.whl
 
       - name: Test installation
-        run: python -c "import libcarna; print(libcarna.version)"
+        run: |
+          eval "$(conda shell.bash hook)"
+          conda activate ./.env
+          python -c "import libcarna; print(libcarna.version)"
 
       - name: Install dependencies for tests and examples
         run: |
+          eval "$(conda shell.bash hook)"
+          conda activate ./.env
           pip install -r test/requirements.txt
           pip install nbconvert
 
       - name: Run tests
-        run: python -m unittest test
+        run: |
+          eval "$(conda shell.bash hook)"
+          conda activate ./.env
+          python -m unittest test
 
       - name: Run example notebooks
-        run: nbconvert --execute --to notebook --inplace examples/*.ipynb
+        run: |
+          eval "$(conda shell.bash hook)"
+          conda activate ./.env
+          nbconvert --execute --to notebook --inplace examples/*.ipynb
