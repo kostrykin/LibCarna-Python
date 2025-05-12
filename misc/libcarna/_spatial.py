@@ -1,15 +1,12 @@
-from __future__ import annotations
-
-from typing import (
-    Literal,
-    Self,
-)
-
 import numpy as np
 
 import libcarna
 from ._axes import AxisHint, resolve_axis_hint
 from ._transform import transform
+from ._typing import (
+    Literal,
+    Self,
+)
 
 
 def _transform_into_local(target: libcarna.base.Spatial, rhs: libcarna.base.Spatial) -> np.array:
