@@ -23,7 +23,7 @@ jobs:
           auto-activate-base: false
           #python-version: ${{ inputs.python-version }}
           channels: conda-forge, bioconda
-          use-only-tar-bz2: true  # IMPORTANT: This needs to be set for caching to work properly!
+          #use-only-tar-bz2: true  # IMPORTANT: This needs to be set for caching to work properly!
           auto-update-conda: true
 
       - name: Set environment variables
