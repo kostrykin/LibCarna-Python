@@ -39,7 +39,7 @@ jobs:
         id: meta
         shell: bash
         run: |
-          export libcarna_version=$(conda list --json |jq -r '[ .[] | select( .name == "libcarna" ) ][0].version')
+          export libcarna_version=$(conda list --json |jq -rj '[ .[] | select( .name == "libcarna" ) ][0].version')
           echo "libcarna_version=$libcarna_version" >> "$GITHUB_OUTPUT"
           echo "libcarna_version: $libcarna_version"
 
