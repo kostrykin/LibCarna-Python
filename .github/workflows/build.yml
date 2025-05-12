@@ -39,8 +39,9 @@ jobs:
         id: meta
         shell: bash
         run: |
-          echo "libcarna_version=$(conda list |grep ^libcarna |sed -E 's/^[^\s]+ ([0-9][^[:space:]]*).*/\1/')" >> "$GITHUB_OUTPUT"
-          echo "libcarna_version: $(conda list |grep ^libcarna |sed -E 's/^[^\s]+ ([0-9][^[:space:]]*).*/\1/')"
+          export libcarna_version=$(conda list --json |jq -r '[ .[] | select( .name == "libcarna" ) ][0].version')
+          echo "libcarna_version=$libcarna_version" >> "$GITHUB_OUTPUT"
+          echo "libcarna_version: $libcarna_version"
 
       - name: Build dist
         shell: bash
