@@ -2,11 +2,16 @@ name: Build and Test
 
 on:
   push:
-    branches:
-      - 'master'
-      - 'dev**'
-    tags:
-      - '**'
+    branches: [ 'master', 'develop' ]
+    paths-ignore:
+      - 'docs/**'
+      - '.git*'
+      - 'LICENSE'
+      - 'LICENSE-*'
+      - 'README.md'
+
+  pull_request:
+    branches-ignore: [ 'master' ]
 
 jobs:
   build_and_test:

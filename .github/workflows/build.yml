@@ -68,3 +68,6 @@ jobs:
 
       - name: Run tests
         run: python -m unittest test
+
+      - name: Run example notebooks
+        run: jupyter nbconvert --execute --to notebook --inplace examples/*.ipynb
