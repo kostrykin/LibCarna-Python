@@ -32,7 +32,7 @@ Using the library requires the following dependencies:
 * [numpy](https://numpy.org/) ≥ 1.16
 * EGL driver support
 * OpenGL 3.3
-* Python ≥ 3.9
+* Python ≥ 3.10
 
 The following dependencies must be satisfied for the build process:
 * [LibCarna](https://github.com/kostrykin/LibCarna) ≥ 3.4

@@ -118,7 +118,7 @@ if __name__ == '__main__':
             'tifffile',
             'pooch',
             'matplotlib',
-            'typing_extensions',
+            'typing_extensions',  # required for Python 3.10
         ],
     )
 
