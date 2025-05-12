@@ -111,7 +111,6 @@ if __name__ == '__main__':
         ],
         install_requires = [
             'numpy',
-            'libcarna ==%s' % VERSION_LIBCARNA,
             'numpngw >=0.1.4, <0.2',
             'scikit-video >=1.1.11, <1.2',
             'scipy',
