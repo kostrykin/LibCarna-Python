@@ -117,6 +117,8 @@ jobs:
           eval "$(conda shell.bash hook)"
           conda activate ./.env
           cd test && python -m unittest
+        env:
+          LIBCARNA_PYTHON_LOGGING: true
 
       - name: Run example notebooks
         run: |

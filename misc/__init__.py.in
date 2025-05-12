@@ -24,4 +24,7 @@ from ._spatial import (
     volume,
 )
 
-logging(False)
+
+import os
+if not os.environ.get('LIBCARNA_PYTHON_LOGGING', ''):
+    logging(False)
