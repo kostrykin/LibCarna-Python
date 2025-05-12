@@ -10,12 +10,11 @@ on:
 
 jobs:
   build_and_test:
-    name: Build and Test
-    runs-on: ubuntu-latest
+    name: Build and Test ${{ matrix.python-version }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.9, 3.10, 3.11, 3.12]
+        python-version: ['3.9', '3.10', '3.11', '3.12']
     uses: ./.github/workflows/build.yml
     secrets: inherit
     with:
