@@ -99,7 +99,7 @@ jobs:
         run: |
           eval "$(conda shell.bash hook)"
           conda activate ./.env
-          python -c "import libcarna; assert libcarna.version == '${{ needs.build.outputs.libcarna_version }}'"
+          python -c "import libcarna; assert libcarna.libcarna_version == '${{ needs.build.outputs.libcarna_version }}'"
 
       - name: Install dependencies for tests and examples
         run: |
