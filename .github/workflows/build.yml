@@ -23,7 +23,7 @@ jobs:
 
       - name: Patch required Python version
         run: |
-          sed -i "s|python .\+|python ~=${{ inputs.python-version }}|g" environment.yml
+          sed -i "s|python .\+|python ==${{ inputs.python-version }}|g" environment.yml
           cat environment.yml
 
       - name: Create and validate conda environment
@@ -33,7 +33,7 @@ jobs:
           eval "$(conda shell.bash hook)"
           conda activate ./.env
           python -V
-          python -c "import sys; v = sys.version_info; assert f'{v.major}.{v.minor}' == '${ inputs.python-version }'"
+          python -c "import sys; v = sys.version_info; assert f'{v.major}.{v.minor}' == '${{ inputs.python-version }}'"
 
       - name: Build dist
         shell: bash
