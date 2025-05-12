@@ -65,8 +65,14 @@ jobs:
           python-version: ${{ inputs.python-version }}
           cache: pip
 
+      - name: Validate Python version
+        shell: bash
+        run: |
+          python -V
+          python -c "import sys; v = sys.version_info; assert f'{v.major}.{v.minor}' == '${{ inputs.python-version }}'"
+
       - name: Install wheel
-        run: pip install dist/*.whl
+        run: pip install libcarna_python-*.whl
 
       - name: Test installation
         run: python -c "import libcarna; print(libcarna.version)"

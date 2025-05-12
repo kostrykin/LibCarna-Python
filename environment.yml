@@ -17,6 +17,7 @@ dependencies:
   - make
   - cmake
   - eigen >=3.0.5
+  - libxcrypt  # requied for Python 3.10
   - pyyaml
   - setuptools
 
