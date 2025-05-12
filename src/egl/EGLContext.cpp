@@ -1,5 +1,8 @@
+#define EGL_EGLEXT_PROTOTYPES
+
 #include <LibCarna/egl/EGLContext.hpp>
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
 #include <cstdlib>
 #include <unordered_set>
 
@@ -68,8 +71,49 @@ struct LibCarna::egl::EGLContext::Details
     ::EGLSurface eglSurf;
     ::EGLContext eglCtx;
 
+    void selectDisplay();
     void activate() const;
 };
+
+
+void LibCarna::egl::EGLContext::Details::selectDisplay()
+{
+    eglDpy = eglGetDisplay( EGL_DEFAULT_DISPLAY );
+    if( eglDpy == EGL_NO_DISPLAY )
+    {
+        LibCarna::base::Log::instance().record( LibCarna::base::Log::warning, "EGL_DEFAULT_DISPLAY initialization failed" );
+
+        /* Load EGL extensions.
+         */
+        PFNEGLQUERYDEVICESEXTPROC eglQueryDevicesEXT = ( PFNEGLQUERYDEVICESEXTPROC ) eglGetProcAddress("eglQueryDevicesEXT");
+        PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT = ( PFNEGLGETPLATFORMDISPLAYEXTPROC ) eglGetProcAddress("eglGetPlatformDisplayEXT");
+
+        /* Query EGL devices.
+         */
+        const static int MAX_DEVICES = 8;
+        EGLDeviceEXT eglDevices[ MAX_DEVICES ];
+        EGLint numDevices;
+        eglQueryDevicesEXT( MAX_DEVICES, eglDevices, &numDevices );
+
+        std::stringstream msg;
+        msg << numDevices << " EGL device(s) found";
+        LibCarna::base::Log::instance().record( LibCarna::base::Log::debug, msg.str() );
+
+        /* Try to get displays from the devices.
+         */
+        for( unsigned int deviceIndex = 0; deviceIndex < numDevices; ++deviceIndex )
+        {
+            eglDpy = eglGetPlatformDisplayEXT( EGL_PLATFORM_DEVICE_EXT,  eglDevices[ deviceIndex ], 0 );
+            if( eglDpy != EGL_NO_DISPLAY )
+            {
+                std::stringstream msg;
+                msg << "Successfully obtained EGL display from device " << deviceIndex;
+                LibCarna::base::Log::instance().record( LibCarna::base::Log::debug, msg.str() );
+                break;
+            }
+        }
+    }
+}
 
 
 void LibCarna::egl::EGLContext::Details::activate() const
@@ -101,8 +145,8 @@ LibCarna::egl::EGLContext* LibCarna::egl::EGLContext::create()
     unsetenv( "DISPLAY" ); // see https://stackoverflow.com/q/67885750/1444073
 
     Details* const pimpl = new Details();
-    pimpl->eglDpy = eglGetDisplay( EGL_DEFAULT_DISPLAY );
-    //LIBCARNA_ASSERT( pimpl->eglDpy != EGL_NO_DISPLAY );
+    pimpl->selectDisplay();
+    LIBCARNA_ASSERT( pimpl->eglDpy != EGL_NO_DISPLAY );
 
     EGLint major, minor;
     const EGLBoolean initialize = eglInitialize( pimpl->eglDpy, &major, &minor );
