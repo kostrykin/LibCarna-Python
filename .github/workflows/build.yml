@@ -25,7 +25,6 @@ jobs:
           channels: conda-forge, bioconda
           use-only-tar-bz2: true  # IMPORTANT: This needs to be set for caching to work properly!
           auto-update-conda: true
-          auto-activate-base: true
 
       - name: Set environment variables
         run: echo "CONDA_PREFIX=$CONDA" >> $GITHUB_ENV
