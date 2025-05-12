@@ -34,8 +34,8 @@ jobs:
       - name: Build dist
         run: python setup.py bdist_wheel
         env:
-          PYBIND11_PREFIX: '${{ CONDA_PREFIX }}/share/cmake/pybind11'
-          CMAKE_MODULE_PATH: '${{ CONDA_PREFIX }}/share/cmake/Modules'
+          PYBIND11_PREFIX: '$CONDA_PREFIX/share/cmake/pybind11'
+          CMAKE_MODULE_PATH: '$CONDA_PREFIX/share/cmake/Modules'
 
       - name: Build and upload artifact
         uses: actions/upload-artifact@v4
