@@ -21,7 +21,7 @@ python:
 build:
   os: ubuntu-24.04
   tools:
-    python: "mambaforge-22.9"
+    python: "miniconda-latest"
   jobs:
     install:
       - bash ./linux_build.bash
