@@ -103,7 +103,7 @@ class OpaqueRenderingStage(testsuite.LibCarnaRenderingTestCase):
 
         camera = libcarna.camera(
             parent=root,
-        ).frustum(fov=90, z_near=1, z_far=1e3).translate(0, 0, 250)
+        ).frustum(fov=90, z_near=1, z_far=1e3).translate(z=250)
 
         # Create renderer
         r = libcarna.renderer(800, 600, [
@@ -163,7 +163,7 @@ class MaskRenderingStage(testsuite.LibCarnaRenderingTestCase):
 
         camera = libcarna.camera(
             parent=root,
-        ).frustum(fov=90, z_near=1, z_far=500).translate(0, 0, 100)
+        ).frustum(fov=90, z_near=1, z_far=500).translate(z=100)
 
         # Create renderer
         r = libcarna.renderer(800, 600, [
@@ -220,7 +220,7 @@ class MIPStage(testsuite.LibCarnaRenderingTestCase):
 
         camera = libcarna.camera(
             parent=root,
-        ).frustum(fov=90, z_near=1, z_far=500).translate(0, 0, 100)
+        ).frustum(fov=90, z_near=1, z_far=500).translate(z=100)
 
         # Create renderer
         r = libcarna.renderer(800, 600, [
@@ -285,11 +285,11 @@ class CuttingPlanesStage(testsuite.LibCarnaRenderingTestCase):
             libcarna.geometry(
                 GEOMETRY_TYPE_PLANE,
                 parent=volume,
-            ).plane(normal=axis, distance=0.99 * volume.extent[0] / 2)
+            ).plane(normal=axis, dist=0.99 * volume.extent[0] / 2)
 
         camera = libcarna.camera(
             parent=root,
-        ).frustum(fov=90, z_near=1, z_far=500).translate(0, 0, 100)
+        ).frustum(fov=90, z_near=1, z_far=500).translate(z=100)
 
         # Create renderer
         r = libcarna.renderer(800, 600, [
@@ -357,7 +357,7 @@ class DVRStage(testsuite.LibCarnaRenderingTestCase):
 
         camera = libcarna.camera(
             parent=root,
-        ).frustum(fov=90, z_near=1, z_far=500).translate(0, 0, 100)
+        ).frustum(fov=90, z_near=1, z_far=500).translate(z=100)
 
         # Create renderer
         dvr = libcarna.dvr(
@@ -420,7 +420,7 @@ class DRRStage(testsuite.LibCarnaRenderingTestCase):
 
         camera = libcarna.camera(
             parent=root,
-        ).frustum(fov=90, z_near=1, z_far=500).translate(0, 0, 100)
+        ).frustum(fov=90, z_near=1, z_far=500).translate(z=100)
 
         # Create renderer
         r = libcarna.renderer(

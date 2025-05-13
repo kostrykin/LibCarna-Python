@@ -38,7 +38,7 @@ class colorbar:
         self.ticks = max((ticks, 2))
         self.tick_labels = tick_labels
 
-    def toarray(self) -> np.array:
+    def toarray(self) -> np.ndarray:
         array = np.full(shape=(len(self.colorlist), 1, 4), fill_value=0, dtype=np.uint8)
         for i, color in enumerate(self.colorlist[::-1]):
             array[i, :, 0] = int(color.r)

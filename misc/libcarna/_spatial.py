@@ -10,7 +10,7 @@ from ._typing import (
 )
 
 
-def _transform_into_local(target: libcarna.base.Spatial, rhs: libcarna.base.Spatial) -> np.array:
+def _transform_into_local(target: libcarna.base.Spatial, rhs: libcarna.base.Spatial) -> np.ndarray:
     """
     Compute the transformation from the local coordinate system of a spatial object `rhs` into the local coordinate
     system of another spatial object `target`.
@@ -22,25 +22,91 @@ def _transform_into_local(target: libcarna.base.Spatial, rhs: libcarna.base.Spat
     
 
 class _spatial_mixin:
-    
+
     @kwalias('degrees', 'deg')
-    def rotate(self, axis: AxisHint, degrees: float) -> Self:
+    @staticmethod
+    def rotation(axis: AxisHint, degrees: float) -> np.ndarray:
         axis = resolve_axis_hint(axis)
-        self.local_transform = (
-            libcarna.base.math.rotation(axis, radians=libcarna.base.math.deg2rad(degrees)) @ self.local_transform
-        )
-        return self
+        return libcarna.base.math.rotation(axis, radians=libcarna.base.math.deg2rad(degrees))
     
-    def scale(self, *factors: float) -> Self:
+    @staticmethod
+    def scaling(*factors: float) -> np.ndarray:
         if len(factors) == 1:
             factors = (factors[0], factors[0], factors[0])
         elif len(factors) != 3:
             raise ValueError('Scale factor must be a single value, or a tuple of three values.')
-        self.local_transform = libcarna.base.math.scaling(*factors) @ self.local_transform
+        return libcarna.base.math.scaling(*factors)
+    
+    @staticmethod
+    def translation(x: float = 0, y: float = 0, z: float = 0) -> np.ndarray:
+        return libcarna.base.math.translation(x, y, z)
+    
+    def rotate_local(self, *args, **kwargs) -> Self:
+        """
+        Rotate the local coordinate system of this spatial object.
+
+        Arguments:
+            axis: The axis of rotation. Can be 'x', 'y', 'z', or an arbitrary axis (vector with 3 components).
+            degrees: The angle of rotation in degrees (alias: `deg`).
+        """
+        self.local_transform = _spatial_mixin.rotation(*args, **kwargs) @ self.local_transform
         return self
     
-    def translate(self, x: float = 0, y: float = 0, z: float = 0) -> Self:
-        self.local_transform = libcarna.base.math.translation(x, y, z) @ self.local_transform
+    def scale_local(self, *args, **kwargs) -> Self:
+        """
+        Scale the local coordinate system of this spatial object.
+
+        Arguments:
+            factors: The scale factors for the x, y, and z axes. If a single value is provided, it is used for all
+                three axes.
+        """
+        self.local_transform = _spatial_mixin.scaling(*args, **kwargs) @ self.local_transform
+        return self
+    
+    def translate_local(self, *args, **kwargs) -> Self:
+        """
+        Translate the local coordinate system of this spatial object.
+
+        Arguments:
+            x: The translation along the x-axis.
+            y: The translation along the y-axis.
+            z: The translation along the z-axis.
+        """
+        self.local_transform = self.local_transform @ _spatial_mixin.translation(*args, **kwargs)
+        return self
+    
+    def rotate(self, *args, **kwargs) -> Self:
+        """
+        Rotate this spatial object in its local coordinate system.
+
+        Arguments:
+            axis: The axis of rotation. Can be 'x', 'y', 'z', or an arbitrary axis (vector with 3 components).
+            degrees: The angle of rotation in degrees (alias: `deg`).
+        """
+        self.local_transform = self.local_transform @ _spatial_mixin.rotation(*args, **kwargs)
+        return self
+    
+    def scale(self, *args, **kwargs) -> Self:
+        """
+        Scale this spatial object in its local coordinate system.
+
+        Arguments:
+            factors: The scale factors for the x, y, and z axes. If a single value is provided, it is used for all
+                three axes.
+        """
+        self.local_transform = self.local_transform @ _spatial_mixin.scaling(*args, **kwargs)
+        return self
+    
+    def translate(self, *args, **kwargs) -> Self:
+        """
+        Translate this spatial object in its local coordinate system.
+
+        Arguments:
+            x: The translation along the x-axis.
+            y: The translation along the y-axis.
+            z: The translation along the z-axis.
+        """
+        self.local_transform = _spatial_mixin.translation(*args, **kwargs) @ self.local_transform
         return self
     
     @kwalias('distance', 'dist', 'd')
@@ -49,7 +115,7 @@ class _spatial_mixin:
         self.local_transform = libcarna.base.math.plane(normal=normal, distance=distance) @ self.local_transform
         return self
     
-    def transform_from(self, rhs: libcarna.base.Spatial) -> np.array:
+    def transform_from(self, rhs: libcarna.base.Spatial) -> np.ndarray:
         """
         Compute the transformation from the local coordinate system of a spatial object `rhs` into the local coordinate
         system of this spatial object.
@@ -275,7 +341,7 @@ def volume(
             self.extent  = extent
             self.spacing = spacing
 
-        def transform_into_voxels_from(self, rhs: libcarna.base.Spatial) -> np.array:
+        def transform_into_voxels_from(self, rhs: libcarna.base.Spatial) -> np.ndarray:
             """
             Compute the transformation from the local coordinate system of a spatial object `rhs` into the voxel
             coordinate system of this volume.
@@ -286,7 +352,7 @@ def volume(
                 self.transform_from(rhs).mat
             )
         
-        def transform_from_voxels_into(self, lhs: libcarna.base.Spatial) -> np.array:
+        def transform_from_voxels_into(self, lhs: libcarna.base.Spatial) -> np.ndarray:
             """
             Compute the transformation from the voxel coordinate system of this volume into the local coordinate system
             of a spatial object `lhs`.
