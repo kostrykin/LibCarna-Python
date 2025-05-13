@@ -1,5 +1,0 @@
-recursive-include misc *
-recursive-include src  *
-recursive-include test *
-include CMakeLists.txt
-prune cbuild

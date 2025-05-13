@@ -1,6 +1,12 @@
+/.env
+/condaenv.*
 /build
+/docs/build
 /dist
-/CarnaPy.egg-info
-/misc/conda-recipe/carnapy
+/LibCarna_Python.egg-info
+/.libcarna-dev
+/test/results/actual
 .ipynb_checkpoints
 *.swp
+*.pyc
+*.DS_Store

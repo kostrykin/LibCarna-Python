@@ -1,7 +1,0 @@
-build:
-  carnapy: 0.1.6
-  carna: 3.3.2
-
-package:
-  carna: 3.3.2
-

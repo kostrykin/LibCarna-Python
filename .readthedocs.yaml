@@ -1,0 +1,28 @@
+# Read the Docs configuration file
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+
+version: 2
+
+# Sphinx setup
+sphinx:
+  fail_on_warning: true
+  configuration: docs/conf.py
+
+# Install build dependencies
+conda:
+  environment: environment.yml
+
+# Specify the build process
+build:
+  os: ubuntu-24.04
+  tools:
+    python: "miniconda-latest"
+  jobs:
+    install:
+      - bash ./linux_build.bash
+      - pip install build/dist/libcarna_python-*.whl
+    pre_build:
+      - pip install -r docs/requirements.txt
+    build:
+      html:
+        - LIBCARNA_PYTHON_NBSPHINX_EXECUTE=never sphinx-build -M html docs $READTHEDOCS_OUTPUT

@@ -1,0 +1,129 @@
+name: Build and Test
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniconda-version: latest
+          auto-update-conda: true
+
+      - name: Patch required Python version
+        run: |
+          sed -i "s|python .\+|python ==${{ inputs.python-version }}|g" environment.yml
+          cat environment.yml
+
+      - name: Create and validate conda environment
+        shell: bash
+        run: |
+          conda env create -f environment.yml --prefix ./.env
+          eval "$(conda shell.bash hook)"
+          conda activate ./.env
+          python -V
+          python -c "import sys; v = sys.version_info; assert f'{v.major}.{v.minor}' == '${{ inputs.python-version }}'"
+
+      - name: Extract libcarna version
+        id: meta
+        shell: bash
+        run: |
+          eval "$(conda shell.bash hook)"
+          conda activate ./.env
+          export libcarna_version=$(conda list --json |jq -rj '[ .[] | select( .name == "libcarna" ) ][0].version')
+          echo "libcarna_version=$libcarna_version" >> "$GITHUB_OUTPUT"
+
+      - name: Build wheel
+        shell: bash
+        run: ./linux_build.bash
+
+      - name: Upload wheel
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ inputs.python-version }}
+          path: build/dist/libcarna_python-*.whl
+
+    outputs:
+      libcarna_version: ${{ steps.meta.outputs.libcarna_version }}
+
+  test:
+    needs: build
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -y -qq
+          sudo apt-get install -y -qq libegl1
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-${{ inputs.python-version }}
+
+      - name: Setup Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniconda-version: latest
+          auto-update-conda: true
+
+      - name: Create and validate conda environment
+        shell: bash
+        run: |
+          conda create --prefix ./.env -c conda-forge -c bioconda \
+            python==${{ inputs.python-version }} \
+            libcarna==${{ needs.build.outputs.libcarna_version }} \
+            pip
+          eval "$(conda shell.bash hook)"
+          conda activate ./.env
+          python -V
+          python -c "import sys; v = sys.version_info; assert f'{v.major}.{v.minor}' == '${{ inputs.python-version }}'"
+
+      - name: Install wheel
+        run: |
+          eval "$(conda shell.bash hook)"
+          conda activate ./.env
+          pip install libcarna_python-*.whl
+
+      - name: Test installation
+        run: |
+          eval "$(conda shell.bash hook)"
+          conda activate ./.env
+          python -c "import libcarna; assert libcarna.libcarna_version == '${{ needs.build.outputs.libcarna_version }}'"
+
+      - name: Install dependencies for tests and examples
+        run: |
+          eval "$(conda shell.bash hook)"
+          conda activate ./.env
+          pip install -r test/requirements.txt
+          pip install -r docs/requirements.txt
+
+      - name: Run tests
+        run: |
+          eval "$(conda shell.bash hook)"
+          conda activate ./.env
+          python -m unittest -vv
+        env:
+          LIBCARNA_PYTHON_LOGGING: true
+
+      - name: Upload failed test output
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-output-${{ inputs.python-version }}
+          path: |
+             test/test/results/actual

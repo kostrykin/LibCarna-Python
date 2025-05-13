@@ -1,175 +1,164 @@
-import test_tools
-import carna.base    as base
-import carna.presets as presets
-import carna.egl     as egl
-import carna.helpers as helpers
+import libcarna.presets
 import numpy as np
-import scipy.ndimage as ndi
 
-import faulthandler
-faulthandler.enable()
+from . import testsuite
 
-# ============================
-# presets.OpaqueRenderingStage
-# ============================
 
-w = 200
-h = 100
+class VolumeRenderingStage(testsuite.LibCarnaTestCase):
 
-root = base.Node.create()
+    def create(self):
+        return None  # VolumeRenderingStage has no public constructor
 
-cam = base.Camera.create()
-cam.local_transform = base.math.translation4f(0, 0, 250)
-cam.projection = base.math.frustum4f(base.math.deg2rad(90), 1, 10, 2000) @ base.math.scaling4f(1, w/h, 1)
-root.attach_child(cam)
+    def test__DEFAULT_SAMPLE_RATE(self):
+        self.assertEqual(libcarna.presets.VolumeRenderingStage.DEFAULT_SAMPLE_RATE, 200)
 
-box_mesh  = base.create_box(40, 40, 40)
-ball_mesh = base.create_ball(35)
-material1 = base.Material.create('unshaded')
-material2 = base.Material.create('unshaded')
-material3 = base.Material.create('solid')
-material1.set_parameter4f('color', [1, 0, 0, 1])
-material2.set_parameter4f('color', [0, 1, 0, 1])
-material3.set_parameter4f('color', [0, 0, 1, 1])
+    def test__init__(self):
+        self.create()
 
-GEOMETRY_TYPE_OPAQUE = 0
+    def test__sample_rate(self):
+        rs = self.create()
+        if rs is not None:  # create is overridden in subclasses
+            self.assertEqual(rs.sample_rate, libcarna.presets.VolumeRenderingStage.DEFAULT_SAMPLE_RATE)
+            for sample_rate in (rs.sample_rate + 100, rs.sample_rate + 200):
+                rs.sample_rate = sample_rate
+                self.assertEqual(rs.sample_rate, sample_rate)
 
-box1 = base.Geometry.create(GEOMETRY_TYPE_OPAQUE)
-box1.put_feature(presets.OpaqueRenderingStage.ROLE_DEFAULT_MESH, box_mesh)
-box1.put_feature(presets.OpaqueRenderingStage.ROLE_DEFAULT_MATERIAL, material1)
-box1.local_transform = base.math.translation4f(-10, -10, -40)
-root.attach_child(box1)
 
-box2 = base.Geometry.create(GEOMETRY_TYPE_OPAQUE)
-box2.put_feature(presets.OpaqueRenderingStage.ROLE_DEFAULT_MESH, box_mesh)
-box2.put_feature(presets.OpaqueRenderingStage.ROLE_DEFAULT_MATERIAL, material2)
-box2.local_transform = base.math.translation4f(+10, +10, +40)
-root.attach_child(box2)
+class MaskRenderingStage(VolumeRenderingStage):
 
-ball = base.Geometry.create(GEOMETRY_TYPE_OPAQUE)
-ball.put_feature(presets.OpaqueRenderingStage.ROLE_DEFAULT_MESH, ball_mesh)
-ball.put_feature(presets.OpaqueRenderingStage.ROLE_DEFAULT_MATERIAL, material3)
-ball.local_transform = base.math.translation4f(-20, +25, 40)
-root.attach_child(ball)
+    def create(self):
+        return libcarna.presets.MaskRenderingStage(geometry_type=1)
 
-box_mesh .release()
-ball_mesh.release()
-material1.release()
-material2.release()
+    def test__DEFAULT_ROLE_MASK(self):
+        self.assertEqual(libcarna.presets.MaskRenderingStage.DEFAULT_ROLE_MASK, 2)
 
-ctx = egl.Context.create()
-surface = base.Surface.create(ctx, w, h)
-renderer = base.FrameRenderer.create( ctx, w, h )
+    def test__DEFAULT_COLOR(self):
+        self.assertEqual(libcarna.presets.MaskRenderingStage.DEFAULT_COLOR.r, 0)
+        self.assertEqual(libcarna.presets.MaskRenderingStage.DEFAULT_COLOR.g, 255)
+        self.assertEqual(libcarna.presets.MaskRenderingStage.DEFAULT_COLOR.b, 0)
+        self.assertEqual(libcarna.presets.MaskRenderingStage.DEFAULT_COLOR.a, 255)
 
-opaque = presets.OpaqueRenderingStage.create(GEOMETRY_TYPE_OPAQUE)
-renderer.append_stage(opaque)
+    def test__DEFAULT_FILLING(self):
+        self.assertEqual(libcarna.presets.MaskRenderingStage.DEFAULT_FILLING, True)
 
-surface.begin()
-renderer.render(cam)
-result = surface.end()
-test_tools.assert_rendering('presets.OpaqueRenderingStage', result)
+    def test__mask_role(self):
+        rs = self.create()
+        self.assertEqual(rs.mask_role, libcarna.presets.MaskRenderingStage.DEFAULT_ROLE_MASK)
+        for mask_role in (rs.mask_role + 1, rs.mask_role + 2):
+            rs = libcarna.presets.MaskRenderingStage(geometry_type=1, mask_role=mask_role)
+            self.assertEqual(rs.mask_role, mask_role)
 
-renderer.free()
-cam.detach_from_parent()
-root.free()
+    def test__color(self):
+        rs = self.create()
+        self.assertEqual(rs.color, libcarna.presets.MaskRenderingStage.DEFAULT_COLOR)
+        for color_r in (50, 100, 150):
+            color = libcarna.base.Color(color_r, 255, 0, 255)
+            rs.color = color
+            self.assertEqual(rs.color, color)
 
-# ============================
-# presets.MIPStage
-# ============================
+    def test__filling(self):
+        rs = self.create()
+        self.assertEqual(rs.filling, True)
+        for filling in (False, True):
+            rs.filling = filling
+            self.assertEqual(rs.filling, filling)
 
-GEOMETRY_TYPE_VOLUME = 1
 
-data = np.ones((100, 100, 100), bool)
-data_center = np.subtract(data.shape, 1) // 2
-data[tuple(data_center)] = False
-data = ndi.distance_transform_edt(data)
-data = np.exp(-(data ** 2) / (2 * (25 ** 2)))
+class ColorMapMixin:
 
-root = base.Node.create()
-grid_helper = helpers.VolumeGrid_UInt16Intensity.create(data.shape);
-grid_helper.load_data( data )
-volume = grid_helper.create_node(GEOMETRY_TYPE_VOLUME, helpers.Dimensions([100, 100, 100]))
-root.attach_child(volume)
-root.attach_child(cam)
+    def test__color_map(self):
+        """
+        Test that, despite that `.color_map` returns a new `ColorMapView` each time it is called, the actual color map
+        is shared between the `ColorMapView` instances.
+        """
+        rs = self.create()
+        cmap1 = rs.color_map
+        cmap1.write_linear_spline([libcarna.color.RED, libcarna.color.BLUE])
+        cmap2 = rs.color_map
+        self.assertEqual(cmap1.color_list, cmap2.color_list)
 
-renderer = base.FrameRenderer.create(ctx, w, h)
-mip = presets.MIPStage.create(GEOMETRY_TYPE_VOLUME)
-mip.append_layer( presets.MIPLayer.create(0, 1, [1, 1, 1, 1]))
-renderer.append_stage(mip)
+    def test__color_map__color_list(self):
+        rs = self.create()
+        self.assertEqual(rs.color_map.color_list[0], libcarna.color.BLACK_NO_ALPHA)
+        self.assertEqual(rs.color_map.color_list[-1], libcarna.color.BLACK_NO_ALPHA)
 
-surface.begin()
-renderer.render(cam)
-result = surface.end()
-test_tools.assert_rendering('presets.MIPStage', result)
+    def test__color_map__write_linear_segment(self):
+        rs = self.create()
+        cmap = rs.color_map
+        cmap.write_linear_segment(0.0, 0.5, libcarna.color.RED, libcarna.color.BLUE)
+        self.assertEqual(cmap.color_list[0], libcarna.color.RED)
+        self.assertEqual(cmap.color_list[len(cmap.color_list) // 2], libcarna.color.BLUE)
 
-# ============================
-# presets.CuttingPlanesStage
-# ============================
+    def test__color_map__write_linear_spline(self):
+        rs = self.create()
+        cmap = rs.color_map
+        cmap.write_linear_spline([libcarna.color.RED, libcarna.color.GREEN, libcarna.color.BLUE])
+        self.assertEqual(cmap.color_list[0], libcarna.color.RED)
+        self.assertEqual(cmap.color_list[len(cmap.color_list) // 2], libcarna.color.GREEN)
+        self.assertEqual(cmap.color_list[-1], libcarna.color.BLUE)
 
-GEOMETRY_TYPE_PLANE = 2
+    def test__color_map__clear(self):
+        rs = self.create()
+        cmap = rs.color_map
+        cmap.write_linear_segment(0.0, 0.5, libcarna.color.RED, libcarna.color.BLUE)
+        cmap.clear()
+        self.assertEqual(cmap.color_list[0], libcarna.color.BLACK_NO_ALPHA)
 
-cps = presets.CuttingPlanesStage.create(GEOMETRY_TYPE_VOLUME, GEOMETRY_TYPE_PLANE)
-renderer.clear_stages()
-renderer.append_stage(cps);
 
-plane = base.Geometry.create(GEOMETRY_TYPE_PLANE)
-plane.local_transform = base.math.plane4f([1, 1, 1], 0)
-root.attach_child(plane);
+class MIPStage(VolumeRenderingStage, ColorMapMixin):
 
-surface.begin()
-renderer.render(cam)
-result = surface.end()
-test_tools.assert_rendering('presets.CuttingPlanesStage', result)
+    def create(self):
+        return libcarna.presets.MIPStage(geometry_type=1)
 
-# ============================
-# presets.DVRStage
-# ============================
+    def test__ROLE_INTENSITIES(self):
+        self.assertEqual(libcarna.presets.MIPStage.ROLE_INTENSITIES, 0)
 
-dvr = presets.DVRStage.create(GEOMETRY_TYPE_VOLUME)
-dvr.write_color_map(0.2, 1, [1.0, 0.0, 0.0, 0.9], [1.0, 1.0, 0.0, 1.0])
-renderer.clear_stages()
-renderer.append_stage(dvr)
 
-surface.begin()
-renderer.render(cam)
-result = surface.end()
-test_tools.assert_rendering('presets.DVRStage', result)
+class DVRStage(VolumeRenderingStage, ColorMapMixin):
 
-# ============================
-# presets.MaskRenderingStage
-# ============================
+    def create(self):
+        return libcarna.presets.DVRStage(geometry_type=1)
 
-GEOMETRY_TYPE_MASK = 3
+    def test__ROLE_INTENSITIES(self):
+        self.assertEqual(libcarna.presets.DVRStage.ROLE_INTENSITIES, 0)
 
-mr = presets.MaskRenderingStage.create(GEOMETRY_TYPE_MASK)
-renderer.clear_stages()
-renderer.append_stage(mr)
+    def test__ROLE_NORMALS(self):
+        self.assertEqual(libcarna.presets.DVRStage.ROLE_NORMALS, 1)
 
-mask_grid_helper = helpers.VolumeGrid_UInt8Intensity.create(data.shape);
-mask_grid_helper.load_data( data > 0.5 )
-mask = mask_grid_helper.create_node(GEOMETRY_TYPE_MASK, helpers.Dimensions([100, 100, 100]))
-root.attach_child(mask)
+    def test__DEFAULT_TRANSLUCENCY(self):
+        self.assertEqual(libcarna.presets.DVRStage.DEFAULT_TRANSLUCENCY, 50)
 
-mr.render_borders = False
-surface.begin()
-renderer.render(cam)
-result = surface.end()
-test_tools.assert_rendering('presets.MaskRenderingStage', result)
+    def test__DEFAULT_DIFFUSE_LIGHT(self):
+        self.assertEqual(libcarna.presets.DVRStage.DEFAULT_DIFFUSE_LIGHT, 1)
 
-mr.render_borders = True
-surface.begin()
-renderer.render(cam)
-result = surface.end()
-test_tools.assert_rendering('presets.MaskRenderingStage.render_borders', result)
+    def test__translucency(self):
+        rs = self.create()
+        self.assertEqual(rs.translucency, libcarna.presets.DVRStage.DEFAULT_TRANSLUCENCY)
+        for translucency in (0.3, 0.5, 0.7):
+            rs.translucency = translucency
+            self.assertAlmostEqual(rs.translucency, translucency, places=5)
 
-# ============================
-# Clean up
-# ============================
+    def test__diffuse_light(self):
+        rs = self.create()
+        self.assertEqual(rs.diffuse_light, libcarna.presets.DVRStage.DEFAULT_DIFFUSE_LIGHT)
+        for diffuse_light in (0.3, 0.5, 0.7):
+            rs.diffuse_light = diffuse_light
+            self.assertAlmostEqual(rs.diffuse_light, diffuse_light, places=5)
 
-renderer.free()
-mask_grid_helper.free()
-grid_helper.free()
-root.free()
-surface.free()
-ctx.free()
+
+class CuttingPlanesStage(testsuite.LibCarnaTestCase):
+
+    def test__windowing_level(self):
+        rs = libcarna.presets.CuttingPlanesStage(volume_geometry_type=1, plane_geometry_type=2)
+        self.assertEqual(rs.windowing_level, libcarna.presets.CuttingPlanesStage.DEFAULT_WINDOWING_LEVEL)
+        for windowing_level in (0.3, 0.5, 0.7):
+            rs.windowing_level = windowing_level
+            self.assertAlmostEqual(rs.windowing_level, windowing_level, places=5)
+
+    def test__windowing_width(self):
+        rs = libcarna.presets.CuttingPlanesStage(volume_geometry_type=1, plane_geometry_type=2)
+        self.assertEqual(rs.windowing_width, libcarna.presets.CuttingPlanesStage.DEFAULT_WINDOWING_WIDTH)
+        for windowing_width in (0.3, 0.5, 0.7):
+            rs.windowing_level = windowing_width
+            self.assertAlmostEqual(rs.windowing_level, windowing_width, places=5)
 

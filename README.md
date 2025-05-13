@@ -1,13 +1,14 @@
-CarnaPy
-========
+LibCarna-Python
+===============
 
-The aim of this package is to provide real-time 3D visualization in Python for specifically, but not limited to, biomedical data. The library is based on [Carna](https://github.com/kostrykin/Carna).
+The aim of this package is to provide real-time 3D visualization in Python for specifically, but not limited to, biomedical data. The library is based on [LibCarna](https://github.com/kostrykin/LibCarna).
 
-See [examples/kalinin2018.ipynb](examples/kalinin2018.ipynb) for an example.
+See [libcarna.readthedocs.io](https://libcarna.readthedocs.io) for examples and documentation.
 
-[![Anaconda-Server Badge](https://img.shields.io/badge/Install%20with-conda-%2387c305)](https://anaconda.org/kostrykin/carnapy)
-[![Anaconda-Server Badge](https://img.shields.io/conda/v/kostrykin/carnapy.svg?label=Version)](https://anaconda.org/kostrykin/carnapy)
-[![Anaconda-Server Badge](https://img.shields.io/conda/pn/kostrykin/carnapy.svg?label=Platforms)](https://anaconda.org/kostrykin/carnapy)
+[![Build and Test](https://github.com/kostrykin/LibCarna-Python/actions/workflows/build_all.yml/badge.svg)](https://github.com/kostrykin/LibCarna-Python/actions/workflows/build_all.yml)
+[![Anaconda-Server Badge](https://img.shields.io/badge/Install%20with-conda-%2387c305)](https://anaconda.org/bioconda/libcarna-python)
+[![Anaconda-Server Badge](https://img.shields.io/conda/v/bioconda/libcarna-python.svg?label=Version)](https://anaconda.org/bioconda/libcarna-python)
+[![Anaconda-Server Badge](https://img.shields.io/conda/pn/bioconda/libcarna-python.svg?label=Platforms)](https://anaconda.org/bioconda/libcarna-python)
 
 ---
 ## Contents
@@ -21,75 +22,49 @@ See [examples/kalinin2018.ipynb](examples/kalinin2018.ipynb) for an example.
 ## 1. Limitations
 
 * Only 8bit and 16bit volume data are supported at the moment.
-* DRR renderings are not exposed to Python yet.
+* Only a subset of rendering stages is exposed to Python yet.
 * Build process is currently limited to Linux-based systems.
 
 ---
 ## 2. Dependencies
 
-Using the library requires the following dependencies:
-* [numpy](https://numpy.org/) ≥ 1.16
-* EGL driver support
-* OpenGL 3.3
-* Python ≥ 3.7
-
-The following dependencies must be satisfied for the build process:
-* [Carna](https://github.com/kostrykin/Carna) ≥ 3.1
-* [Eigen](http://eigen.tuxfamily.org/) ≥ 3.0.5
-* [libboost-iostreams](https://www.boost.org/doc/libs/1_76_0/libs/iostreams/doc/index.html)
-* [pybind11](https://github.com/pybind/pybind11)
-* EGL development files
-
-In addition, the following dependencies are required to run the test suite:
-* [matplotlib](https://matplotlib.org/)
-* [scipy](https://www.scipy.org/)
+General dependencies are listed in *environment.yml*. Further dependencies for testing are listed in
+*test/requirements.txt*, and those for the documentation in *docs/requirements.txt*.
 
 ---
 ## 3. Installation
 
-The easiest way to install and use the library is to use one of the binary [Conda](https://docs.anaconda.com/anaconda/install/) packages:
+The easiest way to install and use the library is to use one of the binary [Conda](https://www.anaconda.com/docs/getting-started/miniconda) packages:
 
 ```bash
-conda install -c kostrykin carnapy
+conda install bioconda::libcarna-python
 ```
 
-Conda packages are available for Python 3.7–3.9.
+If you encounter an error that looks like below,
+
+> Failed expression: pimpl->eglDpy != EGL_NO_DISPLAY
+
+then you must install the EGL implementation suitable for your rendering hardware (e.g., `sudo apt install libegl1`
+installs a meta package that automatically chooses the right implementation, or `libegl-mesa0` for software rendering).
 
 ---
 ## 4. Build instructions
 
-Assuming you are using a recent version of Ubuntu:
-
+There is a build script for Ubuntu Linux which builds a wheel file:
 ```bash
-sudo apt-get -qq install libegl1-mesa-dev libboost-iostreams-dev
+LIBCARNA_PYTHON_BUILD_DOCS=1 LIBCARNA_PYTHON_BUILD_TESTS=1 ./linux_build.bash
 ```
+Adaption to other distributions should be self-explanatory.
 
-Create and activate a Conda environment to work in, then:
-
+After building the wheel file, it can be installed using:
 ```bash
-conda install -c conda-forge pybind11
+pip install --force-reinstall build/dist/libcarna_python-*.whl
 ```
 
-Grab a recent version of [Eigen](http://eigen.tuxfamily.org), unpack it, and tell CMake where it is located:
-
+To build against a development version of LibCarna, install it locally,
 ```bash
-wget https://gitlab.com/libeigen/eigen/-/archive/3.2.10/eigen-3.2.10.tar.gz
-tar -vzxf eigen-3.2.10.tar.gz -C /tmp/
-export CMAKE_PREFIX_PATH="/tmp/eigen-3.2.10:$CMAKE_PREFIX_PATH"
+LIBCARNA_SRC_PREFIX="../LibCarna" ./install_libcarna_dev.bash
 ```
+where you make `LIBCARNA_SRC_PREFIX` point to the source directory.
 
-If you have not already, download, build, and install Carna:
-
-```bash
-git clone git@github.com:kostrykin/Carna.git build_carna
-cd build_carna
-sh linux_build.sh
-```
-
-Now it is time to build, package, and install CarnaPy:
-```
-cd ..
-python setup.py build
-python setup.py install
-```
-
+This will create a local directory `.libcarna-dev`. The build process will give precedence to LibCarna from this directory over other versions. Simply remove `.libcarna-dev` to stop building agaisnt the development version of LibCarna.
