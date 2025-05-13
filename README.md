@@ -62,7 +62,7 @@ Adaption to other distribution should be self-explanatory.
 
 After building the wheel file, it can be installed using:
 ```bash
-python -m pip install --force-reinstall $(find . -name 'LibCarna_Python*.whl')
+pip install --force-reinstall libcarna_python-*.whl
 ```
 
 To build against a development version of LibCarna, install it locally,
