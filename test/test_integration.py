@@ -1,7 +1,7 @@
 import numpy as np
 
 import libcarna
-import testsuite
+from . import testsuite
 
 
 class VolumeGridHelper_IntensityVolumeUInt16(testsuite.LibCarnaTestCase):

@@ -1,7 +1,7 @@
 import numpy as np
 
 import libcarna.base
-import testsuite
+from . import testsuite
 
 
 class SpatialMixin:

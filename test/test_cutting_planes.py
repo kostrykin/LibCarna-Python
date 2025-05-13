@@ -1,7 +1,7 @@
 import numpy as np
 
 import libcarna
-import testsuite
+from . import testsuite
 
 
 class cutting_planes(testsuite.LibCarnaTestCase):

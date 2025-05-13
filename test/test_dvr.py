@@ -1,5 +1,5 @@
 import libcarna
-import testsuite
+from . import testsuite
 
 
 class dvr(testsuite.LibCarnaTestCase):

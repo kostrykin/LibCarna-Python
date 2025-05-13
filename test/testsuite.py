@@ -120,7 +120,7 @@ class LibCarnaRenderingTestCase(LibCarnaTestCase):
             raise ValueError(f'Unsupported array shape: {actual.shape}')
 
     def assert_image_almost_expected(self, actual, **kwargs):
-        expected = f'{self.id()}.png'
+        expected = f'{self.id()}.png'.removeprefix('test.')
         try:
             self.assert_image_almost_equal(actual, expected, **kwargs)
         except:

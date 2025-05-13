@@ -2,7 +2,7 @@ import gc
 
 import libcarna.egl
 
-import testsuite
+from . import testsuite
 
 
 class EGLContext(testsuite.LibCarnaTestCase):

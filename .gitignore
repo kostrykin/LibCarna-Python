@@ -5,6 +5,7 @@
 /dist
 /LibCarna_Python.egg-info
 /.libcarna-dev
+/test/results/actual
 .ipynb_checkpoints
 *.swp
 *.pyc

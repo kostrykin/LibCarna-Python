@@ -1,6 +1,6 @@
 import libcarna
 
-import testsuite
+from . import testsuite
 
 
 class material(testsuite.LibCarnaTestCase):

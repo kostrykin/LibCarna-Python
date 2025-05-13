@@ -1,5 +1,5 @@
 import libcarna
-import testsuite
+from . import testsuite
 
 
 class opaque_renderer(testsuite.LibCarnaTestCase):

@@ -2,7 +2,7 @@ import numpy as np
 
 import libcarna
 
-import testsuite
+from . import testsuite
 
 
 class node(testsuite.LibCarnaTestCase):
