@@ -73,15 +73,15 @@ class LibCarnaRenderingTestCase(LibCarnaTestCase):
             expected = pathlib.Path('test/results/expected') / expected
             expected = _imread(str(expected))
 
-            # If the image is in floating point format, convert it to uint8.
+            # If the image is in floating point format, convert it to [0, 255] range.
             if np.issubdtype(expected.dtype, np.floating):
-                expected = (expected * 255).astype(np.uint8)
+                expected = (expected * 255)
 
         # Define routine for pairwise comparison of `actual` and `expected` frames.
         def verify_frame(actual, expected):
             if blur > 0:
-                actual = ndi.gaussian_filter(actual, sigma=blur)
-                expected = ndi.gaussian_filter(expected, sigma=blur)
+                actual = ndi.gaussian_filter(actual.astype(float), sigma=blur, axes=(0, 1))
+                expected = ndi.gaussian_filter(expected.astype(float), sigma=blur, axes=(0, 1))
             self.assertLessEqual((np.max(np.abs(actual - expected), axis=2) > threshold).sum(), max_differing_pixels)
 
         # If the image is a single frame, compare it directly.
