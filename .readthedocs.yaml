@@ -25,4 +25,6 @@ build:
   jobs:
     install:
       - bash ./linux_build.bash
-      - pip install libcarna_python-*.whl
+      - pip install dist/libcarna_python-*.whl
+  environment:
+    LIBCARNA_PYTHON_NBSPHINX_EXECUTE: never

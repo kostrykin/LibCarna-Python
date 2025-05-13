@@ -20,4 +20,4 @@ LIBCARNA_PYTHON_PATH = os.environ.get('LIBCARNA_PYTHON_PATH')
 sys.path.append(LIBCARNA_PYTHON_PATH)
 os.environ['PYTHONPATH'] = LIBCARNA_PYTHON_PATH + ':' + os.environ.get('PYTHONPATH', '')
 
-nbsphinx_execute = 'always'
+nbsphinx_execute = os.environ.get('LIBCARNA_PYTHON_NBSPHINX_EXECUTE', 'always')
