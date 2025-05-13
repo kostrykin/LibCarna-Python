@@ -37,7 +37,7 @@ source venv/bin/activate
 pip install --no-deps dist/*.whl
 
 # Optionally, run the test suite
-if [ -v LIBCARNA_PYTHON_BUILD_TEST ]; then
+if [ -v LIBCARNA_PYTHON_BUILD_TESTS ]; then
     cd "$ROOT"
     pip install -r test/requirements.txt
     python -m unittest

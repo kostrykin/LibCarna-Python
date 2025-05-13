@@ -52,9 +52,9 @@ installs a meta package that automatically chooses the right implementation, or 
 
 There is a build script for Ubuntu Linux which builds a wheel file:
 ```bash
-LIBCARNA_PYTHON_BUILD_DOCS=ON LIBCARNA_PYTHON_BUILD_TEST=ON ./linux_build.bash
+LIBCARNA_PYTHON_BUILD_DOCS=1 LIBCARNA_PYTHON_BUILD_TESTS=1 ./linux_build.bash
 ```
-Adaption to other distribution should be self-explanatory.
+Adaption to other distributions should be self-explanatory.
 
 After building the wheel file, it can be installed using:
 ```bash
