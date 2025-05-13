@@ -45,7 +45,7 @@ If you encounter an error that looks like this,
 > Failed expression: pimpl->eglDpy != EGL_NO_DISPLAY
 
 then you must install the EGL implementation suitable for your rendering hardware (e.g., `sudo apt install libegl1`
-which is a meta package that will automatically choose the right package, or `libegl-mesa0` for software rendering).
+installs a meta package that automatically chooses the right implementation, or `libegl-mesa0` for software rendering).
 
 ---
 ## 4. Build instructions
