@@ -15,8 +15,6 @@ conda activate "$ROOT"/.env
 
 # Create build directory
 mkdir -p "$ROOT"/build
-rm -f "$ROOT"/build/test
-ln -s "$ROOT"/test "$ROOT"/build/test
 
 # Build native extension
 cd "$ROOT"/build
@@ -30,17 +28,24 @@ make VERBOSE=1
 # Build wheel
 python -m build --no-isolation
 
+# Install wheel
+rm -rf venv
+python -m venv venv
+source venv/bin/activate
+pip install --no-deps dist/*.whl
+
 # Optionally, run the test suite
 if [ -v LIBCARNA_PYTHON_BUILD_TEST ]; then
-    pip install -r "$ROOT/test/requirements.txt"
+    cd "$ROOT"
+    pip install -r test/requirements.txt
     python -m unittest
 fi
 
 # Optionally, build the documentation
 if [ -v LIBCARNA_PYTHON_BUILD_DOCS ]; then
-    pip install -r "$ROOT"/docs/requirements.txt
-    export LIBCARNA_PYTHON_PATH="$ROOT"/build
-    rm -rf "$ROOT"/docs/build
-    sphinx-build -M html "$ROOT"/docs "$ROOT"/docs/build
-    cp "$ROOT/docs/build/html/examples/"*.ipynb "$ROOT"/examples/
+    cd "$ROOT"
+    pip install -r docs/requirements.txt
+    rm -rf docs/build
+    sphinx-build -M html docs docs/build
+    cp docs/build/html/examples/*.ipynb /examples/
 fi
