@@ -3,12 +3,12 @@ LibCarna-Python
 
 The aim of this package is to provide real-time 3D visualization in Python for specifically, but not limited to, biomedical data. The library is based on [LibCarna](https://github.com/kostrykin/LibCarna).
 
-See [examples/kalinin2018.ipynb](examples/kalinin2018.ipynb) for an example.
+See [libcarna.readthedocs.io](https://libcarna.readthedocs.io) for examples and documentation.
 
-[![Build LibCarnaPy and Docker image](https://github.com/kostrykin/LibCarnaPy/actions/workflows/build.yml/badge.svg)](https://github.com/kostrykin/LibCarnaPy/actions/workflows/build.yml)
-[![Anaconda-Server Badge](https://img.shields.io/badge/Install%20with-conda-%2387c305)](https://anaconda.org/kostrykin/carnapy)
-[![Anaconda-Server Badge](https://img.shields.io/conda/v/kostrykin/carnapy.svg?label=Version)](https://anaconda.org/kostrykin/carnapy)
-[![Anaconda-Server Badge](https://img.shields.io/conda/pn/kostrykin/carnapy.svg?label=Platforms)](https://anaconda.org/kostrykin/carnapy)
+[![Build and Test](https://github.com/kostrykin/LibCarna-Python/actions/workflows/build_all.yml/badge.svg)](https://github.com/kostrykin/LibCarna-Python/actions/workflows/build_all.yml)
+[![Anaconda-Server Badge](https://img.shields.io/badge/Install%20with-conda-%2387c305)](https://anaconda.org/bioconda/libcarna-python)
+[![Anaconda-Server Badge](https://img.shields.io/conda/v/bioconda/libcarna-python.svg?label=Version)](https://anaconda.org/bioconda/libcarna-python)
+[![Anaconda-Server Badge](https://img.shields.io/conda/pn/bioconda/libcarna-python.svg?label=Platforms)](https://anaconda.org/bioconda/libcarna-python)
 
 ---
 ## Contents
@@ -28,19 +28,8 @@ See [examples/kalinin2018.ipynb](examples/kalinin2018.ipynb) for an example.
 ---
 ## 2. Dependencies
 
-Using the library requires the following dependencies:
-* [numpy](https://numpy.org/) ≥ 1.16
-* EGL driver support
-* OpenGL 3.3
-* Python ≥ 3.10
-
-The following dependencies must be satisfied for the build process:
-* [LibCarna](https://github.com/kostrykin/LibCarna) ≥ 3.4
-* [Eigen](http://eigen.tuxfamily.org/) ≥ 3.0.5
-* [pybind11](https://github.com/pybind/pybind11)
-* EGL development files
-
-See environment.yml for further dependencies for testing and running.
+General dependencies are listed in environment.yml. Further dependencies for testing are listed in
+test/requirements.txt, and those for the documentation in docs/requirements.txt.
 
 ---
 ## 3. Installation
@@ -50,6 +39,13 @@ The easiest way to install and use the library is to use one of the binary [Cond
 ```bash
 conda install bioconda::libcarna-python
 ```
+
+If you encounter an error that looks like this,
+
+> Failed expression: pimpl->eglDpy != EGL_NO_DISPLAY
+
+then you must install the EGL implementation suitable for your rendering hardware (e.g., `sudo apt install libegl1`
+which is a meta package that will automatically choose the right package, or `libegl-mesa0` for software rendering).
 
 ---
 ## 4. Build instructions
