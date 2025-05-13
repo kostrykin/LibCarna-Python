@@ -111,7 +111,7 @@ jobs:
           eval "$(conda shell.bash hook)"
           conda activate ./.env
           pip install -r test/requirements.txt
-          pip install -r doc/requirements.txt
+          pip install -r docs/requirements.txt
 
       - name: Run tests
         run: |
