@@ -15,6 +15,7 @@ conda activate "$ROOT"/.env
 
 # Create build directory
 mkdir -p "$ROOT"/build
+rm -f "$ROOT"/build/test
 ln -s "$ROOT"/test "$ROOT"/build/test
 
 # Build native extension
