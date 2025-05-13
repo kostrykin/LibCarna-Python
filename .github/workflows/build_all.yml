@@ -30,3 +30,4 @@ jobs:
     secrets: inherit
     with:
       python-version: ${{ matrix.python-version }}
+      python-version-for-docs: '3.12'

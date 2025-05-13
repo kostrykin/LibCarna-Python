@@ -6,6 +6,10 @@ on:
       python-version:
         required: true
         type: string
+      python-version-for-docs:
+        required: false
+        type: string
+        default: ''
 
 jobs:
   build:
@@ -131,3 +135,52 @@ jobs:
           name: test-output-${{ inputs.python-version }}
           path: |
              test/test/results/actual
+
+  docs:
+    if: ${{ inputs.python-version == inputs.python-version-for-docs }}
+    needs: build
+    name: Docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v4
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-${{ inputs.python-version }}
+
+      - name: Setup Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniconda-version: latest
+          auto-update-conda: true
+
+      - name: Create and validate conda environment
+        shell: bash
+        run: |
+          conda create --prefix ./.env -c conda-forge -c bioconda \
+            python==${{ inputs.python-version }} \
+            libcarna==${{ needs.build.outputs.libcarna_version }} \
+            pip
+
+      - name: Install wheel
+        run: |
+          eval "$(conda shell.bash hook)"
+          conda activate ./.env
+          pip install libcarna_python-*.whl
+
+      - name: Install dependencies
+        run: |
+          eval "$(conda shell.bash hook)"
+          conda activate ./.env
+          pip install -r docs/requirements.txt
+
+      - name: Build docs
+        run: |
+          eval "$(conda shell.bash hook)"
+          conda activate ./.env
+          cd docs
+          sphinx-build -M html docs docs/build
+        env:
+          LIBCARNA_PYTHON_NBSPHINX_EXECUTE: never
