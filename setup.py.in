@@ -1,16 +1,8 @@
-import os
-from pathlib import Path
 from setuptools import setup
 
 
-root_dir = Path(os.path.abspath(os.path.dirname(__file__)))
-
-build_dir = root_dir / 'build'
-
 if __name__ == '__main__':
-    build_dir.mkdir(parents=True, exist_ok=True)
-
-    with open(root_dir / 'README.md', encoding='utf-8') as io:
+    with open('README.md', encoding='utf-8') as io:
         long_description = io.read()
 
     setup(
