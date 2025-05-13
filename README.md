@@ -40,7 +40,7 @@ The easiest way to install and use the library is to use one of the binary [Cond
 conda install bioconda::libcarna-python
 ```
 
-If you encounter an error that looks like this,
+If you encounter an error that looks like below,
 
 > Failed expression: pimpl->eglDpy != EGL_NO_DISPLAY
 
