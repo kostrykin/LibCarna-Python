@@ -138,6 +138,11 @@ jobs:
           conda activate ./.env
           jupyter nbconvert --execute --to notebook --inplace examples/*.ipynb
 
+      - name: Summarize notebook changes
+        run: |
+          echo "## Python ${{ inputs.python-version }}" >> $GITHUB_STEP_SUMMARY
+          git diff examples/*.ipynb >> $GITHUB_STEP_SUMMARY
+
       - name: Upload notebooks
         uses: actions/upload-artifact@v4
         with:
