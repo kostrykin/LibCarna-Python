@@ -13,8 +13,11 @@ fi
 eval "$(conda shell.bash hook)"
 conda activate "$ROOT"/.env
 
-# Build native extension
+# Create build directory
 mkdir -p "$ROOT"/build
+ln -s "$ROOT"/test "$ROOT"/build/test
+
+# Build native extension
 cd "$ROOT"/build
 cmake -DCMAKE_BUILD_TYPE=Release \
       -DPYTHON_EXECUTABLE="$(which python)" \
@@ -27,10 +30,9 @@ make VERBOSE=1
 python -m build --no-isolation
 
 # Optionally, run the test suite
-if [ -v LIBCARNA_PYTHON_BUILD_TES ]; then
+if [ -v LIBCARNA_PYTHON_BUILD_TEST ]; then
     pip install -r "$ROOT/test/requirements.txt"
-    cd "$ROOT"
-    # TODO: run tests
+    python -m unittest
 fi
 
 # Optionally, build the documentation
