@@ -52,8 +52,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dist-${{ inputs.python-version }}
-          path: |
-             dist
+          path: build/dist/libcarna_python-*.whl
 
     outputs:
       libcarna_version: ${{ steps.meta.outputs.libcarna_version }}
