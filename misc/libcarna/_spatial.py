@@ -1,6 +1,7 @@
 import numpy as np
 
 import libcarna
+from ._alias import kwalias
 from ._axes import AxisHint, resolve_axis_hint
 from ._transform import transform
 from ._typing import (
@@ -22,10 +23,11 @@ def _transform_into_local(target: libcarna.base.Spatial, rhs: libcarna.base.Spat
 
 class _spatial_mixin:
     
-    def rotate(self, axis: AxisHint, deg: float) -> Self:
+    @kwalias('degrees', 'deg')
+    def rotate(self, axis: AxisHint, degrees: float) -> Self:
         axis = resolve_axis_hint(axis)
         self.local_transform = (
-            libcarna.base.math.rotation(axis, radians=libcarna.base.math.deg2rad(deg)) @ self.local_transform
+            libcarna.base.math.rotation(axis, radians=libcarna.base.math.deg2rad(degrees)) @ self.local_transform
         )
         return self
     
@@ -41,6 +43,7 @@ class _spatial_mixin:
         self.local_transform = libcarna.base.math.translation(x, y, z) @ self.local_transform
         return self
     
+    @kwalias('distance', 'dist', 'd')
     def plane(self, normal: AxisHint, distance: float) -> Self:
         normal = resolve_axis_hint(normal)
         self.local_transform = libcarna.base.math.plane(normal=normal, distance=distance) @ self.local_transform
