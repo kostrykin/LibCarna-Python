@@ -1,14 +1,15 @@
 import base64
 import io
+import itertools
 import tempfile
 from typing import (
     Any,
     Iterable,
 )
 
+import imageio_ffmpeg
 import numpngw
 import numpy as np
-import skvideo.io
 
 try:
     from IPython.core.display import HTML as IPythonHTML
@@ -46,17 +47,27 @@ def _render_html_h264(array: np.ndarray | Iterable[np.ndarray], fps: float = 25)
         return _render_html_h264([array], fps=fps)
     
     # Encode video
+    frame1 = next(iter(array))
     with tempfile.NamedTemporaryFile(suffix='.mp4') as mp4_file:
-        with skvideo.io.FFmpegWriter(
+
+        # Create FFMPEG file writer
+        writer = imageio_ffmpeg.write_frames(
             mp4_file.name,
-            outputdict={
-                '-vcodec': 'h264', 
-                '-pix_fmt': 'yuv420p',
-                '-r': str(fps),
-            },
-        ) as writer:
-            for frame in array:
-                writer.writeFrame(frame)
+            size=frame1.shape[:2],
+            fps=fps,
+            codec='h264',
+            pix_fmt_out='yuv420p',
+        )
+
+        # Write sequence of frames
+        try:
+            writer.send(None)
+            for frame in itertools.chain([frame1], array):
+                writer.send(frame)
+        finally:
+            writer.close()
+
+        # Read the file
         buf = mp4_file.read()
 
     # Produce HTML
