@@ -26,5 +26,5 @@ build:
     install:
       - bash ./linux_build.bash
       - pip install dist/libcarna_python-*.whl
-  environment:
-    LIBCARNA_PYTHON_NBSPHINX_EXECUTE: never
+    pre_build:
+      - export LIBCARNA_PYTHON_NBSPHINX_EXECUTE=never
