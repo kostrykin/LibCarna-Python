@@ -7,6 +7,7 @@ faulthandler.enable()
 
 import matplotlib.pyplot as plt
 import numpy as np
+import scipy.ndimage as ndi
 from apng import APNG
 from numpngw import write_apng
 from PIL import Image
@@ -55,26 +56,45 @@ class LibCarnaTestCase(unittest.TestCase):
 
 class LibCarnaRenderingTestCase(LibCarnaTestCase):
 
-    def assert_image_almost_equal(self, actual, expected, threshold=1, max_differing_pixels=0):
-        if isinstance(actual, str):
-            actual = _imread(actual)
+    def assert_image_almost_equal(self, actual: np.ndarray, expected: str | np.ndarray, blur: float = 1, threshold: float = 1, max_differing_pixels: int = 0):
+        """
+        Compare two images, `actual` and `expected`, and assert that they are almost equal.
+
+        The comparison is done by, first, blurring out small details in the images, and then counting the number of
+        pixels for which the channel-wise difference exceeds a certain` threshold`. The test fails if the number of
+        differing pixels exceeds `max_differing_pixels`.
+
+        The comparison is performed individually for each frame of an image sequence.
+        """
+        assert not np.issubdtype(actual.dtype, np.floating)
+
+        # If `expected` is a string, read the image from the path.
         if isinstance(expected, str):
             expected = pathlib.Path('test/results/expected') / expected
             expected = _imread(str(expected))
+
+            # If the image is in floating point format, convert it to uint8.
             if np.issubdtype(expected.dtype, np.floating):
                 expected = (expected * 255).astype(np.uint8)
 
+        # Define routine for pairwise comparison of `actual` and `expected` frames.
         def verify_frame(actual, expected):
+            if blur > 0:
+                actual = ndi.gaussian_filter(actual, sigma=blur)
+                expected = ndi.gaussian_filter(expected, sigma=blur)
             self.assertLessEqual((np.max(np.abs(actual - expected), axis=2) > threshold).sum(), max_differing_pixels)
 
+        # If the image is a single frame, compare it directly.
         self.assertEqual(actual.shape, expected.shape)
         if actual.ndim == 3:
             verify_frame(actual, expected)
 
+        # If the image is a multi-frame image sequence, compare each frame of the sequence.
         elif actual.ndim == 4:
             for actual_frame, expected_frame in zip(actual, expected):
                 verify_frame(actual_frame, expected_frame)
 
+        # Complain that we don't know how to handle the shape of the image.
         else:
             raise ValueError(f'Unsupported array shape: {actual.shape}')
 
