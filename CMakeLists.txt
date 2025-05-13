@@ -101,6 +101,7 @@ file( COPY ${PYTHON_AUX_FILES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/${PYTHON
 file( GLOB LICENSES "${LibCarna_LICENSE_DIR}/LICENSE*" )
 file( COPY ${LICENSES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}" )
 file( COPY ${CMAKE_CURRENT_SOURCE_DIR}/README.md DESTINATION "${CMAKE_CURRENT_BINARY_DIR}" )
+file( COPY ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE DESTINATION "${CMAKE_CURRENT_BINARY_DIR}" )
 
 ############################################
 # Project
@@ -179,11 +180,3 @@ install( FILES
     ${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_MODULE_NAME}/__init__.py
     DESTINATION ${INSTALL_LIBRARY_DIR}
 )
-
-############################################
-# Process unit tests
-############################################
-
-if( BUILD_TEST )
-    add_subdirectory( test )
-endif()
