@@ -88,8 +88,7 @@ jobs:
           conda create --prefix ./.env -c conda-forge -c bioconda \
             python==${{ inputs.python-version }} \
             libcarna==${{ needs.build.outputs.libcarna_version }} \
-            mesalib \
-            libegl \
+            mesa-libegl-cos7-x86_64 \
             pip
           eval "$(conda shell.bash hook)"
           conda activate ./.env
