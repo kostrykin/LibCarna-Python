@@ -1,5 +1,7 @@
+import glob
 import io
 import pathlib
+import re
 import unittest
 
 import faulthandler
@@ -56,7 +58,27 @@ class LibCarnaTestCase(unittest.TestCase):
 
 class LibCarnaRenderingTestCase(LibCarnaTestCase):
 
-    def assert_image_almost_equal(self, actual: np.ndarray, expected: str | np.ndarray, blur: float = 1, threshold: float = 1, max_differing_pixels: int = 0):
+    @staticmethod
+    def _get_expected_image_filepath(filename: str, vendor: str | None) -> str:
+        results_path = pathlib.Path('test/results')
+        if vendor is None:
+            return str(results_path / 'expected' / filename)
+        else:
+            for filepath in glob.glob(str(results_path / 'expected_*' / filename)):
+                m = re.match(r'^.*/expected_(.*)/.*$', filepath)
+                if m is not None and m.group(1).lower() in re.split(r'[^a-zA-Z0-9]', vendor.lower()):
+                    return filepath
+            return LibCarnaRenderingTestCase._get_expected_image_filepath(filename, vendor=None)
+
+    def assert_image_almost_equal(
+            self,
+            actual: np.ndarray,
+            expected: str | np.ndarray,
+            blur: float = 1,
+            threshold: float = 1,
+            max_differing_pixels: int = 0,
+            vendor: str | None = None,
+        ):
         """
         Compare two images, `actual` and `expected`, and assert that they are almost equal.
 
@@ -70,8 +92,7 @@ class LibCarnaRenderingTestCase(LibCarnaTestCase):
 
         # If `expected` is a string, read the image from the path.
         if isinstance(expected, str):
-            expected = pathlib.Path('test/results/expected') / expected
-            expected = _imread(str(expected))
+            expected = _imread(LibCarnaRenderingTestCase._get_expected_image_filepath(expected, vendor=vendor))
 
             # If the image is in floating point format, convert it to [0, 255] range.
             if np.issubdtype(expected.dtype, np.floating):

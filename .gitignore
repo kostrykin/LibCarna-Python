@@ -8,3 +8,4 @@
 .ipynb_checkpoints
 *.swp
 *.pyc
+*.DS_Store
