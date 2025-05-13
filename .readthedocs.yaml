@@ -12,11 +12,6 @@ sphinx:
 conda:
   environment: environment.yml
 
-# Install doc-building dependencies
-python:
-  install:
-    - requirements: docs/requirements.txt
-
 # Specify the build process
 build:
   os: ubuntu-24.04
@@ -25,4 +20,9 @@ build:
   jobs:
     install:
       - bash ./linux_build.bash
-      - pip install libcarna_python-*.whl
+      - pip install dist/libcarna_python-*.whl
+    pre_build:
+      - pip install -r docs/requirements.txt
+    build:
+      html:
+        - LIBCARNA_PYTHON_NBSPHINX_EXECUTE=never sphinx-build -M html docs $READTHEDOCS_OUTPUT
