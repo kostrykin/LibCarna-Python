@@ -5,18 +5,64 @@ namespace py = pybind11;
 
 using namespace pybind11::literals; // enables the _a literal
 
-#include <Carna/base/glew.h>
-#include <Carna/base/Color.h>
-#include <Carna/base/Geometry.h>
-#include <Carna/base/BufferedIntensityVolume.h>
-#include <Carna/helpers/FrameRendererHelper.h>
-#include <Carna/helpers/PointMarkerHelper.h>
-#include <Carna/helpers/VolumeGridHelper.h>
-#include <Carna/py/py.h>
-#include <iostream> //debug
+#include <LibCarna/py/helpers.hpp>
+#include <LibCarna/base/BufferedIntensityVolume.hpp>
+#include <LibCarna/helpers/FrameRendererHelper.hpp>
+#include <LibCarna/helpers/VolumeGridHelper.hpp>
+#include <LibCarna/helpers/VolumeGridHelperDetails.hpp>
+/*
+#include <LibCarna/base/glew.hpp>
+#include <LibCarna/base/Color.hpp>
+#include <LibCarna/base/Geometry.hpp>
+#include <LibCarna/helpers/FrameRendererHelper.hpp>
+#include <LibCarna/helpers/PointMarkerHelper.hpp>
+*/
 
-using namespace Carna::base;
-using namespace Carna::helpers;
+using namespace LibCarna::py;
+using namespace LibCarna::py::base;
+using namespace LibCarna::py::helpers;
+
+
+
+// ----------------------------------------------------------------------------------
+// addVolumeGridHelperIntensityComponent
+// ----------------------------------------------------------------------------------
+
+template< typename VolumeGridHelperType, typename VolumeGridHelperClass >
+void addVolumeGridHelperIntensityComponent( VolumeGridHelperClass& cls )
+{
+    const static auto DEFAULT_ROLE_INTENSITIES = VolumeGridHelperType::DEFAULT_ROLE_INTENSITIES;
+    cls.def_readonly_static(
+        "DEFAULT_ROLE_INTENSITIES",
+        &DEFAULT_ROLE_INTENSITIES
+    );
+    cls.def_property(
+        "intensities_role",
+        &VolumeGridHelperType::intensitiesRole,
+        &VolumeGridHelperType::setIntensitiesRole 
+    );
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// addVolumeGridHelperNormalsComponent
+// ----------------------------------------------------------------------------------
+
+template< typename VolumeGridHelperType, typename VolumeGridHelperClass >
+void addVolumeGridHelperNormalsComponent( VolumeGridHelperClass& cls )
+{
+    const static auto DEFAULT_ROLE_NORMALS = VolumeGridHelperType::DEFAULT_ROLE_NORMALS;
+    cls.def_readonly_static(
+        "DEFAULT_ROLE_NORMALS",
+        &DEFAULT_ROLE_NORMALS
+    );
+    cls.def_property(
+        "normals_role",
+        &VolumeGridHelperType::normalsRole,
+        &VolumeGridHelperType::setNormalsRole 
+    );
+}
 
 
 
@@ -24,33 +70,118 @@ using namespace Carna::helpers;
 // defineVolumeGridHelper
 // ----------------------------------------------------------------------------------
 
-template< typename VolumeGridHelperType, typename Module >
-void defineVolumeGridHelper( Module& m, const char* name )
+const static auto VolumeGridHelperBase__DEFAULT_MAX_SEGMENT_BYTESIZE = \
+    ([](){ return LibCarna::helpers::VolumeGridHelperBase::DEFAULT_MAX_SEGMENT_BYTESIZE; })();
+
+
+template< typename VolumeGridHelperType, typename VolumeGridHelperClass >
+void defineVolumeGridHelper( VolumeGridHelperClass& cls )
 {
-    auto cl = py::class_< VolumeGridHelperType, VolumeGridHelperBase >( m, name )
-        .def_static( "create", []( const math::Vector3ui& nativeResolution, std::size_t maxSegmentBytesize )
-        {
-            return new VolumeGridHelperType( nativeResolution, maxSegmentBytesize );
-        }
-        , py::return_value_policy::reference, "nativeResolution"_a, "maxSegmentBytesize"_a = ([](){ return VolumeGridHelperBase::DEFAULT_MAX_SEGMENT_BYTESIZE; })() )
-        .def( "load_data", []( VolumeGridHelperType* self, py::array_t< double > data, bool test )
-        {
-            const auto rawData = data.unchecked< 3 >();
-            const auto voxel2intensity = [ &rawData, test ]( const math::Vector3ui voxel )
+    cls
+        .def(
+            py::init< const LibCarna::base::math::Vector3ui&, std::size_t >(),
+            "native_resolution"_a, "max_segment_bytesize"_a = VolumeGridHelperBase__DEFAULT_MAX_SEGMENT_BYTESIZE
+        )
+        .def(
+            "load_intensities",
+            []( VolumeGridHelperType& self, py::array_t< double > intensityData )
             {
-                if (test) {
-                    return 0.f;
-                }
-                else return static_cast< float >( rawData( voxel.x(), voxel.y(), voxel.z() ) );
-            };
-            return self->loadIntensities( voxel2intensity );
-        }
-        , "data"_a, "test"_a = false )
-        .def_property( "intensities_role", &VolumeGridHelperType::intensitiesRole, &VolumeGridHelperType::setIntensitiesRole )
-        .def( "create_node", py::overload_cast< unsigned int, const VolumeGridHelperBase::Spacing& >( &VolumeGridHelperType::createNode, py::const_ ), py::return_value_policy::reference )
-        .def( "create_node", py::overload_cast< unsigned int, const VolumeGridHelperBase::Dimensions& >( &VolumeGridHelperType::createNode, py::const_ ), py::return_value_policy::reference )
+                const auto rawData = intensityData.unchecked< 3 >();
+                return self.loadIntensities(
+                    [ &rawData ]( const LibCarna::base::math::Vector3ui& voxel )
+                    {
+                        return static_cast< float >( rawData( voxel.x(), voxel.y(), voxel.z() ) );
+                    }
+                );
+            }
+            , "intensity_data"_a )
+        .def(
+            "create_node",
+            []
+                ( std::shared_ptr< VolumeGridHelperType > self
+                , unsigned int geometryType
+                , const LibCarna::helpers::VolumeGridHelperBase::Spacing& spacing )
+            {
+                std::shared_ptr< NodeView > nodeView( new NodeView( self->createNode( geometryType, spacing ) ) );
+                nodeView->locks.insert( self );
+                return nodeView;
+            },
+            "geometry_type"_a, "spacing"_a
+        )
+        .def(
+            "create_node",
+            []
+                ( std::shared_ptr< VolumeGridHelperType > self
+                , unsigned int geometryType
+                , const LibCarna::helpers::VolumeGridHelperBase::Extent& extent )
+            {
+                std::shared_ptr< NodeView > nodeView( new NodeView( self->createNode( geometryType, extent ) ) );
+                nodeView->locks.insert( self );
+                return nodeView;
+            },
+            "geometry_type"_a, "extent"_a
+        )
+        /*
         .def( "release_geometry_features", &VolumeGridHelperType::releaseGeometryFeatures )
         .DEF_FREE( VolumeGridHelperType );
+        */
+        .doc() = R"(Computes the partitioning grid of volume data and the corresponding normal map. Also creates scene
+        nodes that represent the volume data within a scene.
+        
+        Arguments:
+            native_resolution: The resolution the partitioning grid is to be prepared for. This is the resolution that
+                will be expected when the data is loaded.
+            max_segment_bytesize: Maximum memory size of a single volume segment in bytes. Determines the partitioning
+                of the volume into a regular grid of segments.)";
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// FrameRendererHelperView
+// ----------------------------------------------------------------------------------
+
+FrameRendererHelperView::FrameRendererHelperView( const std::shared_ptr< LibCarna::py::base::FrameRendererView >& frameRendererView )
+    : frameRendererView( frameRendererView )
+{
+}
+
+
+void FrameRendererHelperView::add_stage( const std::shared_ptr< LibCarna::py::base::RenderStageView >& stage )
+{
+    stages.push_back( stage );
+}
+
+
+void FrameRendererHelperView::reset()
+{
+    stages.clear();
+}
+
+
+void FrameRendererHelperView::commit()
+{
+    /* Verify that the render stages are not already added to another frame renderer.
+     */
+    for( const std::shared_ptr< LibCarna::py::base::RenderStageView >& rsView : stages )
+    {
+        LIBCARNA_ASSERT_EX( rsView->ownedBy.get() == nullptr, "Render stage was already added to a frame renderer." );
+    }
+    
+    /* Add the render stages to the frame renderer (that also takes the ownership).
+     * 
+     * Note that there might be still `RenderStageView` objects around, that reference
+     * the render stages that are currently inside the targeted frame renderer. Hence,
+     * we are not allowed to clear the frame renderer here.
+     */
+    LibCarna::helpers::FrameRendererHelper< > frameRendererHelper( frameRendererView->frameRenderer );
+    for( const std::shared_ptr< LibCarna::py::base::RenderStageView >& rsView : stages )
+    {
+        rsView->ownedBy = frameRendererView;
+        frameRendererHelper << rsView->renderStage;
+    }
+
+    frameRendererHelper.commit( false );
 }
 
 
@@ -59,11 +190,113 @@ void defineVolumeGridHelper( Module& m, const char* name )
 // PYBIND11_MODULE: helpers
 // ----------------------------------------------------------------------------------
 
-const static auto VolumeGridHelperBase__DEFAULT_MAX_SEGMENT_BYTESIZE = ([](){ return VolumeGridHelperBase::DEFAULT_MAX_SEGMENT_BYTESIZE; })();
-
-PYBIND11_MODULE(helpers, m)
+PYBIND11_MODULE( helpers, m )
 {
 
+    py::class_< FrameRendererHelperView >( m, "FrameRendererHelper" )
+        .def( py::init< const std::shared_ptr< FrameRendererView >& >() )
+        .def( "add_stage", &FrameRendererHelperView::add_stage, "stage"_a )
+        .def( "commit", &FrameRendererHelperView::commit )
+        .def( "reset", &FrameRendererHelperView::reset );
+
+    /* The exposed VolumeGridHelper classes need to use a shared holder, due to their lazy data uploading behavior:
+     * https://kostrykin.github.io/LibCarna/html/classLibCarna_1_1base_1_1ManagedTexture3D.html#a37f03f311b2d1bd87ccb12f545d70f04
+     */
+    auto VolumeGridHelperBase = py::class_<
+        LibCarna::helpers::VolumeGridHelperBase, std::shared_ptr< LibCarna::helpers::VolumeGridHelperBase >
+    >( m, "VolumeGridHelperBase" )
+        .def_readonly_static( "DEFAULT_MAX_SEGMENT_BYTESIZE", &VolumeGridHelperBase__DEFAULT_MAX_SEGMENT_BYTESIZE )
+        .def_readonly( "native_resolution", &LibCarna::helpers::VolumeGridHelperBase::nativeResolution );
+
+    py::class_< LibCarna::helpers::VolumeGridHelperBase::Spacing >( VolumeGridHelperBase, "Spacing" )
+        .def( py::init< const LibCarna::base::math::Vector3f& >() )
+        .def_readwrite( "units", &LibCarna::helpers::VolumeGridHelperBase::Spacing::units )
+        .doc() = "Specifies the spacing between two adjacent voxel centers.";
+
+    py::class_< LibCarna::helpers::VolumeGridHelperBase::Extent >( VolumeGridHelperBase, "Extent" )
+        .def( py::init< const LibCarna::base::math::Vector3f& >() )
+        .def_readwrite( "units", &LibCarna::helpers::VolumeGridHelperBase::Extent::units )
+        .doc() = "Specifies the spatial size of the whole dataset.";
+
+    /* VolumeGridHelper_IntensityVolumeUInt16
+     */
+    auto VolumeGridHelper_IntensityVolumeUInt16 = py::class_<
+        LibCarna::helpers::VolumeGridHelper< LibCarna::base::IntensityVolumeUInt16 >,
+        std::shared_ptr< LibCarna::helpers::VolumeGridHelper< LibCarna::base::IntensityVolumeUInt16 > >,
+        LibCarna::helpers::VolumeGridHelperBase
+    >( m, "VolumeGridHelper_IntensityVolumeUInt16" );
+    defineVolumeGridHelper<
+        LibCarna::helpers::VolumeGridHelper< LibCarna::base::IntensityVolumeUInt16 >
+    >(
+        VolumeGridHelper_IntensityVolumeUInt16
+    );
+    addVolumeGridHelperIntensityComponent< LibCarna::helpers::VolumeGridHelper< LibCarna::base::IntensityVolumeUInt16 > >(
+        VolumeGridHelper_IntensityVolumeUInt16
+    );
+
+    /* VolumeGridHelper_IntensityVolumeUInt16_NormalMap3DInt8
+     */
+    auto VolumeGridHelper_IntensityVolumeUInt16_NormalMap3DInt8 = py::class_<
+        LibCarna::helpers::VolumeGridHelper< LibCarna::base::IntensityVolumeUInt16, LibCarna::base::NormalMap3DInt8 >,
+        std::shared_ptr< LibCarna::helpers::VolumeGridHelper< LibCarna::base::IntensityVolumeUInt16, LibCarna::base::NormalMap3DInt8 > >,
+        LibCarna::helpers::VolumeGridHelperBase
+    >( m, "VolumeGridHelper_IntensityVolumeUInt16_NormalMap3DInt8" );
+    defineVolumeGridHelper<
+        LibCarna::helpers::VolumeGridHelper< LibCarna::base::IntensityVolumeUInt16, LibCarna::base::NormalMap3DInt8 >
+    >(
+        VolumeGridHelper_IntensityVolumeUInt16_NormalMap3DInt8
+    );
+    addVolumeGridHelperIntensityComponent<
+        LibCarna::helpers::VolumeGridHelper< LibCarna::base::IntensityVolumeUInt16, LibCarna::base::NormalMap3DInt8 >
+    >(
+        VolumeGridHelper_IntensityVolumeUInt16_NormalMap3DInt8
+    );
+    addVolumeGridHelperNormalsComponent<
+        LibCarna::helpers::VolumeGridHelper< LibCarna::base::IntensityVolumeUInt16, LibCarna::base::NormalMap3DInt8 >
+    >(
+        VolumeGridHelper_IntensityVolumeUInt16_NormalMap3DInt8
+    );
+
+    /* VolumeGridHelper_IntensityVolumeUInt8
+     */
+    auto VolumeGridHelper_IntensityVolumeUInt8 = py::class_<
+        LibCarna::helpers::VolumeGridHelper< LibCarna::base::IntensityVolumeUInt8 >,
+        std::shared_ptr< LibCarna::helpers::VolumeGridHelper< LibCarna::base::IntensityVolumeUInt8 > >,
+        LibCarna::helpers::VolumeGridHelperBase
+    >( m, "VolumeGridHelper_IntensityVolumeUInt8" );
+    defineVolumeGridHelper<
+        LibCarna::helpers::VolumeGridHelper< LibCarna::base::IntensityVolumeUInt8 >
+    >(
+        VolumeGridHelper_IntensityVolumeUInt8
+    );
+    addVolumeGridHelperIntensityComponent< LibCarna::helpers::VolumeGridHelper< LibCarna::base::IntensityVolumeUInt8 > >(
+        VolumeGridHelper_IntensityVolumeUInt8
+    );
+
+    /* VolumeGridHelper_IntensityVolumeUInt8_NormalMap3DInt8
+     */
+    auto VolumeGridHelper_IntensityVolumeUInt8_NormalMap3DInt8 = py::class_<
+        LibCarna::helpers::VolumeGridHelper< LibCarna::base::IntensityVolumeUInt8, LibCarna::base::NormalMap3DInt8 >,
+        std::shared_ptr< LibCarna::helpers::VolumeGridHelper< LibCarna::base::IntensityVolumeUInt8, LibCarna::base::NormalMap3DInt8 > >,
+        LibCarna::helpers::VolumeGridHelperBase
+    >( m, "VolumeGridHelper_IntensityVolumeUInt8_NormalMap3DInt8" );
+    defineVolumeGridHelper<
+        LibCarna::helpers::VolumeGridHelper< LibCarna::base::IntensityVolumeUInt8, LibCarna::base::NormalMap3DInt8 >
+    >(
+        VolumeGridHelper_IntensityVolumeUInt8_NormalMap3DInt8
+    );
+    addVolumeGridHelperIntensityComponent<
+        LibCarna::helpers::VolumeGridHelper< LibCarna::base::IntensityVolumeUInt8, LibCarna::base::NormalMap3DInt8 >
+    >(
+        VolumeGridHelper_IntensityVolumeUInt8_NormalMap3DInt8
+    );
+    addVolumeGridHelperNormalsComponent<
+        LibCarna::helpers::VolumeGridHelper< LibCarna::base::IntensityVolumeUInt8, LibCarna::base::NormalMap3DInt8 >
+    >(
+        VolumeGridHelper_IntensityVolumeUInt8_NormalMap3DInt8
+    );
+
+    /*
     const static auto PointMarkerHelper__DEFAULT_POINT_SIZE = ([](){ return PointMarkerHelper::DEFAULT_POINT_SIZE; })();
 
     py::class_< PointMarkerHelper >( m, "PointMarkerHelper" )
@@ -93,27 +326,6 @@ PYBIND11_MODULE(helpers, m)
         .def_readonly( "point_size", &PointMarkerHelper::pointSize )
         .def_static( "reset_default_color", &PointMarkerHelper::resetDefaultColor )
         .DEF_FREE( PointMarkerHelper );
-
-    py::class_< VolumeGridHelperBase >( m, "VolumeGridHelperBase" )
-        .def_readonly_static( "DEFAULT_MAX_SEGMENT_BYTESIZE", &VolumeGridHelperBase__DEFAULT_MAX_SEGMENT_BYTESIZE );
-
-    py::class_< VolumeGridHelperBase::Spacing >( m, "Spacing" )
-        .def( py::init< const math::Vector3f& >() );
-
-    py::class_< VolumeGridHelperBase::Dimensions >( m, "Dimensions" )
-        .def( py::init< const math::Vector3f& >() );
-
-    defineVolumeGridHelper< VolumeGridHelper< IntensityVolumeUInt16 > >( m, "VolumeGrid_UInt16Intensity" );
-    defineVolumeGridHelper< VolumeGridHelper< IntensityVolumeUInt16, NormalMap3DInt8 > >( m, "VolumeGrid_UInt16Intensity_Int8Normal" );
-
-    defineVolumeGridHelper< VolumeGridHelper< IntensityVolumeUInt8 > >( m, "VolumeGrid_UInt8Intensity" );
-    defineVolumeGridHelper< VolumeGridHelper< IntensityVolumeUInt8, NormalMap3DInt8 > >( m, "VolumeGrid_UInt8Intensity_Int8Normal" );
-
-    py::class_< FrameRendererHelper< > >( m, "FrameRendererHelper" )
-        .def( py::init< RenderStageSequence& >() )
-        .def( "add_stage", &FrameRendererHelper< >::operator<< )
-        .def( "reset", &FrameRendererHelper< >::reset )
-        .def( "commit", &FrameRendererHelper< >::commit, "clear"_a = true );
+    */
 
 }
-

@@ -1,0 +1,19 @@
+img.logo {
+    margin-bottom: 1rem;
+    margin-left: -0.9rem;
+}
+
+h1.logo {
+    font-size: 1.4rem;
+    white-space: nowrap;
+}
+
+section > dl {
+    margin-bottom: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #ccc;
+}
+
+section > dl > dd > dl {
+    margin-top: 15px;
+}

@@ -1,10 +1,10 @@
-#include <Carna/py/Surface.h>
-#include <Carna/base/Framebuffer.h>
-#include <Carna/base/GLContext.h>
-#include <Carna/base/Texture.h>
-#include <Carna/base/glew.h>
+#include <LibCarna/py/Surface.hpp>
+#include <LibCarna/base/Framebuffer.hpp>
+#include <LibCarna/base/GLContext.hpp>
+#include <LibCarna/base/Texture.hpp>
+#include <LibCarna/base/glew.hpp>
 
-namespace Carna
+namespace LibCarna
 {
 
 namespace py
@@ -16,10 +16,10 @@ namespace py
 // createRenderTexture
 // ----------------------------------------------------------------------------------
 
-static base::Texture< 2 >* createRenderTexture( const base::GLContext& glContext )
+static LibCarna::base::Texture< 2 >* createRenderTexture( const LibCarna::base::GLContext& glContext )
 {
     glContext.makeCurrent();
-    return base::Framebuffer::createRenderTexture();
+    return LibCarna::base::Framebuffer::createRenderTexture();
 }
 
 
@@ -30,25 +30,25 @@ static base::Texture< 2 >* createRenderTexture( const base::GLContext& glContext
 
 struct Surface::Details
 {
-    Details( const base::GLContext& glContext, unsigned int width, unsigned int height );
+    Details( const LibCarna::base::GLContext& glContext, unsigned int width, unsigned int height );
 
-    const base::GLContext& glContext;
+    const LibCarna::base::GLContext& glContext;
     const std::size_t frameSize;
     const std::unique_ptr< unsigned char[] > frame;
-    const std::unique_ptr< base::Texture< 2 > > renderTexture;
-    const std::unique_ptr< base::Framebuffer > fbo;
-    std::unique_ptr< base::Framebuffer::Binding > fboBinding;
+    const std::unique_ptr< LibCarna::base::Texture< 2 > > renderTexture;
+    const std::unique_ptr< LibCarna::base::Framebuffer > fbo;
+    std::unique_ptr< LibCarna::base::Framebuffer::Binding > fboBinding;
 
     void grabFrame();
 };
 
 
-Surface::Details::Details( const base::GLContext& glContext, unsigned int width, unsigned int height )
+Surface::Details::Details( const LibCarna::base::GLContext& glContext, unsigned int width, unsigned int height )
     : glContext( glContext )
     , frameSize( width * height * 3 )
     , frame( new unsigned char[ frameSize ] )
     , renderTexture( createRenderTexture( glContext ) )
-    , fbo( new base::Framebuffer( width, height, *renderTexture ) )
+    , fbo( new LibCarna::base::Framebuffer( width, height, *renderTexture ) )
 {
 }
 
@@ -67,9 +67,9 @@ void Surface::Details::grabFrame()
 // Surface
 // ----------------------------------------------------------------------------------
 
-Surface::Surface( const base::GLContext& glContext, unsigned int width, unsigned int height )
-    : pimpl( new Details( glContext, width, height ) )
-    , glContext( glContext )
+Surface::Surface( const LibCarna::py::base::GLContextView& contextView, unsigned int width, unsigned int height )
+    : pimpl( new Details( *contextView.context, width, height ) )
+    , contextView( contextView.shared_from_this() )
     , size( pimpl->frameSize )
 {
 }
@@ -77,7 +77,7 @@ Surface::Surface( const base::GLContext& glContext, unsigned int width, unsigned
 
 Surface::~Surface()
 {
-    glContext.makeCurrent();
+    pimpl->glContext.makeCurrent();
 }
 
 
@@ -95,21 +95,30 @@ unsigned int Surface::height() const
 
 void Surface::begin() const
 {
-    glContext.makeCurrent();
-    pimpl->fboBinding.reset( new base::Framebuffer::Binding( *pimpl->fbo ) );
+    pimpl->glContext.makeCurrent();
+    pimpl->fboBinding.reset( new LibCarna::base::Framebuffer::Binding( *pimpl->fbo ) );
 }
 
 
-const unsigned char* Surface::end() const
+pybind11::array_t< unsigned char > Surface::end() const
 {
     pimpl->grabFrame();
     pimpl->fboBinding.reset();
-    return pimpl->frame.get();
+    const unsigned char* const pixelData = pimpl->frame.get();
+
+    pybind11::buffer_info buf; // performs flipping
+    buf.itemsize = sizeof( unsigned char );
+    buf.format   = pybind11::format_descriptor< unsigned char >::value;
+    buf.ndim     = 3;
+    buf.shape    = { height(), width(), 3 };
+    buf.strides  = { -buf.itemsize * 3 * width(), buf.itemsize * 3, buf.itemsize };
+    buf.ptr      = const_cast< unsigned char* >( pixelData ) + buf.itemsize * 3 * width() * ( height() - 1 );
+    return pybind11::array( buf );
 }
 
 
 
-}  // namespace Carna :: py
+}  // namespace LibCarna :: py
 
-}  // namespace Carna
+}  // namespace LibCarna
 

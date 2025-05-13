@@ -1,27 +1,28 @@
-cmake_minimum_required(VERSION 3.0.2)
-project(CarnaPy)
-include(FindPackageHandleStandardArgs)
+cmake_minimum_required( VERSION 3.5 )
+project( LibCarna-Python )
+set( PYTHON_MODULE_NAME "libcarna" )
+include( FindPackageHandleStandardArgs )
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
+set( CMAKE_CXX_STANDARD 14 )
+set( CMAKE_CXX_STANDARD_REQUIRED ON )
+set( CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE )
 
 ############################################
 
-set(FULL_VERSION ${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION})
-set(TARGET_NAME ${PROJECT_NAME}-${FULL_VERSION})
-string(TOUPPER ${PROJECT_NAME} PROJECT_NAME_CAPS)
+set( FULL_VERSION ${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION} )
+set( TARGET_NAME ${PROJECT_NAME}-${FULL_VERSION} )
+string( TOUPPER ${PROJECT_NAME} PROJECT_NAME_CAPS )
+string( REGEX REPLACE "-" "_" PROJECT_NAME_CAPS ${PROJECT_NAME_CAPS} )
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/carna)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/carna)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/carna)
+set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_MODULE_NAME} )
+set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_MODULE_NAME} )
+set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_MODULE_NAME} )
 
 ############################################
 # Set default options for this build
 ############################################
 
-option(BUILD_DOC  "Build and install the API documentation" OFF)
-option(BUILD_TEST "Build the unit tests" OFF)
+option( BUILD_TEST "Build the test suite" OFF )
 
 ############################################
 # Macro that sets variable to default value
@@ -30,108 +31,106 @@ option(BUILD_TEST "Build the unit tests" OFF)
 
 macro( option_default_to var_name default_val var_type doc_string )
     if( NOT DEFINED ${var_name} )
-        set(${var_name} ${default_val})
+        set( ${var_name} ${default_val} )
     endif()
-    set(${var_name} ${${var_name}} CACHE ${var_type} ${doc_string} FORCE)
+    set( ${var_name} ${${var_name}} CACHE ${var_type} ${doc_string} FORCE )
 endmacro()
 
 ############################################
 # Locate Find<ModuleName>.cmake scripts
 ############################################
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/misc/CMake-Modules)
+list( APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/misc/CMake-Modules )
+list( PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/.libcarna-dev )
 
 ############################################
 # Define default paths for the installation
 ############################################
 
 # set default library and header destinations (relative to CMAKE_INSTALL_PREFIX)
-option_default_to(INSTALL_LIBRARY_DIR "${TARGET_NAME}/carna"      String "Installation directory for libraries")
-option_default_to(INSTALL_DOC_DIR     "share/doc/${PROJECT_NAME}" String "Installation directory for API documentation")
+option_default_to( INSTALL_LIBRARY_DIR "${PROJECT_NAME}" String "Installation directory for libraries" )
 
 ############################################
 # Normalize installation paths
 # (get rid of Windows-style delimiters)
 ############################################
 
-file(TO_CMAKE_PATH ${INSTALL_LIBRARY_DIR} INSTALL_LIBRARY_DIR)
+file( TO_CMAKE_PATH ${INSTALL_LIBRARY_DIR} INSTALL_LIBRARY_DIR )
 
 ############################################
 # Find required dependencies
 ############################################
 
 # EGL
-find_package(OpenGL REQUIRED COMPONENTS OpenGL EGL)
-include_directories(${OPENGL_EGL_INCLUDE_DIRS})
+find_package( OpenGL REQUIRED COMPONENTS EGL )
+include_directories( ${OPENGL_EGL_INCLUDE_DIRS} )
 
 # pybind11
-find_package(pybind11 REQUIRED)
+find_package( pybind11 REQUIRED )
 
 # Eigen
 find_package( Eigen3 REQUIRED )
 include_directories( ${EIGEN3_INCLUDE_DIR} )
 
-# Carna
-find_package( Carna ${REQUIRED_VERSION_CARNA} REQUIRED )
-include_directories( ${CARNA_INCLUDE_DIR} )
-set(CARNA_VERSION ${FOUND_VERSION})
+# LibCarna
+find_package( LibCarna ${REQUIRED_VERSION_LIBCARNA} REQUIRED COMPONENTS release )
+include_directories( ${LibCarna_INCLUDE_DIR} )
+set( LIBCARNA_VERSION ${FOUND_VERSION} )
 
 ############################################
 
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/misc/__init__.py.in
-                ${CMAKE_CURRENT_BINARY_DIR}/carna/__init__.py @ONLY)
+                ${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_MODULE_NAME}/__init__.py @ONLY )
 
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/misc/py.py
-                ${CMAKE_CURRENT_BINARY_DIR}/carna/py.py COPYONLY)
+file( GLOB PYTHON_AUX_FILES "${CMAKE_CURRENT_SOURCE_DIR}/misc/libcarna/*.py" )
+file( COPY ${PYTHON_AUX_FILES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_MODULE_NAME}" )
 
-#configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/src/doc/Doxyfile.in
-#                ${CMAKE_CURRENT_SOURCE_DIR}/src/doc/Doxyfile @ONLY)
+file( GLOB LICENSES "${LibCarna_LICENSE_DIR}/LICENSE*" )
+file( COPY ${LICENSES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/licenses/" )
 
 ############################################
 # Project
 ############################################
 
-include_directories(${CMAKE_PROJECT_DIR}include)
-include_directories(${CMAKE_PROJECT_DIR}src/include)
+include_directories( ${CMAKE_PROJECT_DIR}src/include )
 set( MODULES
         base
         egl
         presets
         helpers
     )
-set( PRIVATE_QOBJECT_HEADERS
-        ""
-)
-set( PRIVATE_HEADERS
-        ${PRIVATE_QOBJECT_HEADERS}
-    )
 set( SRC
-        ""
-    )
-set( FORMS
-        ""
-    )
-set( RESOURCES
-        ""
-    )
-set( DOC_SRC
-        ""
-#        src/doc/Doxyfile.in
-#        src/doc/doc_extra.css
-#        src/doc/doc_main.dox
-#        src/doc/doc_version_log.dox
+        src/egl/EGLContext.cpp
+        src/py/log.cpp
+        src/py/Surface.cpp
+        src/py/base.cpp
+        src/py/egl.cpp
+        src/py/presets.cpp
+        src/py/helpers.cpp
     )
 
 ############################################
-#include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
+# Write unity build file
 ############################################
 
-set(EXTRA_SOURCES_egl src/egl/Context.cpp)
+set( UNITY_BUILD_FILE	${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}-unitybuild.cpp )
+
+file( REMOVE ${UNITY_BUILD_FILE} )
+file( WRITE ${UNITY_BUILD_FILE} "// This file is automatically generated by CMake.\n\n" )
+foreach( SOURCE_FILE ${SRC} )
+	file( APPEND ${UNITY_BUILD_FILE} "#include \"${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_FILE}\"\n" )
+endforeach( SOURCE_FILE )
+
+############################################
+# Add sources
+############################################
+
 foreach( MODULE ${MODULES} )
-    pybind11_add_module(${MODULE} src/py/${MODULE}.cpp ${EXTRA_SOURCES_${MODULE}})
-    target_compile_options(${MODULE} PRIVATE -fvisibility=default -fno-lto)
-
-    SET_TARGET_PROPERTIES(${MODULE} PROPERTIES PREFIX "")
+    string( TOUPPER ${MODULE} MODULE_CAPS )
+    pybind11_add_module( ${MODULE} ${UNITY_BUILD_FILE} )
+    target_compile_options( ${MODULE} PRIVATE -fvisibility=default -fno-lto )
+    target_compile_definitions( ${MODULE} PRIVATE )
+    SET_TARGET_PROPERTIES( ${MODULE} PROPERTIES PREFIX "" )
 endforeach( MODULE )
 
 add_definitions( -D${PROJECT_NAME_CAPS}_EXPORT -DNOMINMAX )
@@ -147,25 +146,25 @@ foreach( MODULE ${MODULES} )
         ${MODULE}
         PRIVATE
         ${OPENGL_LIBRARIES}
-        ${CARNA_LIBRARIES}
+        ${LibCarna_LIBRARIES}
         OpenGL::EGL
     )
-
 endforeach( MODULE )
 
 ############################################
 # Define installation routines
 ############################################
 
-install(TARGETS ${MODULES}
-        RUNTIME DESTINATION ${INSTALL_LIBRARY_DIR}
-        ARCHIVE DESTINATION ${INSTALL_LIBRARY_DIR}
-        LIBRARY DESTINATION ${INSTALL_LIBRARY_DIR})
+install( TARGETS ${MODULES}
+    RUNTIME DESTINATION ${INSTALL_LIBRARY_DIR}
+    ARCHIVE DESTINATION ${INSTALL_LIBRARY_DIR}
+    LIBRARY DESTINATION ${INSTALL_LIBRARY_DIR}
+)
 
-install(FILES
-        ${CMAKE_CURRENT_BINARY_DIR}/carna/__init__.py
-        ${CMAKE_CURRENT_BINARY_DIR}/carna/py.py
-        DESTINATION ${INSTALL_LIBRARY_DIR})
+install( FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_MODULE_NAME}/__init__.py
+    DESTINATION ${INSTALL_LIBRARY_DIR}
+)
 
 ############################################
 # Process unit tests
@@ -174,14 +173,3 @@ install(FILES
 if( BUILD_TEST )
     add_subdirectory( test )
 endif()
-
-############################################
-# Doxygen API documentation
-############################################
-
-#if( BUILD_DOC )
-#    add_subdirectory( src/doc )
-#endif()
-
-############################################
-

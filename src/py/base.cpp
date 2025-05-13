@@ -1,215 +1,645 @@
+#include <memory>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
+#include <pybind11/stl.h>
 
 namespace py = pybind11;
 
 using namespace pybind11::literals; // enables the _a literal
 
-#include <Carna/base/FrameRenderer.h>
-#include <Carna/base/Node.h>
-#include <Carna/base/Camera.h>
-#include <Carna/base/Geometry.h>
-#include <Carna/base/GeometryFeature.h>
-#include <Carna/base/Color.h>
-#include <Carna/base/Material.h>
-#include <Carna/base/BoundingVolume.h>
-#include <Carna/base/GLContext.h>
-#include <Carna/base/MeshFactory.h>
-#include <Carna/base/ManagedMesh.h>
-#include <Carna/base/RenderStage.h>
-#include <Carna/base/BlendFunction.h>
-#include <Carna/py/py.h>
-#include "Surface.cpp"
+#include <LibCarna/base/FrameRenderer.hpp>
+#include <LibCarna/base/Camera.hpp>
+#include <LibCarna/base/Geometry.hpp>
+#include <LibCarna/base/GeometryFeature.hpp>
+#include <LibCarna/base/Color.hpp>
+#include <LibCarna/base/ColorMap.hpp>
+#include <LibCarna/base/BoundingVolume.hpp>
+#include <LibCarna/base/GLContext.hpp>
+#include <LibCarna/base/MeshFactory.hpp>
+#include <LibCarna/base/RenderStage.hpp>
+//#include <LibCarna/base/BlendFunction.hpp>
+#include <LibCarna/base/MeshRenderingStage.hpp>
+#include <LibCarna/py/base.hpp>
+#include <LibCarna/py/Surface.hpp>
+#include <LibCarna/py/log.hpp>
 
-using namespace Carna::base;
-using namespace Carna::py;
+using namespace LibCarna::py;
+using namespace LibCarna::py::base;
 
-py::array_t< unsigned char > Surface__end( const Surface& surface )
+
+
+// ----------------------------------------------------------------------------------
+// GLContextView
+// ----------------------------------------------------------------------------------
+
+GLContextView::GLContextView( LibCarna::base::GLContext* context )
+    : context( context )
 {
-    const unsigned char* pixelData = surface.end();
-    py::buffer_info buf; // performs flipping
-    buf.itemsize = sizeof( unsigned char );
-    buf.format   = py::format_descriptor< unsigned char >::value;
-    buf.ndim     = 3;
-    buf.shape    = { surface.height(), surface.width(), 3 };
-    buf.strides  = { -buf.itemsize * 3 * surface.width(), buf.itemsize * 3, buf.itemsize };
-    buf.ptr      = const_cast< unsigned char* >( pixelData ) + buf.itemsize * 3 * surface.width() * (surface.height() - 1);
-    return py::array( buf );
 }
 
-template< typename VectorElementType , int dimension >
-Eigen::Matrix< float, dimension, 1 > normalized( const Eigen::Matrix< VectorElementType, dimension, 1 >& vector )
+
+GLContextView::~GLContextView()
 {
-    const float length = std::sqrt( static_cast< float >( math::length2( vector ) ) );
-    if( length > 0 ) return vector / length;
-    else return vector;
 }
 
-math::Matrix4f math__plane4f_by_distance( const math::Vector3f& normal, float distance )
+
+
+// ----------------------------------------------------------------------------------
+// SpatialView
+// ----------------------------------------------------------------------------------
+
+SpatialView::SpatialView( LibCarna::base::Spatial* spatial )
+    : ownedBy( nullptr )
+    , spatial( spatial )
 {
-    return math::plane4f( normalized( normal ), distance );
 }
 
-math::Matrix4f math__plane4f_by_support( const math::Vector3f& normal, const math::Vector3f& support )
+
+SpatialView::~SpatialView()
 {
-    return math::plane4f( normalized( normal ), support );
+    if( ownedBy.get() == nullptr )
+    {
+        /* The spatial object of this view is not owned by any other spatial object,
+         * thus it is safe to delete the object, when the last reference dies.
+         */
+         delete spatial;
+    }
 }
 
-// see: https://pybind11.readthedocs.io/en/stable/advanced/misc.html#generating-documentation-using-sphinx
 
-PYBIND11_MODULE(base, m)
+
+// ----------------------------------------------------------------------------------
+// NodeView
+// ----------------------------------------------------------------------------------
+
+NodeView::NodeView( LibCarna::base::Node* node )
+    : SpatialView::SpatialView( node )
+{
+}
+
+
+NodeView::~NodeView()
+{
+    if( auto parentNodeView = std::dynamic_pointer_cast< NodeView >( ownedBy ) )
+    {
+        /* The spatial object of this view is owned by another spatial object, thus the locks are propagated.
+         */
+        parentNodeView->locks.insert( locks.begin(), locks.end() );
+    }
+}
+
+
+LibCarna::base::Node& NodeView::node()
+{
+    return static_cast< LibCarna::base::Node& >( *spatial );
+}
+
+
+void NodeView::attachChild( SpatialView& child )
+{
+    /* Verify that the child is not already attached to another parent.
+     */
+    LIBCARNA_ASSERT_EX( !child.spatial->hasParent(), "Child already has a parent." );
+
+    /* Check for circular relations (verify that `this` is not a child of `child`).
+     */
+    bool circular = false;
+    if( LibCarna::base::Node* const childNode = dynamic_cast< LibCarna::base::Node* >( child.spatial ) )
+    {
+        childNode->visitChildren(
+            true,
+            [ &circular, this ]( const LibCarna::base::Spatial& spatial )
+            {
+                if( &spatial == this->spatial )
+                {
+                    circular = true;
+                }
+            }
+        );
+    }
+    LIBCARNA_ASSERT_EX( !circular, "Circular relations are forbidden." );
+
+    /* Update scene graph structure.
+     */
+    child.ownedBy = this->shared_from_this();
+    this->node().attachChild( child.spatial );
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// CameraView
+// ----------------------------------------------------------------------------------
+
+LibCarna::base::Camera& CameraView::camera()
+{
+    return static_cast< LibCarna::base::Camera& >( *spatial );
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// GeometryView
+// ----------------------------------------------------------------------------------
+
+LibCarna::base::Geometry& GeometryView::geometry()
+{
+    return static_cast< LibCarna::base::Geometry& >( *spatial );
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// GeometryFeatureView
+// ----------------------------------------------------------------------------------
+
+GeometryFeatureView::GeometryFeatureView( LibCarna::base::GeometryFeature& geometryFeature )
+    : geometryFeature( geometryFeature )
+{
+}
+
+
+GeometryFeatureView::~GeometryFeatureView()
+{
+    geometryFeature.release();
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// MaterialView
+// ----------------------------------------------------------------------------------
+
+LibCarna::base::Material& MaterialView::material()
+{
+    return static_cast< LibCarna::base::Material& >( geometryFeature );
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// RenderStageView
+// ----------------------------------------------------------------------------------
+
+RenderStageView::RenderStageView( LibCarna::base::RenderStage* renderStage )
+    : ownedBy( nullptr )
+    , renderStage( renderStage )
+{
+}
+
+
+RenderStageView::~RenderStageView()
+{
+    if( ownedBy.get() == nullptr )
+    {
+        /* The render stage of this view is not owned by any \a FrameRendererView,
+         * thus it is safe to delete the object, when the last reference dies.
+         */
+         delete renderStage;
+    }
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// MeshRenderingStageView
+// ----------------------------------------------------------------------------------
+
+const unsigned int MeshRenderingStageView::DEFAULT_ROLE_MESH = LibCarna::base::MeshRenderingMixin::DEFAULT_ROLE_MESH;
+const unsigned int MeshRenderingStageView::DEFAULT_ROLE_MATERIAL = LibCarna::base::MeshRenderingMixin::DEFAULT_ROLE_MATERIAL;
+
+
+MeshRenderingStageView::MeshRenderingStageView( LibCarna::base::RenderStage* renderStage )
+    : RenderStageView::RenderStageView( renderStage )
+{
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// FrameRendererView
+// ----------------------------------------------------------------------------------
+
+FrameRendererView::FrameRendererView
+        ( GLContextView& context
+        , unsigned int width
+        , unsigned int height
+        , bool fitSquare)
+    : context( context.shared_from_this() )
+    , frameRenderer( *( context.context ), width, height, fitSquare )
+{
+}
+
+
+void FrameRendererView::appendStage( const std::shared_ptr< RenderStageView >& rsView )
+{
+    /* Verify that the render stage was not already added to another frame renderer.
+     */
+    LIBCARNA_ASSERT_EX( rsView->ownedBy.get() == nullptr, "Render stage was already added to a frame renderer." );
+
+    /* Add the render stage to the frame renderer (and take ownership).
+     */
+    rsView->ownedBy = this->shared_from_this();
+    frameRenderer.appendStage( rsView->renderStage );
+}
+
+
+FrameRendererView::~FrameRendererView()
+{
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// ColorMapView
+// ----------------------------------------------------------------------------------
+
+const unsigned int ColorMapView::DEFAULT_RESOLUTION = LibCarna::base::ColorMap::DEFAULT_RESOLUTION;
+
+
+ColorMapView::ColorMapView
+    ( const std::shared_ptr< RenderStageView >& ownedBy
+    , LibCarna::base::ColorMap& colorMap )
+
+    : ownedBy( ownedBy )
+    , colorMap( colorMap )
+{
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// configureLog
+// ----------------------------------------------------------------------------------
+
+static void configureLog( bool enabled )
+{
+    if( enabled )
+    {
+        // TODO: use ::py::print to print log messages to `sys.stdout` so they can be tested
+        // https://pybind11.readthedocs.io/en/stable/advanced/pycpp/utilities.html#using-python-s-print-function-in-c
+        LibCarna::base::Log::instance().setWriter( new LibCarna::base::Log::StdWriter() );
+    }
+    else
+    {
+        LibCarna::base::Log::instance().setWriter( new NullWriter() );
+    }
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// PYBIND11_MODULE: base
+// ----------------------------------------------------------------------------------
+
+PYBIND11_MODULE( base, m )
 {
 
-    py::class_< Carna::base::GLContext >( m, "GLContext" );
+    py::register_exception< LibCarna::base::LibCarnaException >( m, "LibCarnaException" );
+    py::register_exception< LibCarna::base::AssertionFailure >( m, "AssertionFailure" );
 
-    py::class_< Spatial >( m, "Spatial" )
-        .def_property_readonly( "has_parent", &Spatial::hasParent )
-        .def( "detach_from_parent", &Spatial::detachFromParent, py::return_value_policy::reference )
-        .def_property_readonly( "parent", py::overload_cast<>( &Spatial::parent, py::const_ ) )
-        .def( "find_root", py::overload_cast<>( &Spatial::findRoot, py::const_ ), py::return_value_policy::reference )
-        .def_property( "movable", &Spatial::isMovable, &Spatial::setMovable )
-        .def_property( "tag", &Spatial::tag, &Spatial::setTag )
-        .def_readwrite( "local_transform", &Spatial::localTransform )
-        .DEF_FREE( Spatial );
-
-    py::class_< Node, Spatial >( m, "Node" )
-        .def_static( "create", []( const std::string& tag ) {
-            return new Node( tag );
-        }
-        , py::return_value_policy::reference, "tag"_a = "" )
-        .def( "attach_child", &Node::attachChild )
-        .def( "detach_child", &Node::detachChild, py::return_value_policy::reference )
-        .def( "has_child", &Node::hasChild )
-        .def( "delete_all_children", &Node::deleteAllChildren )
-        .def( "children", &Node::children );
-
-    py::class_< Camera, Spatial >( m, "Camera" )
-        .def_static( "create", []()
+    m.def( "logging",
+        []( bool enabled )
         {
-            return new Camera();
-        }
-        , py::return_value_policy::reference )
-        .def_property( "projection", &Camera::projection, &Camera::setProjection )
-        .def_property( "orthogonal_projection_hint", &Camera::isOrthogonalProjectionHintSet, &Camera::setOrthogonalProjectionHint )
-        .def_property_readonly( "view_transform", &Camera::viewTransform );
+            configureLog( enabled );
+        },
+        "enabled"_a = true
+    );
 
-    py::class_< GeometryFeature, std::unique_ptr< GeometryFeature, py::nodelete > >( m, "GeometryFeature" )
-        .def( "release", &GeometryFeature::release );
+    py::class_< GLContextView, std::shared_ptr< GLContextView > >( m, "GLContext" )
+        .doc() = "Wraps and represents an OpenGL context.";
 
-    py::class_< Material, GeometryFeature, std::unique_ptr< Material, py::nodelete > >( m, "Material" )
-        .def_static( "create", []( const std::string& shaderName )
-        {
-            return &Material::create( shaderName );
-        }
-        , py::return_value_policy::reference, "shaderName"_a )
-        .def( "set_parameter4f", &Material::setParameter< math::Vector4f > )
-        .def( "set_parameter3f", &Material::setParameter< math::Vector4f > )
-        .def( "set_parameter2f", &Material::setParameter< math::Vector4f > )
-        .def( "clear_parameters", &Material::clearParameters )
-        .def( "remove_parameter", &Material::removeParameter )
-        .def( "has_parameter", &Material::hasParameter );
+    py::class_< SpatialView, std::shared_ptr< SpatialView > >( m, "Spatial" )
+        .def_property_readonly( "has_parent",
+            VIEW_DELEGATE( SpatialView, spatial->hasParent() )
+        )
+        .def( "detach_from_parent",
+            []( SpatialView& self )
+            {
+                self.ownedBy.reset();
+                self.spatial->detachFromParent();
+            }
+        )
+        .def_property( "is_movable",
+            VIEW_DELEGATE( SpatialView, spatial->isMovable() ),
+            VIEW_DELEGATE( SpatialView, spatial->setMovable( movable ), bool movable )
+        )
+        .def_property( "tag",
+            VIEW_DELEGATE( SpatialView, spatial->tag() ),
+            VIEW_DELEGATE( SpatialView, spatial->setTag( tag ), const std::string& tag )
+        )
+        .def_property( "local_transform",
+            VIEW_DELEGATE( SpatialView, spatial->localTransform ),
+            VIEW_DELEGATE( SpatialView, spatial->localTransform = localTransform, const LibCarna::base::math::Matrix4f& localTransform )
+        )
+        .def( "update_world_transform",
+            VIEW_DELEGATE( SpatialView, spatial->updateWorldTransform() )
+        )
+        .def_property_readonly( "world_transform",
+            VIEW_DELEGATE( SpatialView, spatial->worldTransform() )
+        );
 
-    py::class_< BoundingVolume, std::unique_ptr< BoundingVolume, py::nodelete > >( m, "BoundingVolume" );
+    py::class_< NodeView, std::shared_ptr< NodeView >, SpatialView >( m, "Node" )
+        .def( py::init< const std::string& >(), "tag"_a = "" )
+        .def( "attach_child", &NodeView::attachChild )
+        .def( "children",
+            VIEW_DELEGATE( NodeView, node().children() )
+        );
 
-    py::class_< Geometry, Spatial >( m, "Geometry" )
-        .def_static( "create", []( const unsigned int geometryType, const std::string& tag )
-        {
-            return new Geometry( geometryType, tag );
-        }
-        , py::return_value_policy::reference, "geometryType"_a, "tag"_a = "" )
-        .def( "put_feature", &Geometry::putFeature )
-        .def( "remove_feature", py::overload_cast< GeometryFeature& >( &Geometry::removeFeature ) )
-        .def( "remove_feature_role", py::overload_cast< unsigned int >( &Geometry::removeFeature ) )
-        .def( "clear_features", &Geometry::clearFeatures )
-        .def( "has_feature", py::overload_cast< const GeometryFeature& >( &Geometry::hasFeature, py::const_ ) )
-        .def( "has_feature_role", py::overload_cast< unsigned int >( &Geometry::hasFeature, py::const_ ) )
-        .def( "feature", &Geometry::feature, py::return_value_policy::reference )
-        .def( "features_count", &Geometry::featuresCount )
-        .def_property( "bounding_volume", py::overload_cast<>( &Geometry::boundingVolume, py::const_ ), &Geometry::setBoundingVolume )
-        .def_property_readonly( "has_bounding_volume", &Geometry::hasBoundingVolume )
-        .def_readonly( "geometry_type", &Geometry::geometryType );
+    py::class_< CameraView, std::shared_ptr< CameraView >, SpatialView >( m, "Camera" )
+        .def( py::init<>() )
+        .def_property( "projection",
+            VIEW_DELEGATE( CameraView, camera().projection() ),
+            VIEW_DELEGATE( CameraView, camera().setProjection( projection ), const LibCarna::base::math::Matrix4f& projection )
+        )
+        .def_property( "orthogonal_projection_hint",
+            VIEW_DELEGATE( CameraView, camera().isOrthogonalProjectionHintSet() ),
+            VIEW_DELEGATE( CameraView, camera().setOrthogonalProjectionHint( orthogonalProjectionHint ), bool orthogonalProjectionHint )
+        )
+        .def_property_readonly( "view_transform",
+            VIEW_DELEGATE( CameraView, camera().viewTransform() )
+        );
+
+    py::class_< GeometryFeatureView, std::shared_ptr< GeometryFeatureView > >( m, "GeometryFeature" );
+
+    py::class_< GeometryView, std::shared_ptr< GeometryView >, SpatialView >( m, "Geometry" )
+        .def( py::init< unsigned int, const std::string& >(), "geometry_type"_a, "tag"_a = "" )
+        .def_property_readonly( "geometry_type",
+            VIEW_DELEGATE( GeometryView, geometry().geometryType )
+        )
+        .def_property_readonly( "features_count",
+            VIEW_DELEGATE( GeometryView, geometry().featuresCount() )
+        )
+        .def( "put_feature",
+            VIEW_DELEGATE( GeometryView, geometry().putFeature( role, feature.geometryFeature ), unsigned int role, GeometryFeatureView& feature )
+        )
+        .def( "remove_feature",
+            VIEW_DELEGATE( GeometryView, geometry().removeFeature( role ), unsigned int role )
+        )
+        .def( "remove_feature",
+            VIEW_DELEGATE( GeometryView, geometry().removeFeature( feature.geometryFeature ), GeometryFeatureView& feature )
+        )
+        .def( "clear_features",
+            VIEW_DELEGATE( GeometryView, geometry().clearFeatures() )
+        )
+        .def( "has_feature",
+            VIEW_DELEGATE( GeometryView, geometry().hasFeature( role ), unsigned int role )
+        )
+        .def( "has_feature",
+            VIEW_DELEGATE( GeometryView, geometry().hasFeature( feature.geometryFeature ), GeometryFeatureView& feature )
+        );
+
+    py::class_< MaterialView, std::shared_ptr< MaterialView >, GeometryFeatureView >( m, "Material" )
+        .def( py::init< const std::string& >(), "shader_name"_a )
+        .def( "__setitem__", &MaterialView::setParameter< LibCarna::base::math::Vector4f > )
+        .def( "__setitem__", &MaterialView::setParameter< LibCarna::base::math::Vector3f > )
+        .def( "__setitem__", &MaterialView::setParameter< LibCarna::base::math::Vector2f > )
+        .def( "__setitem__", &MaterialView::setParameter< float > )
+        .def( "clear_parameters",
+            VIEW_DELEGATE( MaterialView, material().clearParameters() )
+        )
+        .def( "remove_parameter",
+            VIEW_DELEGATE( MaterialView, material().removeParameter( name ), const std::string& name )
+        )
+        .def( "has_parameter",
+            VIEW_DELEGATE( MaterialView, material().hasParameter( name ), const std::string& name )
+        )
+        .def_property( "line_width",
+            VIEW_DELEGATE( MaterialView, material().lineWidth() ),
+            VIEW_DELEGATE( MaterialView, material().setLineWidth( lineWidth ), float lineWidth )
+        );
 
     py::class_< Surface >( m, "Surface" )
-        .def_static( "create", []( const GLContext& glContext, unsigned int width, unsigned int height )
-        {
-            return new Surface( glContext, width, height );
-        }
-        , py::return_value_policy::reference, "glContext"_a, "width"_a, "height"_a )
+        .def( py::init< const GLContextView&, unsigned int, unsigned int >(), "gl_context"_a, "width"_a, "height"_a )
         .def_property_readonly( "width", &Surface::width )
         .def_property_readonly( "height", &Surface::height )
-        .def_property_readonly( "gl_context", []( const Surface& self )
-        {
-            return &self.glContext;
-        }
-        , py::return_value_policy::reference )
         .def( "begin", &Surface::begin )
-        .def( "end", &Surface__end )
-        .DEF_FREE( Surface );
+        .def( "end", &Surface::end );
+    
+    py::class_< RenderStageView, std::shared_ptr< RenderStageView > >( m, "RenderStage" )
+        .def_property( "enabled",
+            VIEW_DELEGATE( RenderStageView, renderStage->isEnabled() ),
+            VIEW_DELEGATE( RenderStageView, renderStage->setEnabled( enabled ), bool enabled )
+        )
+        .def_property_readonly( "renderer",
+            VIEW_DELEGATE( RenderStageView, ownedBy.get() )
+        );
 
-    py::class_< RenderStage >( m, "RenderStage" )
-        .def_property( "enabled", &RenderStage::isEnabled, &RenderStage::setEnabled )
-        .def_property_readonly( "renderer", py::overload_cast<>( &RenderStage::renderer, py::const_ ) )
-        .DEF_FREE( RenderStage );
+    py::class_< MeshRenderingStageView, std::shared_ptr< MeshRenderingStageView >, RenderStageView >( m, "MeshRenderingStage" )
+        .def_readonly_static( "DEFAULT_ROLE_MESH", &MeshRenderingStageView::DEFAULT_ROLE_MESH )
+        .def_readonly_static( "DEFAULT_ROLE_MATERIAL", &MeshRenderingStageView::DEFAULT_ROLE_MATERIAL );
 
-    py::class_< RenderStageSequence >( m, "RenderStageSequence" )
-        .def_property_readonly( "stages", &RenderStageSequence::stages )
-        .def( "append_stage", &RenderStageSequence::appendStage )
-        .def( "clear_stages", &RenderStageSequence::clearStages )
-        .def( "stage_at", &RenderStageSequence::stageAt );
+    py::class_< FrameRendererView, std::shared_ptr< FrameRendererView > >( m, "FrameRenderer" )
+        .def( py::init< GLContextView&, unsigned int, unsigned int, bool >(),
+            "gl_context"_a, "width"_a, "height"_a, "fit_square"_a = false
+        )
+        .def( "append_stage",
+            &FrameRendererView::appendStage,
+            "stage"_a
+        )
+        .def_property_readonly( "gl_context",
+            VIEW_DELEGATE( FrameRendererView, context.get() )
+        )
+        .def_property_readonly( "width",
+            VIEW_DELEGATE( FrameRendererView, frameRenderer.width() )
+        )
+        .def_property_readonly( "height",
+            VIEW_DELEGATE( FrameRendererView, frameRenderer.height() )
+        )
+        .def( "set_background_color",
+            VIEW_DELEGATE( FrameRendererView, frameRenderer.setBackgroundColor( color ), const LibCarna::base::Color& color ),
+            "color"_a
+        )
+        .def( "reshape",
+            VIEW_DELEGATE( FrameRendererView,
+                frameRenderer.reshape( width, height ),
+                unsigned int width, unsigned int height
+            ),
+            "width"_a, "height"_a
+        )
+        .def( "reshape",
+            VIEW_DELEGATE( FrameRendererView,
+                frameRenderer.reshape( width, height, fitSquare ),
+                unsigned int width, unsigned int height, bool fitSquare
+            ),
+            "width"_a, "height"_a, "fit_square"_a = false
+        )
+        .def( "render",
+            []( FrameRendererView& self, CameraView& camera, NodeView* root ) {
+                if( root == nullptr )
+                {
+                    self.frameRenderer.render( camera.camera() );
+                }
+                else
+                {
+                    self.frameRenderer.render( camera.camera(), root->node() );
+                }
+            },
+            "camera"_a, "root"_a = nullptr
+        );
 
-    py::class_< FrameRenderer, RenderStageSequence >( m, "FrameRenderer" )
-        .def_static( "create", []( GLContext& glContext, unsigned int width, unsigned int height, bool fitSquare )
-        {
-            return new FrameRenderer( glContext, width, height, fitSquare );
-        }
-        , py::return_value_policy::reference, "glContext"_a, "width"_a, "height"_a, "fitSquare"_a = false )
-        .def_property_readonly( "gl_context", &FrameRenderer::glContext )
-        .def_property_readonly( "width", &FrameRenderer::width )
-        .def_property_readonly( "height", &FrameRenderer::height )
-        .def( "set_background_color", &FrameRenderer::setBackgroundColor )
-        .def( "reshape", py::overload_cast< unsigned int, unsigned int >( &FrameRenderer::reshape ) )
-        .def( "set_fit_square", []( FrameRenderer* self, bool fitSquare )
-        {
-            self->reshape( self->width(), self->height(), fitSquare );
-        }, "fitSquare"_a )
-        .def( "render", []( FrameRenderer* self, Camera& cam, Node* root ){
-            if( root == nullptr ) self->render( cam );
-            else self->render( cam, *root );
-        }, "cam"_a, "root"_a = nullptr )
-        .DEF_FREE( FrameRenderer );
+    py::class_< MeshFactoryView >( m, "MeshFactory" )
+        .def_static( "create_box",
+            []( float width, float height, float depth )
+            {
+                return new GeometryFeatureView( LibCarna::base::MeshFactory< LibCarna::base::PNVertex >::createBox( width, height, depth ) );
+            },
+            "width"_a, "height"_a, "depth"_a
+        )
+        .def_static( "create_ball",
+            []( float radius, unsigned int degree )
+            {
+                return new GeometryFeatureView( LibCarna::base::MeshFactory< LibCarna::base::PNVertex >::createBall( radius, degree ) );
+            },
+            "radius"_a, "degree"_a=4
+        )
+        .def_static( "create_point",
+            []()
+            {
+                return new GeometryFeatureView( LibCarna::base::MeshFactory< LibCarna::base::PVertex >::createPoint() );
+            }
+        )
+        .def_static( "create_line_strip",
+            []( const std::vector< LibCarna::base::math::Vector3f >& points )
+            {
+                return new GeometryFeatureView( LibCarna::base::MeshFactory< LibCarna::base::PVertex >::createLineStrip( points ) );
+            },
+            "points"_a
+        );
 
+    m.def_submodule( "math" )
+        .def( "ortho", &LibCarna::base::math::ortho4f, "left"_a, "right"_a, "bottom"_a, "top"_a, "z_near"_a, "z_far"_a )
+        .def( "frustum",
+            py::overload_cast< float, float, float, float, float, float >( &LibCarna::base::math::frustum4f ),
+            "left"_a, "right"_a, "bottom"_a, "top"_a, "z_near"_a, "z_far"_a
+        )
+        .def( "frustum",
+            py::overload_cast< float, float, float, float >( &LibCarna::base::math::frustum4f ),
+            "fov"_a, "height_over_width"_a, "z_near"_a, "z_far"_a
+        )
+        .def( "deg2rad", &LibCarna::base::math::deg2rad, "degrees"_a )
+        .def( "rad2deg", &LibCarna::base::math::rad2deg, "radians"_a )
+        .def( "rotation", &LibCarna::base::math::rotation4f< LibCarna::base::math::Vector3f >, "axis"_a, "radians"_a )
+        .def( "translation", &LibCarna::base::math::translation4f< LibCarna::base::math::Vector3f >, "offset"_a )
+        .def( "translation",
+            static_cast< LibCarna::base::math::Matrix4f( * )( float, float, float ) >( &LibCarna::base::math::translation4f ),
+            "tx"_a, "ty"_a, "tz"_a
+        )
+        .def( "scaling", &LibCarna::base::math::scaling4f< float >, "factors"_a )
+        .def( "scaling",
+            static_cast< LibCarna::base::math::Matrix4f( * )( float, float, float ) >( &LibCarna::base::math::scaling4f ),
+            "sx"_a, "sy"_a, "sz"_a )
+        .def( "scaling", static_cast< LibCarna::base::math::Matrix4f( * )( float ) >( &LibCarna::base::math::scaling4f ), "uniform_factor"_a )
+        .def( "plane",
+            []( const LibCarna::base::math::Vector3f& normal, float distance )
+            {
+                return LibCarna::base::math::plane4f( normal.normalized(), distance );
+            },
+            "normal"_a, "distance"_a
+        )
+        .def( "plane",
+            []( const LibCarna::base::math::Vector3f& normal, const LibCarna::base::math::Vector3f& support )
+            {
+                return LibCarna::base::math::plane4f( normal.normalized(), support );
+            },
+            "normal"_a, "support"_a 
+        );
+
+    py::class_< LibCarna::base::Color >( m, "Color" )
+        .def_readonly_static( "WHITE", &LibCarna::base::Color::WHITE )
+        .def_readonly_static( "WHITE_NO_ALPHA", &LibCarna::base::Color::WHITE_NO_ALPHA )
+        .def_readonly_static( "BLACK", &LibCarna::base::Color::BLACK )
+        .def_readonly_static( "BLACK_NO_ALPHA", &LibCarna::base::Color::BLACK_NO_ALPHA )
+        .def_readonly_static( "RED", &LibCarna::base::Color::RED )
+        .def_readonly_static( "RED_NO_ALPHA", &LibCarna::base::Color::RED_NO_ALPHA )
+        .def_readonly_static( "GREEN", &LibCarna::base::Color::GREEN )
+        .def_readonly_static( "GREEN_NO_ALPHA", &LibCarna::base::Color::GREEN_NO_ALPHA )
+        .def_readonly_static( "BLUE", &LibCarna::base::Color::BLUE )
+        .def_readonly_static( "BLUE_NO_ALPHA", &LibCarna::base::Color::BLUE_NO_ALPHA )
+        .def( py::init< unsigned char, unsigned char, unsigned char, unsigned char >(), "r"_a, "g"_a, "b"_a, "a"_a )
+        .def( py::init< const LibCarna::base::math::Vector4f& >(), "rgba"_a )
+        .def( py::init<>() )
+        .def_readwrite( "r", &LibCarna::base::Color::r )
+        .def_readwrite( "g", &LibCarna::base::Color::g )
+        .def_readwrite( "b", &LibCarna::base::Color::b )
+        .def_readwrite( "a", &LibCarna::base::Color::a )
+        .def(
+            "__eq__",
+            []( LibCarna::base::Color& self, LibCarna::base::Color& other )
+            {
+                return self == other;
+            }
+        )
+        .def(
+            "toarray",
+            []( LibCarna::base::Color& self )
+            {
+                return static_cast< const LibCarna::base::math::Vector4f& >( self );
+            }
+        );
+
+    py::class_< ColorMapView, std::shared_ptr< ColorMapView > >( m, "ColorMap" )
+        .def_readonly_static( "DEFAULT_RESOLUTION", &ColorMapView::DEFAULT_RESOLUTION )
+        .def_readonly_static( "DEFAULT_MINIMUM_INTENSITY", &LibCarna::base::ColorMap::DEFAULT_MINIMUM_INTENSITY )
+        .def_readonly_static( "DEFAULT_MAXIMUM_INTENSITY", &LibCarna::base::ColorMap::DEFAULT_MAXIMUM_INTENSITY )
+        .def( "clear",
+            VIEW_DELEGATE( ColorMapView, colorMap.clear() )
+        )
+        .def( "write_linear_segment",
+            VIEW_DELEGATE_RETURN_SELF
+                ( const std::shared_ptr< ColorMapView >
+                , get()->colorMap.writeLinearSegment( intensityFirst, intensityLast, colorFirst, colorLast )
+                , float intensityFirst
+                , float intensityLast
+                , const LibCarna::base::Color& colorFirst
+                , const LibCarna::base::Color& colorLast ),
+            "intensity_first"_a, "intensity_last"_a, "color_first"_a, "color_last"_a
+        )
+        .def( "write_linear_spline",
+            VIEW_DELEGATE_RETURN_SELF
+                ( const std::shared_ptr< ColorMapView >
+                , get()->colorMap.writeLinearSpline( colors )
+                , const std::vector< LibCarna::base::Color >& colors ),
+            "colors"_a
+        )
+        .def_property_readonly(
+            "color_list",
+            VIEW_DELEGATE( ColorMapView, colorMap.getColorList() )
+        )
+        .def_property(
+            "minimum_intensity",
+            VIEW_DELEGATE
+                ( const std::shared_ptr< ColorMapView >
+                , get()->colorMap.minimumIntensity() ),
+            VIEW_DELEGATE
+                ( const std::shared_ptr< ColorMapView >
+                , get()->colorMap.setMinimumIntensity( minimumIntensity )
+                , float minimumIntensity )
+        )
+        .def_property(
+            "maximum_intensity",
+            VIEW_DELEGATE
+                ( const std::shared_ptr< ColorMapView >
+                , get()->colorMap.maximumIntensity() ),
+            VIEW_DELEGATE
+                ( const std::shared_ptr< ColorMapView >
+                , get()->colorMap.setMaximumIntensity( maximumIntensity )
+                , float maximumIntensity )
+        )
+        .def( "set",
+            VIEW_DELEGATE_RETURN_SELF
+                ( const std::shared_ptr< ColorMapView >
+                , get()->colorMap = other->colorMap
+                , const std::shared_ptr< ColorMapView >& other ),
+            "other"_a
+        );
+
+/*
     py::class_< BlendFunction >( m, "BlendFunction" )
         .def( py::init< int, int >() )
         .def_readonly( "source_factor", &BlendFunction::sourceFactor )
         .def_readonly( "destination_factor", &BlendFunction::destinationFactor );
-
-    m.def( "create_box", []( float width, float height, float depth )
-    {
-        return static_cast< GeometryFeature* >( &MeshFactory< PNVertex >::createBox( width, height, depth ) );
-    }
-    , py::return_value_policy::reference, "width"_a, "height"_a, "depth"_a );
-
-    m.def( "create_point", []()
-    {
-        return static_cast< GeometryFeature* >( &MeshFactory< PVertex >::createPoint() );
-    }
-    , py::return_value_policy::reference );
-
-    m.def( "create_ball", []( float radius, unsigned int degree )
-    {
-        return static_cast< GeometryFeature* >( &MeshFactory< PNVertex >::createBall( radius, degree ) );
-    }
-    , py::return_value_policy::reference, "radius"_a, "degree"_a = 3 );
-
-    py::module math = m.def_submodule( "math" );
-    math.def( "ortho4f", &math::ortho4f );
-    math.def( "frustum4f", py::overload_cast< float, float, float, float >( &math::frustum4f ) );
-    math.def( "deg2rad", &math::deg2rad );
-    math.def( "rotation4f", static_cast< math::Matrix4f( * )( const math::Vector3f&, float ) >( &math::rotation4f ) );
-    math.def( "translation4f", static_cast< math::Matrix4f( * )( float, float, float ) >( &math::translation4f ) );
-    math.def( "scaling4f", static_cast< math::Matrix4f( * )( float, float, float ) >( &math::scaling4f ) );
-    math.def( "plane4f", math__plane4f_by_distance );
-    math.def( "plane4f", math__plane4f_by_support );
+*/
 
 }
-
