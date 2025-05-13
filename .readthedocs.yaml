@@ -23,4 +23,6 @@ build:
       - pip install dist/libcarna_python-*.whl
     pre_build:
       - pip install -r docs/requirements.txt
-      - export LIBCARNA_PYTHON_NBSPHINX_EXECUTE=never
+    build:
+      html:
+        - LIBCARNA_PYTHON_NBSPHINX_EXECUTE=never sphinx-build -M html docs $READTHEDOCS_OUTPUT/html
