@@ -6,9 +6,9 @@ from typing import (
     Iterable,
 )
 
+import imageio_ffmpeg
 import numpngw
 import numpy as np
-import skvideo.io
 
 try:
     from IPython.core.display import HTML as IPythonHTML
@@ -47,16 +47,16 @@ def _render_html_h264(array: np.ndarray | Iterable[np.ndarray], fps: float = 25)
     
     # Encode video
     with tempfile.NamedTemporaryFile(suffix='.mp4') as mp4_file:
-        with skvideo.io.FFmpegWriter(
+        with imageio_ffmpeg.write_frames(
             mp4_file.name,
-            outputdict={
-                '-vcodec': 'h264', 
-                '-pix_fmt': 'yuv420p',
-                '-r': str(fps),
-            },
+            size=array.shape[1:],
+            fps=fps,
+            codec='h264',
+            pix_fmt_out='yuv420p',
         ) as writer:
+            writer.send(None)
             for frame in array:
-                writer.writeFrame(frame)
+                writer.send(frame)
         buf = mp4_file.read()
 
     # Produce HTML
