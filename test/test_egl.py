@@ -31,7 +31,6 @@ class EGLContext(testsuite.LibCarnaTestCase):
         ctx = libcarna.egl.EGLContext()
         self.assertIsInstance(ctx.vendor, str)
         self.assertGreater(len(ctx.vendor), 0)
-        print("*** EGL vendor: %s" % ctx.vendor)
 
     def test__renderer(self):
         """
@@ -40,4 +39,3 @@ class EGLContext(testsuite.LibCarnaTestCase):
         ctx = libcarna.egl.EGLContext()
         self.assertIsInstance(ctx.renderer, str)
         self.assertGreater(len(ctx.renderer), 0)
-        print("*** EGL renderer: %s" % ctx.renderer)

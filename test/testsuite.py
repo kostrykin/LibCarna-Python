@@ -55,7 +55,7 @@ class LibCarnaTestCase(unittest.TestCase):
 
 class LibCarnaRenderingTestCase(LibCarnaTestCase):
 
-    def assert_image_almost_equal(self, actual, expected, decimal=5):
+    def assert_image_almost_equal(self, actual, expected, threshold=1, max_differing_pixels=0):
         if isinstance(actual, str):
             actual = _imread(actual)
         if isinstance(expected, str):
@@ -63,7 +63,20 @@ class LibCarnaRenderingTestCase(LibCarnaTestCase):
             expected = _imread(str(expected))
             if np.issubdtype(expected.dtype, np.floating):
                 expected = (expected * 255).astype(np.uint8)
-        np.testing.assert_array_almost_equal(actual, expected, decimal=decimal)
+
+        def verify_frame(actual, expected):
+            self.assertLessEqual((np.max(np.abs(actual - expected), axis=2) > threshold).sum(), max_differing_pixels)
+
+        self.assertEqual(actual.shape, expected.shape)
+        if actual.ndim == 3:
+            verify_frame(actual, expected)
+
+        elif actual.ndim == 4:
+            for actual_frame, expected_frame in zip(actual, expected):
+                verify_frame(actual_frame, expected_frame)
+
+        else:
+            raise ValueError(f'Unsupported array shape: {actual.shape}')
 
     def assert_image_almost_expected(self, actual, **kwargs):
         expected = f'{self.id()}.png'
