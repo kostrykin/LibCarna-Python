@@ -19,18 +19,20 @@ mkdir -p "$ROOT"/build
 # Build native extension
 cd "$ROOT"/build
 cmake -DCMAKE_BUILD_TYPE=Release \
-      -DPYTHON_EXECUTABLE="$(which python)" \
-      -Dpybind11_DIR="$CONDA_PREFIX/share/cmake/pybind11" \
-      -DCMAKE_MODULE_PATH="$CONDA_PREFIX/share/cmake/Modules" \
-      "$ROOT"
-make VERBOSE=1
+    -DPYTHON_EXECUTABLE="$(which python)" \
+    -Dpybind11_DIR="$CONDA_PREFIX/share/cmake/pybind11" \
+    -DCMAKE_MODULE_PATH="$CONDA_PREFIX/share/cmake/Modules" \
+    "$ROOT"
+if [ -z "$LIBCARNA_SKIP_NATIVE" ]; then
+    make VERBOSE=1
+fi
 
 # Build wheel
 python -m build --no-isolation
 
 # Install wheel
 rm -rf venv
-python -m venv venv
+python -m venv venv --system-site-package
 source venv/bin/activate
 pip install --no-deps dist/*.whl
 
