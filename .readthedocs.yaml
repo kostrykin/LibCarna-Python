@@ -20,7 +20,7 @@ build:
   jobs:
     install:
       - bash ./linux_build.bash
-      - pip install dist/libcarna_python-*.whl
+      - pip install build/dist/libcarna_python-*.whl
     pre_build:
       - pip install -r docs/requirements.txt
     build:
