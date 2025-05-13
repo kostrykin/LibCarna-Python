@@ -28,8 +28,8 @@ See [libcarna.readthedocs.io](https://libcarna.readthedocs.io) for examples and 
 ---
 ## 2. Dependencies
 
-General dependencies are listed in environment.yml. Further dependencies for testing are listed in
-test/requirements.txt, and those for the documentation in docs/requirements.txt.
+General dependencies are listed in *environment.yml*. Further dependencies for testing are listed in
+*test/requirements.txt*, and those for the documentation in *docs/requirements.txt*.
 
 ---
 ## 3. Installation
