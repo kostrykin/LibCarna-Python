@@ -49,5 +49,5 @@ if [ -v LIBCARNA_PYTHON_BUILD_DOCS ]; then
     pip install -r docs/requirements.txt
     rm -rf docs/build
     sphinx-build -M html docs docs/build
-    cp docs/build/html/examples/*.ipynb /examples/
+    cp docs/build/html/examples/*.ipynb examples/
 fi
