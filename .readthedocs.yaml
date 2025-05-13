@@ -25,4 +25,4 @@ build:
       - pip install -r docs/requirements.txt
     build:
       html:
-        - LIBCARNA_PYTHON_NBSPHINX_EXECUTE=never sphinx-build -M html docs $READTHEDOCS_OUTPUT/html
+        - LIBCARNA_PYTHON_NBSPHINX_EXECUTE=never sphinx-build -M html docs $READTHEDOCS_OUTPUT
