@@ -1,7 +1,7 @@
 import libcarna.presets
 import numpy as np
 
-import testsuite
+from . import testsuite
 
 
 class VolumeRenderingStage(testsuite.LibCarnaTestCase):

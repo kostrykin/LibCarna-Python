@@ -1,7 +1,7 @@
 import libcarna.helpers
 import numpy as np
 
-import testsuite
+from . import testsuite
 
 
 class VolumeGridHelper:

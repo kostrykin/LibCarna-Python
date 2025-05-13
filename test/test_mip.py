@@ -1,5 +1,5 @@
 import libcarna
-import testsuite
+from . import testsuite
 
 
 class mip(testsuite.LibCarnaTestCase):

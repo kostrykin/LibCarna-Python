@@ -1,4 +1,4 @@
-version = '@MAJOR_VERSION@.@MINOR_VERSION@.@PATCH_VERSION@'
+version = '@FULL_VERSION@'
 libcarna_version = '@LIBCARNA_VERSION@'
 
 

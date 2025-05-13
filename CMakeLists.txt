@@ -3,6 +3,10 @@ project( LibCarna-Python )
 set( PYTHON_MODULE_NAME "libcarna" )
 include( FindPackageHandleStandardArgs )
 
+set( MAJOR_VERSION 0 )
+set( MINOR_VERSION 2 )
+set( PATCH_VERSION 0 )
+
 set( CMAKE_CXX_STANDARD 14 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 set( CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE )
@@ -73,20 +77,31 @@ find_package( Eigen3 REQUIRED )
 include_directories( ${EIGEN3_INCLUDE_DIR} )
 
 # LibCarna
-find_package( LibCarna ${REQUIRED_VERSION_LIBCARNA} REQUIRED COMPONENTS release )
+find_package( LibCarna "3.4.0" REQUIRED COMPONENTS release )
 include_directories( ${LibCarna_INCLUDE_DIR} )
 set( LIBCARNA_VERSION ${FOUND_VERSION} )
 
 ############################################
 
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/misc/__init__.py.in
-                ${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_MODULE_NAME}/__init__.py @ONLY )
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/misc/__init__.py.in
+    ${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_MODULE_NAME}/__init__.py
+    @ONLY
+)
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in
+    ${CMAKE_CURRENT_BINARY_DIR}/setup.py
+    @ONLY
+)
 
 file( GLOB PYTHON_AUX_FILES "${CMAKE_CURRENT_SOURCE_DIR}/misc/libcarna/*.py" )
 file( COPY ${PYTHON_AUX_FILES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_MODULE_NAME}" )
 
 file( GLOB LICENSES "${LibCarna_LICENSE_DIR}/LICENSE*" )
-file( COPY ${LICENSES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/licenses/" )
+file( COPY ${LICENSES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}" )
+file( COPY ${CMAKE_CURRENT_SOURCE_DIR}/README.md DESTINATION "${CMAKE_CURRENT_BINARY_DIR}" )
+file( COPY ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE DESTINATION "${CMAKE_CURRENT_BINARY_DIR}" )
 
 ############################################
 # Project
@@ -165,11 +180,3 @@ install( FILES
     ${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_MODULE_NAME}/__init__.py
     DESTINATION ${INSTALL_LIBRARY_DIR}
 )
-
-############################################
-# Process unit tests
-############################################
-
-if( BUILD_TEST )
-    add_subdirectory( test )
-endif()
