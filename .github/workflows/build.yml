@@ -66,10 +66,10 @@ jobs:
       - name: Git checkout
         uses: actions/checkout@v4
 
-      - name: Install EGL implementation
+      - name: Install dependencies
         run: |
           sudo apt-get update -y -qq
-          sudo apt-get install -y -qq libegl1
+          sudo apt-get install -y -qq libegl1 ffmpeg
 
       - name: Download artifact
         uses: actions/download-artifact@v4
