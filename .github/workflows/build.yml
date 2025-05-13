@@ -66,10 +66,10 @@ jobs:
       - name: Git checkout
         uses: actions/checkout@v4
 
-#      - name: Install EGL implementation
-#        run: |
-#          sudo apt-get update -y -qq
-#          sudo apt-get install -y -qq libegl1
+      - name: Install EGL implementation
+        run: |
+          sudo apt-get update -y -qq
+          sudo apt-get install -y -qq libegl1
 
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -88,7 +88,6 @@ jobs:
           conda create --prefix ./.env -c conda-forge -c bioconda \
             python==${{ inputs.python-version }} \
             libcarna==${{ needs.build.outputs.libcarna_version }} \
-            mesa-libegl-cos7-x86_64 \
             pip
           eval "$(conda shell.bash hook)"
           conda activate ./.env

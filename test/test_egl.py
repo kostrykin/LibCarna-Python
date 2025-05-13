@@ -23,3 +23,21 @@ class EGLContext(testsuite.LibCarnaTestCase):
         del ctx2
         gc.collect()
         del ctx1
+
+    def test__vendor(self):
+        """
+        Test the "vendor" string of the EGL context.
+        """
+        ctx = libcarna.egl.EGLContext()
+        self.assertIsInstance(ctx.vendor, str)
+        self.assertGreater(len(ctx.vendor), 0)
+        print("*** EGL vendor: %s" % ctx.vendor)
+
+    def test__renderer(self):
+        """
+        Test the "renderer" string of the EGL context.
+        """
+        ctx = libcarna.egl.EGLContext()
+        self.assertIsInstance(ctx.renderer, str)
+        self.assertGreater(len(ctx.renderer), 0)
+        print("*** EGL renderer: %s" % ctx.renderer)

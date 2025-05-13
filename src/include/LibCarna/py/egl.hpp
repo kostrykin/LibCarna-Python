@@ -1,6 +1,7 @@
 #pragma once
 
 #include <LibCarna/py/base.hpp>
+#include <LibCarna/egl/EGLContext.hpp>
 
 namespace LibCarna
 {
@@ -23,6 +24,8 @@ class EGLContextView : public LibCarna::py::base::GLContextView
 public:
 
     EGLContextView();
+
+    LibCarna::egl::EGLContext& eglContext() const;
 
 }; // EGLContextView
 

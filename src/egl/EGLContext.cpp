@@ -1,5 +1,6 @@
 #define EGL_EGLEXT_PROTOTYPES
 
+#include <LibCarna/base/glew.hpp>
 #include <LibCarna/egl/EGLContext.hpp>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
@@ -70,6 +71,9 @@ struct LibCarna::egl::EGLContext::Details
     ::EGLDisplay eglDpy;
     ::EGLSurface eglSurf;
     ::EGLContext eglCtx;
+
+    std::string vendor;
+    std::string renderer;
 
     void selectDisplay();
     bool initializeDisplay();
@@ -174,6 +178,11 @@ LibCarna::egl::EGLContext* LibCarna::egl::EGLContext::create()
 
     pimpl->activate();
     REPORT_EGL_ERROR;
+
+    pimpl->vendor   = ( const char* ) glGetString( GL_VENDOR   );
+    pimpl->renderer = ( const char* ) glGetString( GL_RENDERER );
+    REPORT_EGL_ERROR;
+
     return new LibCarna::egl::EGLContext( pimpl );
 }
 
@@ -189,4 +198,16 @@ LibCarna::egl::EGLContext::~EGLContext()
 void LibCarna::egl::EGLContext::activate() const
 {
     pimpl->activate();
+}
+
+
+const std::string& LibCarna::egl::EGLContext::vendor() const
+{
+    return pimpl->vendor;
+}
+
+
+const std::string& LibCarna::egl::EGLContext::renderer() const
+{
+    return pimpl->renderer;
 }

@@ -31,6 +31,10 @@ public:
 
     virtual ~EGLContext();
 
+    const std::string& vendor() const;
+
+    const std::string& renderer() const;
+
 protected:
 
     virtual void activate() const;
