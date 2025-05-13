@@ -16,13 +16,15 @@ conda activate "$ROOT"/.env
 # Create build directory
 mkdir -p "$ROOT"/build
 
-# Build native extension
+# Configure build
 cd "$ROOT"/build
 cmake -DCMAKE_BUILD_TYPE=Release \
     -DPYTHON_EXECUTABLE="$(which python)" \
     -Dpybind11_DIR="$CONDA_PREFIX/share/cmake/pybind11" \
     -DCMAKE_MODULE_PATH="$CONDA_PREFIX/share/cmake/Modules" \
     "$ROOT"
+
+# Build native extension
 if [ -z "$LIBCARNA_SKIP_NATIVE" ]; then
     make VERBOSE=1
 fi
