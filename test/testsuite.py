@@ -92,6 +92,7 @@ class LibCarnaRenderingTestCase(LibCarnaTestCase):
 
         # If `expected` is a string, read the image from the path.
         if isinstance(expected, str):
+            print('***', LibCarnaRenderingTestCase._get_expected_image_filepath(expected, vendor=vendor))
             expected = _imread(LibCarnaRenderingTestCase._get_expected_image_filepath(expected, vendor=vendor))
 
             # If the image is in floating point format, convert it to [0, 255] range.

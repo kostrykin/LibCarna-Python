@@ -122,7 +122,7 @@ class OpaqueRenderingStage(testsuite.LibCarnaRenderingTestCase):
         # .. OpaqueRenderingStage: example-single-frame-end
 
         # Verify result
-        self.assert_image_almost_expected(array)
+        self.assert_image_almost_expected(array, vendor=r.gl_context.vendor)
 
     def test__animated(self):
         r, camera = self.r, self.camera
@@ -139,7 +139,7 @@ class OpaqueRenderingStage(testsuite.LibCarnaRenderingTestCase):
         # .. OpaqueRenderingStage: example-animation-end
 
         # Verify result
-        self.assert_image_almost_expected(np.array(frames))
+        self.assert_image_almost_expected(np.array(frames), vendor=r.gl_context.vendor)
 
 
 class MaskRenderingStage(testsuite.LibCarnaRenderingTestCase):
@@ -181,7 +181,7 @@ class MaskRenderingStage(testsuite.LibCarnaRenderingTestCase):
         array = r.render(camera)
 
         # Verify result
-        self.assert_image_almost_expected(array)
+        self.assert_image_almost_expected(array, vendor=r.gl_context.vendor)
 
     def test__animated(self):
         r, camera = self.r, self.camera
@@ -196,7 +196,7 @@ class MaskRenderingStage(testsuite.LibCarnaRenderingTestCase):
         frames = list(animation.render(r, camera))
 
         # Verify result
-        self.assert_image_almost_expected(np.array(frames))
+        self.assert_image_almost_expected(np.array(frames), vendor=r.gl_context.vendor)
 
 
 class MIPStage(testsuite.LibCarnaRenderingTestCase):
@@ -238,7 +238,7 @@ class MIPStage(testsuite.LibCarnaRenderingTestCase):
         array = r.render(camera)
 
         # Verify result
-        self.assert_image_almost_expected(array)
+        self.assert_image_almost_expected(array, vendor=r.gl_context.vendor)
 
     def test__animated(self):
         r, camera = self.r, self.camera
@@ -253,7 +253,7 @@ class MIPStage(testsuite.LibCarnaRenderingTestCase):
         frames = list(animation.render(r, camera))
 
         # Verify result
-        self.assert_image_almost_expected(np.array(frames))
+        self.assert_image_almost_expected(np.array(frames), vendor=r.gl_context.vendor)
 
 
 class CuttingPlanesStage(testsuite.LibCarnaRenderingTestCase):
@@ -311,7 +311,7 @@ class CuttingPlanesStage(testsuite.LibCarnaRenderingTestCase):
         array = r.render(camera)
 
         # Verify result
-        self.assert_image_almost_expected(array)
+        self.assert_image_almost_expected(array, vendor=r.gl_context.vendor)
 
     def test__animated(self):
         r, volume, zplane, camera = self.r, self.volume, self.zplane, self.camera
@@ -332,7 +332,7 @@ class CuttingPlanesStage(testsuite.LibCarnaRenderingTestCase):
         # .. CuttingPlanesStage: example-animation-end
 
         # Verify result
-        self.assert_image_almost_expected(np.array(frames))
+        self.assert_image_almost_expected(np.array(frames), vendor=r.gl_context.vendor)
 
 
 class DVRStage(testsuite.LibCarnaRenderingTestCase):
@@ -381,7 +381,7 @@ class DVRStage(testsuite.LibCarnaRenderingTestCase):
         array = r.render(camera)
 
         # Verify result
-        self.assert_image_almost_expected(array)
+        self.assert_image_almost_expected(array, vendor=r.gl_context.vendor)
 
     def test__animated(self):
         r, camera = self.r, self.camera
@@ -396,7 +396,7 @@ class DVRStage(testsuite.LibCarnaRenderingTestCase):
         frames = list(animation.render(r, camera))
 
         # Verify result
-        self.assert_image_almost_expected(np.array(frames))
+        self.assert_image_almost_expected(np.array(frames), vendor=r.gl_context.vendor)
 
 
 class DRRStage(testsuite.LibCarnaRenderingTestCase):
@@ -443,7 +443,7 @@ class DRRStage(testsuite.LibCarnaRenderingTestCase):
         array = r.render(camera)
 
         # Verify result
-        self.assert_image_almost_expected(array)
+        self.assert_image_almost_expected(array, vendor=r.gl_context.vendor)
 
     def test__animated(self):
         r, camera = self.r, self.camera
@@ -458,4 +458,4 @@ class DRRStage(testsuite.LibCarnaRenderingTestCase):
         frames = list(animation.render(r, camera))
 
         # Verify result
-        self.assert_image_almost_expected(np.array(frames))
+        self.assert_image_almost_expected(np.array(frames), vendor=r.gl_context.vendor)

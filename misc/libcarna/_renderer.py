@@ -15,7 +15,8 @@ class renderer:
         height: Vertical rendering resolution.
         stages: List of stages to be added to the frame renderer.
         background_color: Background color of the surface (aliases: `bgcolor`, `bgc`).
-        ctx: OpenGL context to be used for rendering. If `None`, a new :class:`egl_context` will be created.
+        gl_context: OpenGL context to be used for rendering (alias: `ctx`). If `None`, a new :class:`egl_context` will
+            be created.
     """
 
     width: int
@@ -28,19 +29,24 @@ class renderer:
     Vertical rendering resolution.
     """
 
+    gl_context: libcarna.gl_context
+    """
+    OpenGL context used for rendering.
+    """
+
     @kwalias('background_color', 'bgcolor', 'bgc')
+    @kwalias('gl_context', 'ctx')
     def __init__(
             self,
             width: int,
             height: int,
             stages: Iterable[libcarna.base.RenderStage],
             background_color: libcarna.color = libcarna.color.BLACK_NO_ALPHA,
-            ctx: libcarna.gl_context | None = None,
+            gl_context: libcarna.gl_context | None = None,
         ):
-        if ctx is None:
-            ctx = libcarna.egl_context()
-        surface = libcarna.surface(ctx, width, height)
-        frame_renderer = libcarna.frame_renderer(ctx, surface.width, surface.height)
+        self.gl_context = gl_context or libcarna.egl_context()
+        surface = libcarna.surface(self.gl_context, width, height)
+        frame_renderer = libcarna.frame_renderer(self.gl_context, surface.width, surface.height)
         frame_renderer.set_background_color(background_color)
 
         # Add stages to the frame renderer
