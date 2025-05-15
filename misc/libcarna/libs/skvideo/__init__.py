@@ -3,7 +3,6 @@ __version__ = "1.1.11"
 from .utils import check_output, where
 import os
 import warnings
-import numpy as np
 
 # Run a program-based check to see if all install
 # requirements have been met.

@@ -4,12 +4,7 @@
 import os
 import platform
 import itertools
-from .xmltodict import parse as xmltodictparser
 import subprocess as sp
-from .edge import canny
-from .stpyr import SpatialSteerablePyramid, rolling_window
-from .mscn import compute_image_mscn_transform, gen_gauss_window
-from .stats import ggd_features, aggd_features, paired_product
 
 
 # dictionary based on pix_fmt keys
@@ -291,17 +286,8 @@ def vshape(videodata):
         raise ValueError("Improper data input")
 
 __all__ = [
-    'xmltodictparser',
     'bpplut',
     'where',
     'check_output',
     'vshape',
-    'canny',
-    'SpatialSteerablePyramid',
-    'compute_image_mscn_transform',
-    'gen_gauss_window',
-    'paired_product',
-    'ggd_features',
-    'aggd_features',
-    'rolling_window'
 ]
