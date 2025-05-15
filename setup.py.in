@@ -40,6 +40,7 @@ if __name__ == '__main__':
             'Topic :: Multimedia :: Graphics :: 3D Rendering',
             'Topic :: Scientific/Engineering :: Visualization',
         ],
+        python_requires = '>=3.10',
         install_requires = [
             'numpy',
             'numpngw >=0.1.4, <0.2',
@@ -49,7 +50,7 @@ if __name__ == '__main__':
             'tifffile',
             'pooch',
             'matplotlib',
-            'typing_extensions',  # required for Python 3.10
+            'typing_extensions; python_version <= "3.10"',
         ],
     )
 
