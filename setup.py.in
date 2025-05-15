@@ -22,11 +22,22 @@ if __name__ == '__main__':
             'LICENSE-LibCarna',
             'LICENSE-Eigen',
             'LICENSE-GLEW',
+            'LICENSE-scikit-video',
         ],
         package_dir = {
             'libcarna': 'libcarna',
+            'libcarna.libs': 'libcarna/libs',
+            'libcarna.libs.skvideo': 'libcarna/libs/skvideo',
+            'libcarna.libs.skvideo.io': 'libcarna/libs/skvideo/io',
+            'libcarna.libs.skvideo.utils': 'libcarna/libs/skvideo/utils',
         },
-        packages = ['libcarna'],
+        packages = [
+            'libcarna',
+            'libcarna.libs',
+            'libcarna.libs.skvideo',
+            'libcarna.libs.skvideo.io',
+            'libcarna.libs.skvideo.utils',
+        ],
         package_data = {
             'libcarna': ['*.so'],
         },
