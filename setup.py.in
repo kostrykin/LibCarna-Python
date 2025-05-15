@@ -22,7 +22,7 @@ if __name__ == '__main__':
             'LICENSE-LibCarna',
             'LICENSE-Eigen',
             'LICENSE-GLEW',
-            'LICENSE-scikit-video',
+            'LICENSE-skvideo',
         ],
         package_dir = {
             'libcarna': 'libcarna',
