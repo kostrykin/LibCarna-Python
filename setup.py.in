@@ -22,11 +22,22 @@ if __name__ == '__main__':
             'LICENSE-LibCarna',
             'LICENSE-Eigen',
             'LICENSE-GLEW',
+            'LICENSE-skvideo',
         ],
         package_dir = {
             'libcarna': 'libcarna',
+            'libcarna.libs': 'libcarna/libs',
+            'libcarna.libs.skvideo': 'libcarna/libs/skvideo',
+            'libcarna.libs.skvideo.io': 'libcarna/libs/skvideo/io',
+            'libcarna.libs.skvideo.utils': 'libcarna/libs/skvideo/utils',
         },
-        packages = ['libcarna'],
+        packages = [
+            'libcarna',
+            'libcarna.libs',
+            'libcarna.libs.skvideo',
+            'libcarna.libs.skvideo.io',
+            'libcarna.libs.skvideo.utils',
+        ],
         package_data = {
             'libcarna': ['*.so'],
         },
@@ -44,7 +55,6 @@ if __name__ == '__main__':
         install_requires = [
             'numpy',
             'numpngw >=0.1.4, <0.2',
-            'scikit-video >=1.1.11, <1.2',
             'scipy',
             'scikit-image',
             'tifffile',
