@@ -186,16 +186,6 @@ bpplut["ayuv64le"] = [4, 64]
 bpplut["ayuv64be"] = [4, 64]
 bpplut["videotoolbox_vld"] = [0, 0]
 
-
-
-# python2 only
-binary_type = str
-
-def check_dict(dic, key, valueifnot):
-    if key not in dic:
-        dic[key] = valueifnot
-
-
 # patch for python 2.6
 def check_output(*popenargs, **kwargs):
     closeNULL = 0
@@ -223,27 +213,9 @@ def check_output(*popenargs, **kwargs):
         raise error
     return output
 
-try:
-    # on py27 make map/filter behave like an iterator
-    map = itertools.imap
-    filter = itertools.ifilter
-except AttributeError:
-    # py3+
-    pass
-
-
 def where( filename ):
     """ Returns all matching file paths. """
     return list(iwhere(filename))
-
-
-def first( filename ):
-    """ Returns first matching file path. """
-    try:
-        return next(iwhere(filename))
-    except StopIteration:
-        return None
-
 
 def iwhere( filename ):
     possible_paths = _gen_possible_matches(filename)
@@ -318,42 +290,11 @@ def vshape(videodata):
     else:
         raise ValueError("Improper data input")
 
-def rgb2gray(videodata):
-    """Computes the grayscale video.
-
-    Computes the grayscale video from the input video returning the 
-    standardized shape (T, M, N, C), where T is number of frames, 
-    M is height, N is width, and C is number of channels (here always 1).
-
-    Parameters
-    ----------
-    videodata : ndarray
-        Input data of shape (T, M, N, C), (T, M, N), (M, N, C), or (M, N), where
-        T is number of frames, M is height, N is width, and C is number of 
-        channels.
-
-    Returns
-    -------
-    videodataout : ndarray
-        Standardized grayscaled version of videodata, shape (T, M, N, 1)
-    """
-    videodata = vshape(videodata)
-    T, M, N, C = videodata.shape
-
-    if C == 1:
-        return videodata
-    elif C == 3: # assume RGB
-        videodata = videodata[:, :, :, 0]*0.2989 + videodata[:, :, :, 1]*0.5870 + videodata[:, :, :, 2]*0.1140 
-        return vshape(videodata)
-    else:
-        raise NotImplemented
-
 __all__ = [
     'xmltodictparser',
     'bpplut',
     'where',
     'check_output',
-    'rgb2gray',
     'vshape',
     'canny',
     'SpatialSteerablePyramid',
