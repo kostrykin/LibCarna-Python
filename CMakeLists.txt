@@ -82,16 +82,6 @@ include_directories( ${LibCarna_INCLUDE_DIR} )
 set( LIBCARNA_VERSION ${FOUND_VERSION} )
 
 ############################################
-# Macro that sets variable to default value
-# only when the variable isn't defined yet
-############################################
-
-macro( copy_python_aux_files mod_path )
-    file( GLOB PYTHON_AUX_FILES "${CMAKE_CURRENT_SOURCE_DIR}/misc/${mod_path}/*.py" )
-    file( COPY ${PYTHON_AUX_FILES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/${mod_path}" )
-endmacro()
-
-############################################
 
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/misc/__init__.py.in
@@ -105,17 +95,13 @@ configure_file(
     @ONLY
 )
 
-copy_python_aux_files( "${PYTHON_MODULE_NAME}" )
-copy_python_aux_files( "${PYTHON_MODULE_NAME}/libs" )
-copy_python_aux_files( "${PYTHON_MODULE_NAME}/libs/skvideo" )
-copy_python_aux_files( "${PYTHON_MODULE_NAME}/libs/skvideo/io" )
-copy_python_aux_files( "${PYTHON_MODULE_NAME}/libs/skvideo/utils" )
+file( GLOB PYTHON_AUX_FILES "${CMAKE_CURRENT_SOURCE_DIR}/misc/libcarna/*.py" )
+file( COPY ${PYTHON_AUX_FILES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_MODULE_NAME}" )
 
 file( GLOB LICENSES "${LibCarna_LICENSE_DIR}/LICENSE*" )
 file( COPY ${LICENSES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}" )
 file( COPY ${CMAKE_CURRENT_SOURCE_DIR}/README.md DESTINATION "${CMAKE_CURRENT_BINARY_DIR}" )
 file( COPY ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE DESTINATION "${CMAKE_CURRENT_BINARY_DIR}" )
-file( COPY ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE-skvideo DESTINATION "${CMAKE_CURRENT_BINARY_DIR}" )
 
 ############################################
 # Project
