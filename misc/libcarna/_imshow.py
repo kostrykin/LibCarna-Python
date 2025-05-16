@@ -8,7 +8,7 @@ from typing import (
 
 import numpngw
 import numpy as np
-from .libs.skvideo import io as skvideo_io
+import skvideo.io
 
 try:
     from IPython.core.display import HTML as IPythonHTML
@@ -47,7 +47,7 @@ def _render_html_h264(array: np.ndarray | Iterable[np.ndarray], fps: float = 25)
     
     # Encode video
     with tempfile.NamedTemporaryFile(suffix='.mp4') as mp4_file:
-        with skvideo_io.FFmpegWriter(
+        with skvideo.io.FFmpegWriter(
             mp4_file.name,
             outputdict={
                 '-vcodec': 'h264', 
