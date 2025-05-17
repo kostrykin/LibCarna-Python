@@ -11,6 +11,10 @@ See [libcarna.readthedocs.io](https://libcarna.readthedocs.io) for examples and 
 [![Anaconda-Server Badge](https://img.shields.io/conda/pn/bioconda/libcarna-python.svg?label=Platforms)](https://anaconda.org/bioconda/libcarna-python)
 
 ---
+
+<a href="https://libcarna.readthedocs.io/en/latest/examples/cells.html"><img src="https://figshare.com/ndownloader/files/54620162" height="350px"></a>&nbsp;<a href="https://libcarna.readthedocs.io/en/latest/examples/cthead.html"><img src="https://figshare.com/ndownloader/files/54620159" height="350px"></a>
+
+---
 ## Contents
 
 * [Limitations](#1-limitations)
