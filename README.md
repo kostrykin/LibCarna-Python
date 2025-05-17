@@ -61,7 +61,7 @@ After building the wheel file, it can be installed using:
 pip install --force-reinstall build/dist/libcarna_python-*.whl
 ```
 
-To build against a development version of LibCarna, install it locally,
+To build against a development version of [LibCarna](https://github.com/kostrykin/LibCarna), install it locally via
 ```bash
 LIBCARNA_SRC_PREFIX="../LibCarna" ./install_libcarna_dev.bash
 ```
